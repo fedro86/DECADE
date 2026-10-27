@@ -1,0 +1,21 @@
+[project]
+name = "opera-ds"
+version = "0.1.0"
+description = "Downscaling spazio-temporale OPERA ODYSSEY (2 km / 15 min) -> 1 km / 5 min"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "numpy",
+    "scipy",
+    "opencv-python-headless",
+    "h5py",
+    "matplotlib",
+    "pyproj",
+    "shapely",
+    "pyshp",
+]
+
+[project.optional-dependencies]
+pysteps = ["pysteps"]
+
+[tool.uv]
+package = false

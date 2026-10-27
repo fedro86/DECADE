@@ -1,0 +1,27 @@
+{
+  "factor": 2,
+  "dt_in_min": 15.0,
+  "dt_out_min": 5.0,
+  "dbz_floor": 0.0,
+  "rain_threshold_dbz": null,
+  "spatial_interp": "linear",
+  "blend_space": "Z",
+  "coverage_rule": "intersection",
+  "max_step_px": 2.0,
+  "context_pairs": 1,
+  "lk": {
+    "backend": "opencv",
+    "highpass_sigma": 15.0,
+    "highpass_range": 12.0,
+    "feature_min_dbz": 10.0,
+    "max_corners": 5000,
+    "win_size": 50,
+    "pyr_levels": 3,
+    "fb_max_err_px": 1.0,
+    "buffer_px": 5,
+    "decluster_px": 20,
+    "grid_step": 10,
+    "idw_k": 30,
+    "smooth_sigma": 1.5
+  }
+}
