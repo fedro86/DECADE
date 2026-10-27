@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from opera_ds import DownscaleConfig, Frame, LKParams, estimate_motion  # noqa: E402
 from opera_ds import pipeline as pl  # noqa: E402
 from opera_ds.validate import run_validation  # noqa: E402
+from opera_ds.windows import Window, WindowStore, dbz_to_rr, make_window  # noqa: E402
 
 NY, NX = 600, 800             # griglia fine (1 km)
 FLOOR, DET = 0.0, 12.0        # undetect sotto DET dBZ
@@ -85,10 +86,15 @@ def make_frame(f, cov, t):
     return Frame(t, np.where(und, FLOOR, f).astype(np.float32), cov.copy(), und, {})
 
 
-def npz_reader(path, quantity="DBZH"):
+def npz_reader(path, quantity="DBZH", extent=None, scale=2000.0):
+    """Lettore dei file sintetici; `extent` (metri dall'angolo UL) come read_odim_composite."""
     d = np.load(path)
     t = dt.datetime.fromisoformat(str(d["time"]))
-    return Frame(t, d["values"], d["coverage"], d["undetect"], {})
+    v, c, u = d["values"], d["coverage"], d["undetect"]
+    if extent is not None:
+        x0, y0, w, h = (int(round(e / scale)) for e in extent)
+        v, c, u = (a[y0:y0 + h, x0:x0 + w] for a in (v, c, u))
+    return Frame(t, v, c, u, {})
 
 
 def save(fr: Frame, path):
@@ -188,6 +194,40 @@ def main(out):
     fr = npz_reader(files[1])
     assert fr.values.shape == (NY, NX)
     print(f"[pipeline] {len(files)} file 1 km / 5 min, primo intervallo ok")
+
+    # metadati di produzione ed etichette in convenzione CIRRUS
+    captured = {}
+    pl.run_downscaling(ody, T0 + dt.timedelta(minutes=15), T0 + dt.timedelta(minutes=45),
+                       os.path.join(out, "ds_shift"), cfg, overwrite=True, reader=npz_reader,
+                       writer=lambda path, fr, q: captured.__setitem__(fr.time, fr.attrs),
+                       time_shift_min=-2.5)
+    got = [(int((t - T0).total_seconds() // 60), round(at["alpha"], 3)) for t, at in sorted(captured.items())]
+    exp = [(15, 0.833), (20, 0.167), (25, 0.5), (30, 0.833), (35, 0.167), (40, 0.5)]
+    assert got == exp, got
+    print(f"[pipeline] shift -2.5 min: etichette e alpha {got}")
+
+    # finestre per il ML: a alpha=0 devono coincidere col downscaling sul dominio intero
+    import zarr
+    win = Window(T0 + dt.timedelta(minutes=30), row0=200, col0=300, T=12, H=128, W=128)
+    rr, alpha, times = make_window(ody, win, cfg, context_km=60, reader=npz_reader)
+    assert rr.shape == (12, 128, 128) and np.isfinite(rr).any()
+    assert np.allclose(alpha, [0, 1 / 3, 2 / 3] * 4), alpha
+    full = pl.FrameSource(ody, cfg, reader=npz_reader).pair(win.t_start)
+    val, cov, _ = full.get(0.0, "lk")
+    ref = np.where(cov, dbz_to_rr(val, FLOOR), np.nan)[200:328, 300:428]
+    both = np.isfinite(ref) & np.isfinite(rr[0])
+    assert both.mean() > 0.5 and np.allclose(rr[0][both], ref[both], rtol=1e-5, atol=1e-6), \
+        np.nanmax(np.abs(rr[0] - ref))
+    store = WindowStore(os.path.join(out, "windows.zarr"), 12, 128, 128, {"test": True})
+    store.append(rr, alpha, times, win.row0, win.col0)
+    store.append(rr, alpha, times, win.row0, win.col0)
+    g = zarr.open_group(os.path.join(out, "windows.zarr"), mode="r")
+    assert g["RR"].shape == (2, 12, 128, 128) and g["RR"].dtype == np.float16
+    assert int(g["time"][1, 0]) == int((win.t_start - dt.datetime(1970, 1, 1)).total_seconds())
+    # float16: errore relativo di arrotondamento sotto 1e-3
+    rel = np.nanmax(np.abs(np.asarray(g["RR"][0, 0], np.float32) - rr[0]) / np.maximum(rr[0], 1e-3))
+    assert rel < 1e-3, rel
+    print(f"[finestre] {g['RR'].shape} float16, alpha {alpha[:3]}, coincide col dominio intero ad alpha=0")
     print("TUTTI I TEST SUPERATI")
 
 

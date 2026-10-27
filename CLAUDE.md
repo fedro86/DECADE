@@ -48,7 +48,8 @@ uv run python scripts/opera_ds_cli.py validate \
 | `opera_ds/interp.py` | `PairInterpolator.get(alpha, method)`; metodi `nearest`, `linear`, `lk`, con suffisso `:Z` o `:dB` |
 | `opera_ds/pipeline.py` | `FrameSource`, `run_downscaling`, `run_downscaling_parallel` (accetta `reader`) |
 | `opera_ds/validate.py` | metriche in dBZ, in R per scala, conservazione interna, accumuli orari |
-| `scripts/opera_ds_cli.py` | sottocomandi `downscale` e `validate`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
+| `opera_ds/windows.py` | finestre per il ML: `Window`, `make_window`, `WindowStore` (Zarr in formato IRENE), `dbz_to_rr` |
+| `scripts/opera_ds_cli.py` | sottocomandi `downscale`, `validate` e `windows`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
 | `scripts/fetch_ord_archive.py` | download dal bucket pubblico ORD |
 | `scripts/make_region_mask.py` | maschera di un paese (Natural Earth 1:10m) sulla griglia di un file ODIM |
 
@@ -61,6 +62,12 @@ uv run python scripts/opera_ds_cli.py validate \
   `per_time.csv`, `mass_internal.csv`, `accum_1h.csv`, `qq.json`, `grid_check.txt`
   e i grafici.
 - Gli accumuli orari richiedono `--pair-stride 1`.
+- `pipeline.output_times(t0, cfg, shift)` è l'unica regola tra etichette di
+  output e `alpha`. Con shift 0 (default) α = 0, 1/3, 2/3; con −2,5 (convenzione
+  CIRRUS) α = 1/6, 1/2, 5/6 e nessun frame è un ODYSSEY vero.
+- Una finestra 24 × 256 × 256 costa circa 1 s e circa 1,6 MB compressa.
+  `ProcessPoolExecutor` passa l'indice completo dei file a ogni job: per molti
+  anni di dati andrà passato una volta sola (initializer).
 
 ## Fonti dati (verificate a ottobre 2026)
 

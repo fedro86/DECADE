@@ -12,6 +12,7 @@ dependencies = [
     "pyproj",
     "shapely",
     "pyshp",
+    "zarr>=3",
 ]
 
 [project.optional-dependencies]

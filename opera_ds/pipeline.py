@@ -93,58 +93,76 @@ def floor_time(t: dt.datetime, minutes: float) -> dt.datetime:
     return epoch + dt.timedelta(seconds=((t - epoch).total_seconds() // s) * s)
 
 
+def output_times(t0: dt.datetime, cfg: DownscaleConfig, time_shift_min: float = 0.0):
+    """Etichette di output T (multipli di dt_out) servite dalla coppia (t0, t0+dt_in) e
+    relativo alpha = (T + shift - t0) / dt_in, con alpha in [0, 1).
+    shift = 0: etichette ODYSSEY (alpha = 0, 1/3, 2/3; alpha = 0 e' un frame vero).
+    shift = -2.5: etichette in convenzione CIRRUS (alpha = 1/6, 1/2, 5/6)."""
+    out = []
+    lo = t0 - dt.timedelta(minutes=time_shift_min)
+    T = floor_time(lo - dt.timedelta(minutes=cfg.dt_out_min), cfg.dt_out_min)
+    while T < lo + dt.timedelta(minutes=cfg.dt_in_min):
+        a = ((T - t0).total_seconds() / 60 + time_shift_min) / cfg.dt_in_min
+        if 0 <= a < 1 - 1e-9:
+            out.append((T, round(a, 6)))
+        T += dt.timedelta(minutes=cfg.dt_out_min)
+    return out
+
+
 def run_downscaling(files: dict[dt.datetime, str], start: dt.datetime, end: dt.datetime,
                     out_dir: str, cfg: DownscaleConfig | None = None, quantity: str = "DBZH",
                     name_fmt: str = "OPERA_DS_1km_5min_%Y%m%d%H%M.h5",
                     method: str = "lk", overwrite: bool = False,
                     reader: Callable = read_odim_composite,
-                    writer: Callable = write_odim_composite) -> list[str]:
+                    writer: Callable = write_odim_composite,
+                    time_shift_min: float = 0.0) -> list[str]:
     """Genera i compositi 1 km / 5 min tra start (incluso) e end (escluso).
-    reader(path, quantity) -> Frame ; writer(path, Frame, quantity)."""
+    reader(path, quantity) -> Frame ; writer(path, Frame, quantity).
+    Ogni frame porta in `attrs` l'alpha (0 = frame ODYSSEY vero) e lo shift applicato
+    alle etichette (vedi `output_times`)."""
     cfg = cfg or DownscaleConfig()
     src = FrameSource(files, cfg, quantity, reader=reader)
     os.makedirs(out_dir, exist_ok=True)
     step_in = dt.timedelta(minutes=cfg.dt_in_min)
-    step_out = dt.timedelta(minutes=cfg.dt_out_min)
     written = []
-    t0 = floor_time(start, cfg.dt_in_min)
+    t0 = floor_time(start - dt.timedelta(minutes=max(time_shift_min, 0) + cfg.dt_in_min), cfg.dt_in_min)
     while t0 < end:
         fr0 = src.frame(t0)
         if fr0 is None:
             t0 += step_in
             continue
         where = refine_where(fr0.where, cfg.factor)
-        pi = src.pair(t0)
-        if pi is None:
+        targets = [(T, a) for T, a in output_times(t0, cfg, time_shift_min) if start <= T < end]
+        pi = src.pair(t0) if targets else None
+        if targets and pi is None:
+            # manca t0+dt: si scrive solo l'eventuale istante con alpha = 0
             log.info("%s: manca t0+%s, scrivo solo l'istante nominale", t0, step_in)
-            alphas = [0.0]
+            targets = [(T, a) for T, a in targets if a == 0]
             pi = PairInterpolator(src.field(t0), src.field(t0), np.zeros((2,) + fr0.values.shape, np.float32), cfg)
-        else:
-            alphas = [k / cfg.n_sub for k in range(cfg.n_sub)]
-        for k, a in enumerate(alphas):
-            t = t0 + k * step_out
-            if not (start <= t < end):
-                continue
-            path = os.path.join(out_dir, t.strftime(name_fmt))
+        for T, a in targets:
+            path = os.path.join(out_dir, T.strftime(name_fmt))
             if os.path.exists(path) and not overwrite:
                 written.append(path)
                 continue
             val, cov, und = pi.get(a, method)
-            writer(path, Frame(t, val, cov, und, where), quantity)
+            attrs = {"alpha": float(a), "interpolated": int(a != 0), "time_shift_min": float(time_shift_min),
+                     "source_t0": t0.strftime("%Y%m%dT%H%M"), "method": method}
+            writer(path, Frame(T, val, cov, und, where, attrs=attrs), quantity)
             written.append(path)
         t0 += step_in
-    return written
+    return sorted(set(written))
 
 
 def _chunk_job(args):
-    files, s, e, out_dir, cfg, quantity, name_fmt, method, overwrite, reader = args
-    return run_downscaling(files, s, e, out_dir, cfg, quantity, name_fmt, method, overwrite, reader)
+    files, s, e, out_dir, cfg, quantity, name_fmt, method, overwrite, reader, shift = args
+    return run_downscaling(files, s, e, out_dir, cfg, quantity, name_fmt, method, overwrite, reader,
+                           time_shift_min=shift)
 
 
 def run_downscaling_parallel(files, start, end, out_dir, cfg=None, quantity="DBZH",
                              name_fmt="OPERA_DS_1km_5min_%Y%m%d%H%M.h5", method="lk",
                              overwrite=False, workers=4, chunk_days=1,
-                             reader: Callable = read_odim_composite):
+                             reader: Callable = read_odim_composite, time_shift_min: float = 0.0):
     """Come run_downscaling, a blocchi di `chunk_days` giorni su piu' processi.
     I frame di contesto ai bordi dei blocchi vengono letti comunque (indice completo).
     `reader` deve essere serializzabile (es. functools.partial di una funzione di modulo)."""
@@ -153,7 +171,7 @@ def run_downscaling_parallel(files, start, end, out_dir, cfg=None, quantity="DBZ
     jobs, s = [], start
     while s < end:
         e = min(s + dt.timedelta(days=chunk_days), end)
-        jobs.append((files, s, e, out_dir, cfg, quantity, name_fmt, method, overwrite, reader))
+        jobs.append((files, s, e, out_dir, cfg, quantity, name_fmt, method, overwrite, reader, time_shift_min))
         s = e
     out = []
     with ProcessPoolExecutor(workers) as ex:

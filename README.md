@@ -147,6 +147,26 @@ uv run python scripts/opera_ds_cli.py downscale \
   --bbox 2.5 49.45 6.45 51.55 --buffer-km 200 --workers 8 --out out_ds
 ```
 
+```bash
+# finestre per il ML: store Zarr in formato IRENE da un CSV con t_start,row0,col0
+uv run python scripts/opera_ds_cli.py windows \
+  --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" \
+  --time-regex "@(\d{8}T\d{4})@" --time-format "%Y%m%dT%H%M" \
+  --windows-csv finestre.csv --T 24 --H 256 --W 256 --context-km 150 \
+  --workers 8 --out windows.zarr
+```
+
+- Ogni frame prodotto porta `alpha` (0 = frame ODYSSEY vero, 1/3 e 2/3 =
+  interpolati). Nei file ODIM sta in `dataset1/how`, insieme a `interpolated`,
+  `time_shift_min`, `source_t0` e `method`.
+- Le etichette di default sono i tempi ODYSSEY. `--time-shift -2.5` le porta in
+  convenzione CIRRUS, ma allora tutti i frame sono interpolati (α = 1/6, 1/2,
+  5/6). Per il pre-addestramento conviene lasciare 0.
+- Lo store delle finestre ha `RR` (n, T, H, W) in mm/h float16 (NaN fuori
+  copertura, dBZ limitati a [0, 60] come IRENE), `alpha` e `time` (n, T),
+  `row0` e `col0` (n,) sulla griglia OPERA a 1 km; gli attributi descrivono
+  griglia, Z-R e configurazione. Le finestre con frame ODYSSEY mancanti vengono
+  scartate. Il moto si stima su un ritaglio con `--context-km` per lato.
 - `--time-regex` deve catturare il timestamp nel nome del file; se lo si omette,
   il tempo viene letto dagli attributi ODIM, più lentamente.
 - `--bbox` e `--buffer-km` ritagliano in lettura una finestra allineata a 2 km,

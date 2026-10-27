@@ -30,6 +30,7 @@ class Frame:
     undetect: np.ndarray
     where: dict = field(default_factory=dict)
     path: str = ""
+    attrs: dict = field(default_factory=dict)   # metadati di produzione (es. alpha), in dataset1/how
 
     def to_field(self, floor: float, threshold: float | None = None) -> np.ndarray:
         """Campo pronto per l'elaborazione: undetect e valori < floor -> floor.
@@ -189,6 +190,10 @@ def write_odim_composite(path: str, frame: Frame, quantity: str = "DBZH",
         dw = d.create_group("what")
         dw.attrs.update({"quantity": np.bytes_(quantity), "gain": gain, "offset": offset,
                          "nodata": float(NODATA), "undetect": float(UNDETECT)})
+        if frame.attrs:
+            how = f["dataset1"].create_group("how")
+            for k, v in frame.attrs.items():
+                how.attrs[k] = np.bytes_(v) if isinstance(v, str) else v
         ds_what = f["dataset1"].create_group("what")
         ds_what.attrs.update({"product": np.bytes_("MAX"),
                               "startdate": np.bytes_(t.strftime("%Y%m%d")),

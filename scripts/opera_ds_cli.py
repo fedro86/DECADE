@@ -15,10 +15,16 @@ python scripts/opera_ds_cli.py validate \
 python scripts/opera_ds_cli.py downscale \
     --odyssey-glob "/data/opera/odyssey/2019/**/*DBZH*.h5" \
     --time-regex "(\\d{12})" --start 2019-01-01 --end 2020-01-01 --out /data/opera_1km_5min/2019
+
+# finestre per il ML (store Zarr in formato IRENE) da un CSV con t_start,row0,col0
+python scripts/opera_ds_cli.py windows \
+    --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" --time-regex "@(\\d{8}T\\d{4})@" \
+    --time-format "%Y%m%dT%H%M" --windows-csv finestre.csv --out windows.zarr --workers 8
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import dataclasses
 import datetime as dt
 import functools
@@ -32,8 +38,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import numpy as np  # noqa: E402
 
 from opera_ds import DownscaleConfig, LKParams, index_files, run_downscaling, run_validation  # noqa: E402
-from opera_ds.odim_io import bbox_extent, extent_window, read_odim_composite  # noqa: E402
+from opera_ds.odim_io import bbox_extent, extent_window, read_odim_composite, refine_where  # noqa: E402
 from opera_ds.pipeline import run_downscaling_parallel  # noqa: E402
+from opera_ds.windows import Window, WindowStore, make_window, store_attrs  # noqa: E402
 
 
 def load_cfg(path: str | None) -> DownscaleConfig:
@@ -46,31 +53,87 @@ def load_cfg(path: str | None) -> DownscaleConfig:
     return cfg
 
 
+def _window_job(args):
+    files, win, cfg, method, quantity, context_km, shift, clip = args
+    return win, make_window(files, win, cfg, method, quantity, context_km=context_km,
+                            time_shift_min=shift, clip_dbz=clip)
+
+
+def run_windows(a, ody, cfg):
+    """Produce le finestre del CSV in parallelo e le accoda allo store (un solo scrittore)."""
+    with open(a.windows_csv) as f:
+        wins = [Window(dt.datetime.fromisoformat(r["t_start"]), int(r["row0"]), int(r["col0"]), a.T, a.H, a.W)
+                for r in csv.DictReader(f)]
+    w1 = refine_where(read_odim_composite(next(iter(ody.values())), a.quantity).where, cfg.factor)
+    store = WindowStore(a.out, a.T, a.H, a.W,
+                        store_attrs(w1, cfg, a.method, a.time_shift, a.clip_dbz, a.context_km))
+    jobs = [(ody, w, cfg, a.method, a.quantity, a.context_km, a.time_shift, a.clip_dbz) for w in wins]
+    ok = skipped = 0
+    if a.workers > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(a.workers) as ex:
+            results = ex.map(_window_job, jobs)
+            for win, res in results:
+                ok, skipped = _store_result(store, win, res, ok, skipped)
+    else:
+        for job in jobs:
+            win, res = _window_job(job)
+            ok, skipped = _store_result(store, win, res, ok, skipped)
+    logging.info("finestre scritte: %d, scartate (buchi temporali): %d, totale nello store: %d",
+                 ok, skipped, len(store))
+
+
+def _store_result(store, win, res, ok, skipped):
+    if res is None:
+        logging.warning("finestra scartata (mancano frame ODYSSEY): %s", win)
+        return ok, skipped + 1
+    rr, alpha, times = res
+    store.append(rr, alpha, times, win.row0, win.col0)
+    return ok + 1, skipped
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    def common(p):
+    def base(p):
         p.add_argument("--odyssey-glob", required=True)
         p.add_argument("--time-regex", default=None,
                        help="regex con un gruppo che cattura il timestamp nel nome file")
         p.add_argument("--time-format", default="%Y%m%d%H%M")
         p.add_argument("--quantity", default="DBZH")
-        p.add_argument("--start", required=True, type=dt.datetime.fromisoformat)
-        p.add_argument("--end", required=True, type=dt.datetime.fromisoformat)
         p.add_argument("--config", default=None, help="JSON con i campi di DownscaleConfig (e 'lk')")
         p.add_argument("--out", required=True)
+        p.add_argument("-v", "--verbose", action="store_true")
+
+    def common(p):
+        base(p)
+        p.add_argument("--start", required=True, type=dt.datetime.fromisoformat)
+        p.add_argument("--end", required=True, type=dt.datetime.fromisoformat)
         p.add_argument("--bbox", type=float, nargs=4, default=None,
                        metavar=("LON_MIN", "LAT_MIN", "LON_MAX", "LAT_MAX"),
                        help="ritaglia in lettura al bbox (piu' --buffer-km), allineato a 2 km")
         p.add_argument("--buffer-km", type=float, default=0.0)
-        p.add_argument("-v", "--verbose", action="store_true")
 
     p = sub.add_parser("downscale")
     common(p)
     p.add_argument("--method", default="lk", choices=["lk", "linear", "nearest"])
     p.add_argument("--overwrite", action="store_true")
     p.add_argument("--workers", type=int, default=1, help="processi paralleli (blocchi di 1 giorno)")
+    p.add_argument("--time-shift", type=float, default=0.0,
+                   help="minuti; 0 = etichette ODYSSEY, -2.5 = convenzione CIRRUS")
+
+    p = sub.add_parser("windows")
+    base(p)
+    p.add_argument("--windows-csv", required=True, help="colonne t_start (ISO), row0, col0 (griglia 1 km)")
+    p.add_argument("--T", type=int, default=24)
+    p.add_argument("--H", type=int, default=256)
+    p.add_argument("--W", type=int, default=256)
+    p.add_argument("--context-km", type=float, default=150.0, help="margine per lato per stimare il moto")
+    p.add_argument("--time-shift", type=float, default=0.0)
+    p.add_argument("--method", default="lk")
+    p.add_argument("--clip-dbz", type=float, default=60.0)
+    p.add_argument("--workers", type=int, default=1)
 
     p = sub.add_parser("validate")
     common(p)
@@ -92,6 +155,10 @@ def main():
     ody = index_files(a.odyssey_glob, a.time_regex, a.time_format, a.quantity)
     logging.info("ODYSSEY: %d file", len(ody))
 
+    if a.cmd == "windows":
+        run_windows(a, ody, cfg)
+        return
+
     reader = read_odim_composite
     if a.bbox:
         w2 = read_odim_composite(next(iter(ody.values())), a.quantity).where
@@ -104,10 +171,10 @@ def main():
         if a.workers > 1:
             out = run_downscaling_parallel(ody, a.start, a.end, a.out, cfg, a.quantity,
                                            method=a.method, overwrite=a.overwrite, workers=a.workers,
-                                           reader=reader)
+                                           reader=reader, time_shift_min=a.time_shift)
         else:
             out = run_downscaling(ody, a.start, a.end, a.out, cfg, a.quantity, method=a.method,
-                                  overwrite=a.overwrite, reader=reader)
+                                  overwrite=a.overwrite, reader=reader, time_shift_min=a.time_shift)
         logging.info("scritti %d file in %s", len(out), a.out)
     else:
         cir = index_files(a.cirrus_glob, a.cirrus_time_regex or a.time_regex,

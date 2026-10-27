@@ -116,7 +116,6 @@ Varianti da valutare dopo, non di default:
     (era il 18% prima della correzione di massa).
 
 **Non ancora fatto**
-- Flag `alpha` nell'output, shift −2,5 min in produzione, output Zarr.
 - Campionatore di finestre su ODYSSEY a 2 km.
 - Pipeline di addestramento e valutazione IRENE.
 - Linea B: pulizia, omogeneizzazione, confronto con ECA&D.
@@ -125,8 +124,9 @@ Varianti da valutare dopo, non di default:
 
 1. ~~**Upscaling conservativo.**~~ Fatto: default `mass_correction=True`,
    `blend_space="R"`.
-2. **Output per il ML.** Flag `alpha`, etichette in convenzione CIRRUS (shift
-   stimato), scrittura Zarr per finestre (dBZ in uint8 o float16, chunk per tempo).
+2. ~~**Output per il ML.**~~ Fatto: `alpha` nei metadati, `time_shift_min`
+   (default 0 = etichette ODYSSEY, così α = 0 resta un frame vero), sottocomando
+   `windows` con store Zarr in formato IRENE (`RR` mm/h float16).
 3. **Campionatore su ODYSSEY.** Filtro dei buchi e campionamento per importanza a
    2 km, sul modello di `importance_sampler/` di IRENE; poi interpolazione delle
    sole finestre scelte.
