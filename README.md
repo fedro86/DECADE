@@ -126,6 +126,12 @@ uv run python scripts/fetch_ord_archive.py --product DBZH_QIND \
 uv run python scripts/fetch_ord_archive.py --product DBZH \
   --start 2024-07-01 --end 2024-07-06 --out data/cirrus
 
+# solo l'area del Belgio + 350 km, leggendo a pezzi i GeoTIFF (circa 3 h per 12 anni di ODYSSEY)
+uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
+  --ref "data/odyssey/OPERA@20240702T1200@0@DBZH_QIND.h5" \
+  --bbox 2.5 49.45 6.45 51.55 --buffer-km 350 \
+  --start 2012-09-01 --end 2024-07-06 --out data/odyssey_bel --threads 32
+
 # maschera del Belgio sulla griglia CIRRUS a 1 km
 uv run python scripts/make_region_mask.py --ref "data/cirrus/OPERA@20240702T1205@0@DBZH.h5" \
   --country BEL --out data/mask_BEL_1km.npy

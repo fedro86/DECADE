@@ -14,6 +14,10 @@ Esempio (Belgio + 350 km: 200 di area di campionamento + 150 di contesto per il 
       --ref "data/odyssey/OPERA@20240702T1200@0@DBZH_QIND.h5" \
       --bbox 2.5 49.45 6.45 51.55 --buffer-km 350 \
       --start 2012-09-01 --end 2024-07-06 --out data/odyssey_bel --threads 32
+  uv run python scripts/fetch_cog_crop.py --product DBZH \
+      --ref "data/cirrus/OPERA@20240701T0720@0@DBZH.h5" \
+      --bbox 2.5 49.45 6.45 51.55 --buffer-km 350 \
+      --start 2024-07-01 --end 2026-10-27 --out data/cirrus_bel --threads 32
 """
 from __future__ import annotations
 
@@ -37,11 +41,12 @@ GDAL_ENV = dict(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", CPL_VSIL_CURL_ALLOWED_
                 CPL_VSIL_CURL_NON_CACHED="/vsicurl/", GDAL_HTTP_MAX_RETRY="4", GDAL_HTTP_RETRY_DELAY="2")
 NODATA, UNDETECT = -9999000.0, -8888000.0
 WHAT_KEYS = ("date", "time", "source", "object", "version")
-DS_WHAT_KEYS = ("product", "quantity", "startdate", "starttime", "enddate", "enddate", "endtime")
+DS_WHAT_KEYS = ("product", "quantity", "startdate", "starttime", "enddate", "endtime")
 
 
-def write_crop(path, data, tags, where):
-    """HDF5 ODIM 2.0 minimale: valori float32, nodata/undetect come negli originali."""
+def write_crop(path, data, tags, where, quantity):
+    """HDF5 ODIM 2.0 minimale: valori float32, nodata/undetect come negli originali.
+    I tag dei GeoTIFF CIRRUS non hanno `quantity`: in quel caso si usa quella data."""
     tmp = path + ".part"
     with h5py.File(tmp, "w") as f:
         f.attrs["Conventions"] = np.bytes_("ODIM_H5/V2_0")
@@ -54,6 +59,8 @@ def write_crop(path, data, tags, where):
             wh.attrs[k] = np.bytes_(v) if isinstance(v, str) else v
         how = f.create_group("how")
         how.attrs["nodes"] = np.bytes_(tags.get("nodes", ""))
+        if "comment" in tags:
+            how.attrs["comment"] = np.bytes_(tags["comment"])
         how.attrs["crop_source"] = np.bytes_("GeoTIFF ORD, lettura a pezzi (fetch_cog_crop.py)")
         d = f.create_group("dataset1/data1")
         d.create_dataset("data", data=data, compression="gzip", compression_opts=4, shuffle=True,
@@ -62,11 +69,13 @@ def write_crop(path, data, tags, where):
         for k in DS_WHAT_KEYS:
             if k in tags:
                 dw.attrs[k] = np.bytes_(tags[k])
+        if "quantity" not in tags:
+            dw.attrs["quantity"] = np.bytes_(quantity)
         dw.attrs.update({"gain": 1.0, "offset": 0.0, "nodata": NODATA, "undetect": UNDETECT})
     os.replace(tmp, path)
 
 
-def fetch_one(key, window, where_crop, out_dir):
+def fetch_one(key, window, where_crop, out_dir, quantity):
     import rasterio
     from rasterio.windows import Window
 
@@ -84,7 +93,7 @@ def fetch_one(key, window, where_crop, out_dir):
             a = ds.read(1, window=Window(c0, r0, c1 - c0, r1 - r0))
             tags = ds.tags()
     a = np.where(np.isnan(a), UNDETECT, a).astype(np.float32)
-    write_crop(path, a, tags, where_crop)
+    write_crop(path, a, tags, where_crop, quantity)
     return 1
 
 
@@ -94,6 +103,9 @@ def main():
     ap.add_argument("--ref", required=True, help="HDF5 del prodotto sulla griglia intera, per i metadati 'where'")
     ap.add_argument("--bbox", type=float, nargs=4, required=True, metavar=("LON_MIN", "LAT_MIN", "LON_MAX", "LAT_MAX"))
     ap.add_argument("--buffer-km", type=float, default=0.0)
+    ap.add_argument("--align-m", type=float, default=2000.0,
+                    help="allineamento del ritaglio; 2000 = stessa area per ODYSSEY e CIRRUS")
+    ap.add_argument("--quantity", default="DBZH", help="se manca nei tag del GeoTIFF (CIRRUS)")
     ap.add_argument("--start", required=True, type=dt.date.fromisoformat)
     ap.add_argument("--end", required=True, type=dt.date.fromisoformat, help="escluso")
     ap.add_argument("--out", required=True)
@@ -101,11 +113,11 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
-    full = read_odim_composite(a.ref).where
-    ext = bbox_extent(full, a.bbox, a.buffer_km, align_m=float(full["xscale"]))
+    full = read_odim_composite(a.ref, a.quantity).where
+    ext = bbox_extent(full, a.bbox, a.buffer_km, align_m=a.align_m)
     window = extent_window(full, ext)
     where_crop = crop_where(full, window)
-    print(f"finestra (righe, colonne) {window}: {(window[1]-window[0])} x {(window[3]-window[2])} px")
+    print(f"finestra (righe, colonne) {window}: {(window[1]-window[0])} x {(window[3]-window[2])} px", flush=True)
     os.makedirs(a.out, exist_ok=True)
     failed_path = os.path.join(a.out, "failed.txt")
     t_start, n_ok, n_skip, n_fail = time.time(), 0, 0, 0
@@ -122,7 +134,7 @@ def main():
             if a.dry_run:
                 print(f"{m_end:%Y-%m}: {len(keys)} file")
                 continue
-            futs = {ex.submit(fetch_one, k, window, where_crop, a.out): k for k in keys}
+            futs = {ex.submit(fetch_one, k, window, where_crop, a.out, a.quantity): k for k in keys}
             for fu, k in futs.items():
                 try:
                     if fu.result():

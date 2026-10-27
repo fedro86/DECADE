@@ -52,6 +52,7 @@ uv run python scripts/opera_ds_cli.py validate \
 | `opera_ds/sampling.py` | scelta delle finestre su ODYSSEY a 2 km: `SamplerConfig`, `sample_block`, `block_times` |
 | `scripts/opera_ds_cli.py` | sottocomandi `downscale`, `validate`, `sample` e `windows`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
 | `scripts/fetch_ord_archive.py` | download dal bucket pubblico ORD |
+| `scripts/fetch_cog_crop.py` | download di un'area sola: legge a pezzi i GeoTIFF e scrive HDF5 ritagliati con l'offset in `where` |
 | `scripts/make_region_mask.py` | maschera di un paese (Natural Earth 1:10m) sulla griglia di un file ODIM |
 
 - `reader(path, quantity) -> Frame` è iniettabile ovunque; con il ritaglio si usa
@@ -127,6 +128,19 @@ I file sono stati caricati a febbraio 2026; ci sono giorni mancanti (ad es.
   ≥ 100 dBZ. Serve una soglia più una maschera dei punti persistenti. Qualsiasi
   conversione in R va limitata (si usa 55 dBZ), altrimenti questi pixel dominano
   i volumi.
+- **GeoTIFF (`.tiff`) accanto agli HDF5:** tiled 512 × 512, deflate, float32,
+  con overview. Valori identici agli HDF5 (verificato su ODYSSEY 2013, 2018, 2024
+  e su CIRRUS 1/7/2024), `undetect` → NaN. La georeferenziazione è sfasata di
+  mezzo pixel (origine −1000/+1000 m a 2 km, −500/+500 a 1 km): la griglia si
+  prende dall'HDF5 e si legge per indici. I tag CIRRUS non hanno `quantity`.
+  Leggere a pezzi solo l'area del Belgio + 350 km costa 140–280 kB di rete a
+  frame ODYSSEY contro circa 950 kB dell'HDF5 intero.
+- **Archivi ritagliati locali (Belgio + 350 km, allineati a 2 km):**
+  `data/odyssey_bel/` (righe 1053–1531, colonne 528–1027 a 2 km, circa 100 kB a
+  frame) e `data/cirrus_bel/` (2106–3062, 1056–2054 a 1 km, circa 380 kB a
+  frame). Si leggono con `read_odim_composite` come i file interi, anche con
+  `extent`, purché l'estensione stia dentro il ritaglio. CIRRUS ha giorni
+  incompleti (ad es. 192 frame su 288 il 2/7/2024).
 - **CIRRUS `how/comment`:** alcuni volumi sono estrapolati con LK da Météo-France
   (pysteps). Non è indicato quali radar.
 

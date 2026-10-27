@@ -115,6 +115,10 @@ Varianti da valutare dopo, non di default:
   - il campo interpolato ha circa un terzo dell'energia a piccola scala di CIRRUS
     (era il 18% prima della correzione di massa).
 
+- Archivi ritagliati sul Belgio + 350 km dal bucket pubblico (lettura a pezzi
+  dei GeoTIFF): ODYSSEY `DBZH_QIND` 9/2012–7/2024 in `data/odyssey_bel/`, CIRRUS
+  `DBZH` 7/2024–10/2026 in `data/cirrus_bel/`.
+
 **Non ancora fatto**
 - Pipeline di addestramento e valutazione IRENE.
 - Linea B: pulizia, omogeneizzazione, confronto con ECA&D.
