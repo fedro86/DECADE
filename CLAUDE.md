@@ -49,7 +49,8 @@ uv run python scripts/opera_ds_cli.py validate \
 | `opera_ds/pipeline.py` | `FrameSource`, `run_downscaling`, `run_downscaling_parallel` (accetta `reader`) |
 | `opera_ds/validate.py` | metriche in dBZ, in R per scala, conservazione interna, accumuli orari |
 | `opera_ds/windows.py` | finestre per il ML: `Window`, `make_window`, `WindowStore` (Zarr in formato IRENE), `dbz_to_rr` |
-| `scripts/opera_ds_cli.py` | sottocomandi `downscale`, `validate` e `windows`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
+| `opera_ds/sampling.py` | scelta delle finestre su ODYSSEY a 2 km: `SamplerConfig`, `sample_block`, `block_times` |
+| `scripts/opera_ds_cli.py` | sottocomandi `downscale`, `validate`, `sample` e `windows`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
 | `scripts/fetch_ord_archive.py` | download dal bucket pubblico ORD |
 | `scripts/make_region_mask.py` | maschera di un paese (Natural Earth 1:10m) sulla griglia di un file ODIM |
 
@@ -65,9 +66,21 @@ uv run python scripts/opera_ds_cli.py validate \
 - `pipeline.output_times(t0, cfg, shift)` è l'unica regola tra etichette di
   output e `alpha`. Con shift 0 (default) α = 0, 1/3, 2/3; con −2,5 (convenzione
   CIRRUS) α = 1/6, 1/2, 5/6 e nessun frame è un ODYSSEY vero.
-- Una finestra 24 × 256 × 256 costa circa 1 s e circa 1,6 MB compressa.
-  `ProcessPoolExecutor` passa l'indice completo dei file a ogni job: per molti
-  anni di dati andrà passato una volta sola (initializer).
+- **Costi misurati (16 core, disco locale):**
+  - `sample` sull'intero dominio: 5 giorni in 43 s con 10 processi, quindi circa
+    10 h per i 12 anni di ODYSSEY;
+  - con i parametri di IRENE escono circa 56.000 finestre in 5 giorni (circa 50
+    milioni su 12 anni): `m`, `q_min`, `step_px` e `step_t` vanno tarati su un
+    budget;
+  - `windows`: circa 8 s di CPU e 1,1–1,6 MB a finestra 24 × 256 × 256. Ogni
+    finestra rilegge e decomprime per intero i suoi 9–11 file ODYSSEY: per la
+    produzione conviene raggruppare le finestre per tempo e stimare il moto una
+    volta sola per coppia.
+- L'indice dei file arriva ai processi una volta sola (`_map` con initializer
+  nella CLI).
+- Il seme di `sample` genera un generatore indipendente per blocco
+  (`SeedSequence.spawn`). Nel codice di IRENE, con un seme fissato, ogni
+  finestra riceverebbe lo stesso numero casuale.
 
 ## Fonti dati (verificate a ottobre 2026)
 

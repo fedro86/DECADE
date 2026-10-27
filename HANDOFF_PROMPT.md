@@ -116,7 +116,6 @@ Varianti da valutare dopo, non di default:
     (era il 18% prima della correzione di massa).
 
 **Non ancora fatto**
-- Campionatore di finestre su ODYSSEY a 2 km.
 - Pipeline di addestramento e valutazione IRENE.
 - Linea B: pulizia, omogeneizzazione, confronto con ECA&D.
 
@@ -127,9 +126,10 @@ Varianti da valutare dopo, non di default:
 2. ~~**Output per il ML.**~~ Fatto: `alpha` nei metadati, `time_shift_min`
    (default 0 = etichette ODYSSEY, così α = 0 resta un frame vero), sottocomando
    `windows` con store Zarr in formato IRENE (`RR` mm/h float16).
-3. **Campionatore su ODYSSEY.** Filtro dei buchi e campionamento per importanza a
-   2 km, sul modello di `importance_sampler/` di IRENE; poi interpolazione delle
-   sole finestre scelte.
+3. ~~**Campionatore su ODYSSEY.**~~ Fatto: sottocomando `sample` → CSV per
+   `windows`. Da decidere il budget di finestre (con i parametri di IRENE
+   sarebbero circa 50 milioni su 12 anni) e, per la produzione, raggruppare le
+   finestre per tempo per leggere ogni frame una volta sola.
 4. **Dati CIRRUS per la rifinitura.** Scarico, conversione in R, suddivisione a
    blocchi mensili, stesso formato Zarr.
 5. **Esperimento della curva di apprendimento.** Prima una prova piccola (k = 1,

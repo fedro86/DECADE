@@ -148,6 +148,12 @@ uv run python scripts/opera_ds_cli.py downscale \
 ```
 
 ```bash
+# scelta delle finestre su ODYSSEY a 2 km: filtro dei buchi e campionamento per importanza
+uv run python scripts/opera_ds_cli.py sample \
+  --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" \
+  --time-regex "@(\d{8}T\d{4})@" --time-format "%Y%m%dT%H%M" \
+  --start 2024-07-01 --end 2024-07-06 --workers 10 --out finestre.csv
+
 # finestre per il ML: store Zarr in formato IRENE da un CSV con t_start,row0,col0
 uv run python scripts/opera_ds_cli.py windows \
   --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" \
@@ -156,6 +162,14 @@ uv run python scripts/opera_ds_cli.py windows \
   --workers 8 --out windows.zarr
 ```
 
+- `sample` segue lo schema di `importance_sampler` di IRENE, ma lavora
+  direttamente sui file ODYSSEY a 2 km. Una finestra di T frame a 5 min richiede
+  ⌊(T−1)·5/15⌋ + 2 frame ODYSSEY consecutivi (9 per T = 24): se ne manca uno
+  viene scartata. Poi si scarta se la frazione fuori copertura supera
+  `--max-nan-frac` (default 0,64%, come IRENE), e si accetta con probabilità
+  q = min(1, q_min + m · media(1 − e^(−R/s))). Il CSV ha `t_start`, `row0`,
+  `col0` (griglia a 1 km), `q`, `rain_score`, `nan_frac`; accanto c'è un JSON
+  con parametri e statistiche. `--bbox`/`--buffer-km` limitano l'area.
 - Ogni frame prodotto porta `alpha` (0 = frame ODYSSEY vero, 1/3 e 2/3 =
   interpolati). Nei file ODIM sta in `dataset1/how`, insieme a `interpolated`,
   `time_shift_min`, `source_t0` e `method`.

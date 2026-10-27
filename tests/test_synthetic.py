@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from opera_ds import DownscaleConfig, Frame, LKParams, estimate_motion  # noqa: E402
 from opera_ds import pipeline as pl  # noqa: E402
 from opera_ds.validate import run_validation  # noqa: E402
+from opera_ds.sampling import SamplerConfig, block_times, sample_block  # noqa: E402
 from opera_ds.windows import Window, WindowStore, dbz_to_rr, make_window  # noqa: E402
 
 NY, NX = 600, 800             # griglia fine (1 km)
@@ -228,7 +229,50 @@ def main(out):
     rel = np.nanmax(np.abs(np.asarray(g["RR"][0, 0], np.float32) - rr[0]) / np.maximum(rr[0], 1e-3))
     assert rel < 1e-3, rel
     print(f"[finestre] {g['RR'].shape} float16, alpha {alpha[:3]}, coincide col dominio intero ad alpha=0")
+
+    test_sampler(ody, cfg)
     print("TUTTI I TEST SUPERATI")
+
+
+def test_sampler(ody, cfg):
+    """Campionatore su "ODYSSEY" a 2 km: buchi, frazione di NaN, indipendenza dai blocchi."""
+    scfg = SamplerConfig(T=12, H=128, W=128, step_px=16, max_nan_frac=0.2, q_min=1.0)
+    n = scfg.frames_needed
+    assert n == 5, n
+    end = T0 + dt.timedelta(minutes=DURATION_MIN - (n - 1) * 15 + 1)
+    gap = dict(ody)
+    del gap[T0 + dt.timedelta(minutes=60)]
+
+    def run(block_days, files):
+        rows = []
+        for times, k in block_times(T0, end, scfg, block_days):
+            rows += sample_block(files, times, k, scfg, seed=0, reader=npz_reader)[0]
+        return rows
+
+    full = run(1.0, ody)
+    split = run(1 / 24, ody)          # blocchi di un'ora
+    key = lambda r: (r["t_start"], r["row0"], r["col0"])
+    assert sorted(map(key, full)) == sorted(map(key, split)), (len(full), len(split))
+    starts = sorted({r["t_start"] for r in full})
+    assert len(starts) == (DURATION_MIN // 15) - n + 2, starts
+    # frazione di NaN contro il calcolo diretto
+    r = full[len(full) // 2]
+    t = dt.datetime.fromisoformat(r["t_start"])
+    i, j = r["row0"] // 2, r["col0"] // 2
+    cov = np.stack([npz_reader(ody[t + k * dt.timedelta(minutes=15)]).coverage for k in range(n)])
+    direct = 1 - cov[:, i:i + 64, j:j + 64].mean()
+    assert abs(direct - r["nan_frac"]) < 1e-6, (direct, r["nan_frac"])
+    assert all(x["nan_frac"] <= 0.2 for x in full)
+    # buco a T0+60: escluse le partenze da T0 a T0+60
+    holed = run(1.0, gap)
+    bad = {(T0 + dt.timedelta(minutes=m)).isoformat(timespec="minutes") for m in (0, 15, 30, 45, 60)}
+    assert holed and not bad & {x["t_start"] for x in holed}
+    # le finestre scelte si producono davvero
+    x = holed[0]
+    w = Window(dt.datetime.fromisoformat(x["t_start"]), x["row0"], x["col0"], T=12, H=128, W=128)
+    assert make_window(gap, w, cfg, context_km=60, reader=npz_reader, domain_fine=(NY, NX)) is not None
+    print(f"[campionatore] {len(full)} finestre su {len(starts)} partenze, uguali con blocchi di 1 h; "
+          f"buco escluso ({len(holed)} finestre)")
 
 
 if __name__ == "__main__":

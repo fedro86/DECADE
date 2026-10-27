@@ -16,6 +16,11 @@ python scripts/opera_ds_cli.py downscale \
     --odyssey-glob "/data/opera/odyssey/2019/**/*DBZH*.h5" \
     --time-regex "(\\d{12})" --start 2019-01-01 --end 2020-01-01 --out /data/opera_1km_5min/2019
 
+# scelta delle finestre su ODYSSEY a 2 km (filtro dei buchi + campionamento per importanza)
+python scripts/opera_ds_cli.py sample \
+    --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" --time-regex "@(\\d{8}T\\d{4})@" \
+    --time-format "%Y%m%dT%H%M" --start 2024-07-01 --end 2024-07-06 --out finestre.csv --workers 8
+
 # finestre per il ML (store Zarr in formato IRENE) da un CSV con t_start,row0,col0
 python scripts/opera_ds_cli.py windows \
     --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" --time-regex "@(\\d{8}T\\d{4})@" \
@@ -40,6 +45,7 @@ import numpy as np  # noqa: E402
 from opera_ds import DownscaleConfig, LKParams, index_files, run_downscaling, run_validation  # noqa: E402
 from opera_ds.odim_io import bbox_extent, extent_window, read_odim_composite, refine_where  # noqa: E402
 from opera_ds.pipeline import run_downscaling_parallel  # noqa: E402
+from opera_ds.sampling import SamplerConfig, block_times, sample_block  # noqa: E402
 from opera_ds.windows import Window, WindowStore, make_window, store_attrs  # noqa: E402
 
 
@@ -53,10 +59,29 @@ def load_cfg(path: str | None) -> DownscaleConfig:
     return cfg
 
 
+_FILES: dict = {}   # indice dei file ODYSSEY, passato una volta sola a ogni processo
+
+
+def _init_files(files):
+    global _FILES
+    _FILES = files
+
+
+def _map(fn, jobs, files, workers):
+    """map in parallelo (o in serie) con l'indice dei file condiviso tramite initializer."""
+    if workers <= 1:
+        _init_files(files)
+        yield from map(fn, jobs)
+        return
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor(workers, initializer=_init_files, initargs=(files,)) as ex:
+        yield from ex.map(fn, jobs)
+
+
 def _window_job(args):
-    files, win, cfg, method, quantity, context_km, shift, clip = args
-    return win, make_window(files, win, cfg, method, quantity, context_km=context_km,
-                            time_shift_min=shift, clip_dbz=clip)
+    win, cfg, method, quantity, context_km, shift, clip, domain = args
+    return win, make_window(_FILES, win, cfg, method, quantity, context_km=context_km,
+                            time_shift_min=shift, clip_dbz=clip, domain_fine=domain)
 
 
 def run_windows(a, ody, cfg):
@@ -65,22 +90,57 @@ def run_windows(a, ody, cfg):
         wins = [Window(dt.datetime.fromisoformat(r["t_start"]), int(r["row0"]), int(r["col0"]), a.T, a.H, a.W)
                 for r in csv.DictReader(f)]
     w1 = refine_where(read_odim_composite(next(iter(ody.values())), a.quantity).where, cfg.factor)
+    domain = (int(w1["ysize"]), int(w1["xsize"]))
     store = WindowStore(a.out, a.T, a.H, a.W,
                         store_attrs(w1, cfg, a.method, a.time_shift, a.clip_dbz, a.context_km))
-    jobs = [(ody, w, cfg, a.method, a.quantity, a.context_km, a.time_shift, a.clip_dbz) for w in wins]
+    jobs = [(w, cfg, a.method, a.quantity, a.context_km, a.time_shift, a.clip_dbz, domain) for w in wins]
     ok = skipped = 0
-    if a.workers > 1:
-        from concurrent.futures import ProcessPoolExecutor
-        with ProcessPoolExecutor(a.workers) as ex:
-            results = ex.map(_window_job, jobs)
-            for win, res in results:
-                ok, skipped = _store_result(store, win, res, ok, skipped)
-    else:
-        for job in jobs:
-            win, res = _window_job(job)
-            ok, skipped = _store_result(store, win, res, ok, skipped)
+    for win, res in _map(_window_job, jobs, ody, a.workers):
+        ok, skipped = _store_result(store, win, res, ok, skipped)
     logging.info("finestre scritte: %d, scartate (buchi temporali): %d, totale nello store: %d",
                  ok, skipped, len(store))
+
+
+def _sample_job(args):
+    times, n_starts, scfg, seed, reader, origin = args
+    return sample_block(_FILES, times, n_starts, scfg, seed, reader, origin)
+
+
+def run_sample(a, ody):
+    """Sceglie le finestre su ODYSSEY a 2 km e scrive il CSV per `windows` + metadati."""
+    if os.path.exists(a.out) and not a.overwrite:
+        raise SystemExit(f"{a.out} esiste gia': usa --overwrite per sostituirlo")
+    scfg = SamplerConfig(T=a.T, H=a.H, W=a.W, step_t=a.step_t, step_px=a.step_px,
+                         max_nan_frac=a.max_nan_frac, q_min=a.q_min, m=a.m, s=a.s, n_rand=a.n_rand,
+                         clip_dbz=a.clip_dbz)
+    w2 = read_odim_composite(next(iter(ody.values())), a.quantity).where
+    reader, origin = read_odim_composite, (0, 0)
+    if a.bbox:
+        extent = bbox_extent(w2, a.bbox, a.buffer_km, align_m=float(w2["xscale"]))
+        reader = functools.partial(read_odim_composite, extent=extent)
+        origin = (int(round(extent[1] / float(w2["yscale"]))), int(round(extent[0] / float(w2["xscale"]))))
+        logging.info("area di campionamento: %.0f x %.0f km, origine (%d, %d) a 2 km",
+                     extent[2] / 1e3, extent[3] / 1e3, *origin)
+    blocks = block_times(a.start, a.end, scfg, a.block_days)
+    seeds = np.random.SeedSequence(a.seed).spawn(len(blocks))
+    jobs = [(times, k, scfg, int(s.generate_state(1)[0]), reader, origin) for (times, k), s in zip(blocks, seeds)]
+    rows, stats = [], {}
+    for out, st in _map(_sample_job, jobs, ody, a.workers):
+        rows += out
+        for k, v in st.items():
+            stats[k] = stats.get(k, 0) + v
+    rows.sort(key=lambda r: (r["t_start"], r["row0"], r["col0"]))
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+    with open(a.out, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["t_start", "row0", "col0", "q", "rain_score", "nan_frac"])
+        w.writeheader(); w.writerows(rows)
+    meta = {"csv": a.out, "odyssey_glob": a.odyssey_glob, "start": a.start.isoformat(), "end": a.end.isoformat(),
+            "bbox": a.bbox, "buffer_km": a.buffer_km, "seed": a.seed, "block_days": a.block_days,
+            "sampler": dataclasses.asdict(scfg), "frames_needed": scfg.frames_needed, "stats": stats,
+            "created": dt.datetime.now().isoformat(timespec="seconds")}
+    with open(os.path.splitext(a.out)[0] + "_metadata.json", "w") as f:
+        json.dump(meta, f, indent=2)
+    logging.info("finestre accettate: %d | statistiche: %s", len(rows), stats)
 
 
 def _store_result(store, win, res, ok, skipped):
@@ -123,6 +183,24 @@ def main():
     p.add_argument("--time-shift", type=float, default=0.0,
                    help="minuti; 0 = etichette ODYSSEY, -2.5 = convenzione CIRRUS")
 
+    p = sub.add_parser("sample", help="sceglie le finestre su ODYSSEY a 2 km -> CSV per `windows`")
+    common(p)
+    p.add_argument("--T", type=int, default=24)
+    p.add_argument("--H", type=int, default=256)
+    p.add_argument("--W", type=int, default=256)
+    p.add_argument("--step-t", type=int, default=1, help="passo in frame ODYSSEY (15 min)")
+    p.add_argument("--step-px", type=int, default=8, help="passo in pixel a 2 km")
+    p.add_argument("--max-nan-frac", type=float, default=SamplerConfig.max_nan_frac)
+    p.add_argument("--q-min", type=float, default=1e-4)
+    p.add_argument("--m", type=float, default=0.1)
+    p.add_argument("--s", type=float, default=1.0)
+    p.add_argument("--n-rand", type=int, default=1)
+    p.add_argument("--clip-dbz", type=float, default=60.0)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--block-days", type=float, default=7.0)
+    p.add_argument("--workers", type=int, default=1)
+    p.add_argument("--overwrite", action="store_true")
+
     p = sub.add_parser("windows")
     base(p)
     p.add_argument("--windows-csv", required=True, help="colonne t_start (ISO), row0, col0 (griglia 1 km)")
@@ -157,6 +235,9 @@ def main():
 
     if a.cmd == "windows":
         run_windows(a, ody, cfg)
+        return
+    if a.cmd == "sample":
+        run_sample(a, ody)
         return
 
     reader = read_odim_composite

@@ -49,15 +49,21 @@ def dbz_to_rr(dbz, floor=0.0, clip_dbz=60.0, a=200.0, b=1.6):
     return np.where(dbz > floor, r, np.float32(0)).astype(np.float32)
 
 
-def window_extent(win: Window, scale_fine: float, context_km: float, factor: int = 2):
+def window_extent(win: Window, scale_fine: float, context_km: float, factor: int = 2,
+                  domain_fine: tuple[int, int] | None = None):
     """Estensione di lettura (x_off, y_off, w, h in metri dall'angolo UL) che contiene la
-    finestra piu' `context_km` per lato, allineata ai pixel grossolani. Restituisce anche
-    l'offset (righe, colonne a 1 km) della finestra dentro il ritaglio."""
+    finestra piu' `context_km` per lato, allineata ai pixel grossolani e limitata al
+    dominio (`domain_fine` = righe, colonne a 1 km). Restituisce anche l'offset
+    (righe, colonne a 1 km) della finestra dentro il ritaglio."""
     if win.row0 % factor or win.col0 % factor or win.H % factor or win.W % factor:
         raise ValueError("origine e dimensioni della finestra devono essere multipli di factor")
     pad = int(np.ceil(context_km * 1000.0 / (scale_fine * factor))) * factor   # px fini
     r0, c0 = max(win.row0 - pad, 0), max(win.col0 - pad, 0)
     r1, c1 = win.row0 + win.H + pad, win.col0 + win.W + pad
+    if domain_fine is not None:
+        if win.row0 + win.H > domain_fine[0] or win.col0 + win.W > domain_fine[1]:
+            raise ValueError(f"finestra fuori dal dominio {domain_fine}: {win}")
+        r1, c1 = min(r1, domain_fine[0]), min(c1, domain_fine[1])
     ext = (c0 * scale_fine, r0 * scale_fine, (c1 - c0) * scale_fine, (r1 - r0) * scale_fine)
     return ext, (win.row0 - r0, win.col0 - c0)
 
@@ -65,12 +71,12 @@ def window_extent(win: Window, scale_fine: float, context_km: float, factor: int
 def make_window(files: dict, win: Window, cfg: DownscaleConfig | None = None, method: str = "lk",
                 quantity: str = "DBZH", scale_fine: float = 1000.0, context_km: float = 150.0,
                 time_shift_min: float = 0.0, clip_dbz: float = 60.0,
-                reader: Callable = read_odim_composite):
+                reader: Callable = read_odim_composite, domain_fine: tuple[int, int] | None = None):
     """Produce una finestra. Restituisce (RR[T,H,W] float32, alpha[T], times[T]) oppure
     None se manca un frame ODYSSEY necessario (finestre con buchi temporali scartate,
     come in IRENE). `files` e' l'indice tempo -> file ODYSSEY (griglia intera)."""
     cfg = cfg or DownscaleConfig()
-    ext, (dr, dc) = window_extent(win, scale_fine, context_km, cfg.factor)
+    ext, (dr, dc) = window_extent(win, scale_fine, context_km, cfg.factor, domain_fine)
     src = FrameSource(files, cfg, quantity, reader=functools.partial(reader, extent=ext))
     step_out = dt.timedelta(minutes=cfg.dt_out_min)
     wanted = [win.t_start + k * step_out for k in range(win.T)]
