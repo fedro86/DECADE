@@ -33,9 +33,11 @@ class DownscaleConfig:
     rain_threshold_dbz: float | None = None   # es. 7 dBZ (~0.1 mm/h con Marshall-Palmer)
     spatial_interp: str = "linear"        # nearest | linear | cubic
     coverage_rule: str = "intersection"   # copertura in uscita: intersection | union
-    blend_space: str = "Z"                # "Z": media in riflettivita' lineare (undetect = 0); "dB"
+    blend_space: str = "Z"                # media in "Z" lineare o in "R" (undetect = 0), oppure in "dB"
     max_step_px: float = 2.0              # passo massimo delle sotto-traiettorie (px grossolani)
     context_pairs: int = 1                # coppie extra prima/dopo per la stima del moto
+    mass_correction: bool = False         # media 2x2 in R dell'upscaling = R del pixel grossolano
+    zr_b: float = 1.6                     # esponente Z = a R^b (a si semplifica nei rapporti)
     lk: LKParams = field(default_factory=LKParams)
 
     @property
@@ -90,6 +92,23 @@ def block_repeat(m: np.ndarray, f: int) -> np.ndarray:
     return np.repeat(np.repeat(m, f, axis=0), f, axis=1)
 
 
+def mass_correction_db(F, cov, XC, YC, f, floor, zr_b=1.6, k_range=(0.25, 4.0)):
+    """Correzione additiva in dB, sulla griglia grossolana, che rende la media in R dei
+    f x f pixel fini interpolati bilinearmente uguale a R del pixel grossolano.
+    L'interpolazione in dBZ perde massa (R e' convessa in dBZ, disuguaglianza di Jensen).
+    Un fattore k su R corrisponde a +10*b*log10(k) dB; k e' limitato a `k_range`."""
+    def rain_rel(d):   # R a meno della costante a^(-1/b), che si semplifica nel rapporto
+        return np.where(d > floor, np.power(np.float32(10), d / (10 * zr_b)), np.float32(0))
+
+    ny, nx = F.shape
+    G = _remap(F, XC, YC, cv2.INTER_LINEAR, cv2.BORDER_REPLICATE)
+    Rg = rain_rel(G).reshape(ny, f, nx, f).mean(axis=(1, 3))
+    R0 = rain_rel(F)
+    k = np.where(cov & (Rg > 0) & (R0 > 0), R0 / np.maximum(Rg, 1e-12), 1.0)
+    k = np.clip(k, *k_range)
+    return (10 * zr_b * np.log10(k)).astype(np.float32)
+
+
 class PairInterpolator:
     """Interpola una coppia (F0 a t0, F1 a t1=t0+dt) su griglia fine a qualsiasi alpha."""
 
@@ -116,14 +135,25 @@ class PairInterpolator:
         else:
             self.out_thr = float(detected.min()) if detected.size else float(fl) + 1.0
         self.vmax_in = float(detected.max()) if detected.size else float(fl)
+        # correzione di massa: segue i valori anche lungo le traiettorie, perche' viene
+        # campionata (nearest) negli stessi punti di partenza del campo
+        self._src = [(self.F0, self.c0f, None), (self.F1, self.c1f, None)]
+        if cfg.mass_correction:
+            self._src = [(F, c, mass_correction_db(F, cov, self.XC, self.YC, f, fl, cfg.zr_b))
+                         for F, c, cov in ((self.F0, self.c0f, self.cov0), (self.F1, self.c1f, self.cov1))]
 
     # -- campionamento ------------------------------------------------------
-    def _sample(self, F, cov_f, X, Y):
+    def _sample(self, which, X, Y):
+        """Campiona F0 (which=0) o F1 (which=1) nei punti (X, Y) della griglia grossolana."""
+        F, cov_f, corr = self._src[which]
         interp = _INTERP[self.cfg.spatial_interp]
         val = _remap(F, X, Y, interp, cv2.BORDER_REPLICATE)
         ok = _remap(cov_f, X, Y, cv2.INTER_NEAREST, cv2.BORDER_CONSTANT, 0.0) > 0.5
         if self.cfg.spatial_interp == "cubic":
             np.clip(val, self.cfg.dbz_floor, self.vmax_in, out=val)
+        if corr is not None:
+            d = _remap(corr, X, Y, cv2.INTER_NEAREST, cv2.BORDER_REPLICATE)
+            val = np.where(val > self.cfg.dbz_floor, val + d, val).astype(np.float32)
         return val, ok
 
     def _departure(self, tau):
@@ -146,10 +176,10 @@ class PairInterpolator:
 
     # -- metodi -------------------------------------------------------------
     def eulerian(self, a, method="linear"):
-        A, okA = self._sample(self.F0, self.c0f, self.XC, self.YC)
+        A, okA = self._sample(0, self.XC, self.YC)
         if a == 0:
             return self._finish(A)
-        B, okB = self._sample(self.F1, self.c1f, self.XC, self.YC)
+        B, okB = self._sample(1, self.XC, self.YC)
         if method == "nearest":
             return self._finish(A if a < 0.5 else B)
         return self._finish(self._blend(A, okA, B, okB, a))
@@ -160,29 +190,32 @@ class PairInterpolator:
             return self.eulerian(0.0)
         XA, YA = self._departure(a)
         XB, YB = self._departure(-(1.0 - a))
-        A, okA = self._sample(self.F0, self.c0f, XA, YA)
-        B, okB = self._sample(self.F1, self.c1f, XB, YB)
+        A, okA = self._sample(0, XA, YA)
+        B, okB = self._sample(1, XB, YB)
         out = self._blend(A, okA, B, okB, a, floor_if_none=False)
         # dove nessuna traiettoria resta in copertura (eco che entra dall'esterno
         # della rete radar) si ricade sull'interpolazione euleriana
         miss = ~(okA | okB)
         if miss.any():
-            Ae, okAe = self._sample(self.F0, self.c0f, self.XC, self.YC)
-            Be, okBe = self._sample(self.F1, self.c1f, self.XC, self.YC)
+            Ae, okAe = self._sample(0, self.XC, self.YC)
+            Be, okBe = self._sample(1, self.XC, self.YC)
             eul = self._blend(Ae, okAe, Be, okBe, a)
             out[miss] = eul[miss]
         return self._finish(out)
 
     def _blend(self, A, okA, B, okB, a, floor_if_none=True):
         a = np.float32(a)
-        if self._space == "Z":
-            # media in Z lineare: un pixel asciutto (floor) pesa 0 invece di trascinare
-            # il valore in dB sotto la soglia di rilevazione ai bordi delle celle
+        if self._space in ("Z", "R"):
+            # media in Z lineare o in R: un pixel asciutto (floor) pesa 0 invece di
+            # trascinare il valore in dB sotto la soglia di rilevazione ai bordi delle celle.
+            # In R (Z^(1/b)) la media conserva la pioggia; in Z la sovrastima dove A e B
+            # non coincidono, perche' R e' concava in Z.
             fl = np.float32(self.cfg.dbz_floor)
-            zA = np.where(A > fl, np.power(np.float32(10), A / 10), 0).astype(np.float32)
-            zB = np.where(B > fl, np.power(np.float32(10), B / 10), 0).astype(np.float32)
+            p = np.float32(10 if self._space == "Z" else 10 * self.cfg.zr_b)
+            zA = np.where(A > fl, np.power(np.float32(10), A / p), 0).astype(np.float32)
+            zB = np.where(B > fl, np.power(np.float32(10), B / p), 0).astype(np.float32)
             z = (1 - a) * zA + a * zB
-            out = np.where(z > 0, 10 * np.log10(np.maximum(z, 1e-10)), fl).astype(np.float32)
+            out = np.where(z > 0, p * np.log10(np.maximum(z, 1e-10)), fl).astype(np.float32)
         else:
             out = (1 - a) * A + a * B
         out = np.where(okA & ~okB, A, out)
@@ -192,11 +225,11 @@ class PairInterpolator:
         return out
 
     def get(self, a: float, method: str = "lk"):
-        """method: 'lk' | 'linear' | 'nearest', con suffisso opzionale ':Z' o ':dB'
+        """method: 'lk' | 'linear' | 'nearest', con suffisso opzionale ':Z', ':R' o ':dB'
         per forzare lo spazio di blending (es. 'lk:dB')."""
         base, _, space = method.partition(":")
         self._space = space or self.cfg.blend_space
-        if self._space not in ("Z", "dB"):
+        if self._space not in ("Z", "R", "dB"):
             raise ValueError(f"blend_space sconosciuto: {self._space}")
         if base == "lk":
             return self.advect(a)

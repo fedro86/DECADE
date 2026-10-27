@@ -102,8 +102,11 @@ I file sono stati caricati a febbraio 2026; ci sono giorni mancanti (ad es.
   un campo di qualità `quality1`.
 - **Punti anomali in ODYSSEY:** ad es. il 3/7/2024 alle 12:00 c'è un gruppo di 4
   pixel fino a 75.000 mm/h, alla riga 1444 e colonna 899 della griglia a 2 km,
-  dentro il ritaglio di lavoro del Belgio. Serve una soglia più una maschera dei
-  punti persistenti.
+  dentro il ritaglio di lavoro del Belgio. Lo stesso punto vale **128 dBZ** in
+  `DBZH_QIND`; sul dominio intero si trovano spesso da 4 a oltre 100 pixel
+  ≥ 100 dBZ. Serve una soglia più una maschera dei punti persistenti. Qualsiasi
+  conversione in R va limitata (si usa 55 dBZ), altrimenti questi pixel dominano
+  i volumi.
 - **CIRRUS `how/comment`:** alcuni volumi sono estrapolati con LK da Météo-France
   (pysteps). Non è indicato quali radar.
 
