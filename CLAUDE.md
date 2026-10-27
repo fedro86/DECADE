@@ -89,8 +89,11 @@ uv run python scripts/opera_ds_cli.py validate \
 
 `https://s3.waw3-1.cloudferro.com/openradar-archive/` (CC BY 4.0, nessuna
 credenziale). Chiavi: `AAAA/MM/GG/OPERA/COMP/OPERA@AAAAMMGGTHHMM@0@<prodotto>.{h5,tiff}`.
-I file sono stati caricati a febbraio 2026; ci sono giorni mancanti (ad es.
-1/10/2012 e 15/10/2024).
+L'archivio fino al 31/12/2025 è stato caricato a febbraio 2026 (HDF5 + GeoTIFF);
+**dal 1/1/2026 il bucket si aggiorna quasi in tempo reale ma con i soli HDF5**
+(GeoTIFF presenti solo il 19/5 e il 26/10/2026, parziali). Ci sono giorni
+mancanti (ad es. 1/10/2012, 15/10/2024; CIRRUS manca dal 7 al 17/10/2024, quando
+c'è solo NIMBUS, e il 13–15/5/2025 non c'è nessun prodotto).
 
 | prodotto | file | griglia | passo | periodo nel bucket |
 |---|---|---|---|---|
@@ -140,7 +143,12 @@ I file sono stati caricati a febbraio 2026; ci sono giorni mancanti (ad es.
   frame) e `data/cirrus_bel/` (2106–3062, 1056–2054 a 1 km, circa 380 kB a
   frame). Si leggono con `read_odim_composite` come i file interi, anche con
   `extent`, purché l'estensione stia dentro il ritaglio. CIRRUS ha giorni
-  incompleti (ad es. 192 frame su 288 il 2/7/2024).
+  incompleti (ad es. 192 frame su 288 il 2/7/2024). `cirrus_bel` contiene
+  per ora 7/2024–12/2025 (152.975 frame, 39 GB): il 2026 c'è solo come HDF5.
+- **HDF5 CIRRUS interi:** circa 2,2–2,8 MB, chunk 760 × 880 gzip 9 (l'area del
+  Belgio tocca 6 chunk su 30). Lettura a pezzi via HTTP range verificata
+  identica, ma con `urllib` lenta in parallelo (1,2 file/s); il download intero
+  va a 16–20 file/s (circa 40 MB/s).
 - **CIRRUS `how/comment`:** alcuni volumi sono estrapolati con LK da Météo-France
   (pysteps). Non è indicato quali radar.
 
