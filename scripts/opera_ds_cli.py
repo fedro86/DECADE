@@ -43,7 +43,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import numpy as np  # noqa: E402
 
 from opera_ds import DownscaleConfig, LKParams, index_files, run_downscaling, run_validation  # noqa: E402
-from opera_ds.odim_io import bbox_extent, extent_window, read_odim_composite, refine_where  # noqa: E402
+from opera_ds.odim_io import (bbox_extent, extent_window, full_grid_where, read_odim_composite,  # noqa: E402
+                              refine_where)
 from opera_ds.pipeline import run_downscaling_parallel  # noqa: E402
 from opera_ds.sampling import SamplerConfig, block_times, sample_block  # noqa: E402
 from opera_ds.windows import Window, WindowStore, make_window, store_attrs  # noqa: E402
@@ -90,6 +91,7 @@ def run_windows(a, ody, cfg):
         wins = [Window(dt.datetime.fromisoformat(r["t_start"]), int(r["row0"]), int(r["col0"]), a.T, a.H, a.W)
                 for r in csv.DictReader(f)]
     w1 = refine_where(read_odim_composite(next(iter(ody.values())), a.quantity).where, cfg.factor)
+    w1 = full_grid_where(w1)
     domain = (int(w1["ysize"]), int(w1["xsize"]))
     store = WindowStore(a.out, a.T, a.H, a.W,
                         store_attrs(w1, cfg, a.method, a.time_shift, a.clip_dbz, a.context_km))
@@ -114,7 +116,8 @@ def run_sample(a, ody):
                          max_nan_frac=a.max_nan_frac, q_min=a.q_min, m=a.m, s=a.s, n_rand=a.n_rand,
                          clip_dbz=a.clip_dbz)
     w2 = read_odim_composite(next(iter(ody.values())), a.quantity).where
-    reader, origin = read_odim_composite, (0, 0)
+    # file gia' ritagliati: l'origine e' l'offset del ritaglio sulla griglia intera
+    reader, origin = read_odim_composite, (int(w2.get("crop_row0", 0)), int(w2.get("crop_col0", 0)))
     if a.bbox:
         extent = bbox_extent(w2, a.bbox, a.buffer_km, align_m=float(w2["xscale"]))
         reader = functools.partial(read_odim_composite, extent=extent)

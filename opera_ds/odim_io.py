@@ -71,6 +71,7 @@ def bbox_extent(where: dict, bbox_lonlat, buffer_km: float = 0.0,
     tra la griglia a 2 km e quella a 1 km."""
     from pyproj import Proj
 
+    where = full_grid_where(where)
     p = Proj(where["projdef"])
     x_ul, y_ul = p(float(where["UL_lon"]), float(where["UL_lat"]))
     lo0, la0, lo1, la1 = bbox_lonlat
@@ -95,8 +96,25 @@ def extent_window(where: dict, extent) -> tuple[int, int, int, int]:
     return tuple(int(round(v)) for v in idx)
 
 
+CROP_KEYS = ("crop_row0", "crop_col0", "full_xsize", "full_ysize", "full_UL_lon", "full_UL_lat")
+
+
+def full_grid_where(where: dict) -> dict:
+    """Metadati della griglia intera da cui proviene un ritaglio (o `where` stesso se
+    non e' un ritaglio). Servono per esprimere estensioni e origini sempre sulla griglia
+    intera, anche leggendo file gia' ritagliati."""
+    if "crop_row0" not in where:
+        return where
+    w = {k: v for k, v in where.items() if k not in CROP_KEYS and not k[:2] in ("LL", "LR", "UR")}
+    w.update(xsize=int(where["full_xsize"]), ysize=int(where["full_ysize"]),
+             UL_lon=float(where["full_UL_lon"]), UL_lat=float(where["full_UL_lat"]))
+    return w
+
+
 def crop_where(where: dict, window) -> dict:
-    """Metadati 'where' (dimensioni e angoli) della sotto-griglia `window`."""
+    """Metadati 'where' (dimensioni e angoli) della sotto-griglia `window`, relativa alla
+    griglia descritta da `where`. Aggiunge (o aggiorna) l'offset del ritaglio sulla
+    griglia intera (`crop_row0`, `crop_col0`) e i dati della griglia intera (`full_*`)."""
     from pyproj import Proj
 
     r0, r1, c0, c1 = window
@@ -106,6 +124,10 @@ def crop_where(where: dict, window) -> dict:
     xa, xb = x_ul + c0 * sx, x_ul + c1 * sx
     ya, yb = y_ul - r0 * sy, y_ul - r1 * sy
     w = dict(where)
+    if "crop_row0" not in where:
+        w.update(crop_row0=0, crop_col0=0, full_xsize=int(where["xsize"]), full_ysize=int(where["ysize"]),
+                 full_UL_lon=float(where["UL_lon"]), full_UL_lat=float(where["UL_lat"]))
+    w["crop_row0"], w["crop_col0"] = int(w["crop_row0"]) + r0, int(w["crop_col0"]) + c0
     w["xsize"], w["ysize"] = c1 - c0, r1 - r0
     for c, (x, y) in {"UL": (xa, ya), "UR": (xb, ya), "LL": (xa, yb), "LR": (xb, yb)}.items():
         w[f"{c}_lon"], w[f"{c}_lat"] = (float(v) for v in p(x, y, inverse=True))
@@ -114,8 +136,10 @@ def crop_where(where: dict, window) -> dict:
 
 def read_odim_composite(path: str, quantity: str = "DBZH", extent=None) -> Frame:
     """Legge il primo campo `quantity` da un composito ODIM (2.0 o 2.4).
-    extent: (x_off, y_off, width, height) in metri dall'angolo UL (vedi `bbox_extent`);
-    se dato, legge solo quella finestra e aggiorna i metadati 'where'."""
+    extent: (x_off, y_off, width, height) in metri dall'angolo UL della griglia intera
+    (vedi `bbox_extent`); se dato, legge solo quella finestra e aggiorna i metadati
+    'where'. Funziona anche su file gia' ritagliati (con `crop_row0`/`crop_col0`),
+    purche' la finestra stia dentro il ritaglio."""
     import h5py
 
     with h5py.File(path, "r") as f:
@@ -133,7 +157,12 @@ def read_odim_composite(path: str, quantity: str = "DBZH", extent=None) -> Frame
                     continue
                 where = {**root_where, **ds_where}
                 if extent is not None:
-                    win = extent_window(where, extent)
+                    r0, r1, c0, c1 = extent_window(where, extent)          # griglia intera
+                    dr, dc = int(where.get("crop_row0", 0)), int(where.get("crop_col0", 0))
+                    win = (r0 - dr, r1 - dr, c0 - dc, c1 - dc)                # nel file
+                    ny, nx = grp["data"].shape
+                    if win[0] < 0 or win[2] < 0 or win[1] > ny or win[3] > nx:
+                        raise ValueError(f"estensione {extent} fuori dal ritaglio del file {path}")
                     raw = grp["data"][win[0]:win[1], win[2]:win[3]]
                     where = crop_where(where, win)
                 else:
@@ -205,7 +234,7 @@ def write_odim_composite(path: str, frame: Frame, quantity: str = "DBZH",
 def refine_where(where_coarse: dict, factor: int) -> dict:
     """Aggiorna i metadati 'where' per la griglia raffinata (stessa estensione)."""
     w = dict(where_coarse)
-    for k in ("xsize", "ysize"):
+    for k in ("xsize", "ysize", "full_xsize", "full_ysize", "crop_row0", "crop_col0"):
         if k in w:
             w[k] = int(w[k]) * factor
     for k in ("xscale", "yscale"):

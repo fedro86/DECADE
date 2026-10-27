@@ -13,6 +13,7 @@ dependencies = [
     "shapely",
     "pyshp",
     "zarr>=3",
+    "rasterio",
 ]
 
 [project.optional-dependencies]
