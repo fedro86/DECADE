@@ -131,8 +131,10 @@ I file sono stati caricati a febbraio 2026; ci sono giorni mancanti (ad es.
 
 - **Conversione in R:** Marshall-Palmer Z = 200 R^1,6, la stessa di NIMBUS e di
   IRENE. Nelle metriche in R i dBZ sono limitati a 55 (`r_cap_dbz`).
-- **Interpolazioni:** fatte in dBZ perdono massa (Jensen). Il blending temporale
-  di default è in Z lineare; l'upscaling è ancora bilineare in dBZ ed è da
-  sostituire con una versione conservativa.
+- **Conservazione della massa (default):** `mass_correction=True` (upscaling che
+  preserva in R la media dei blocchi 2×2) e `blend_space="R"`. Sui 4 giorni il
+  volume resta entro l'1% di quello ODYSSEY a ogni `alpha`; il blending in Z
+  aggiunge circa il 6% e l'upscaling bilineare senza correzione ne toglie l'8%.
+  Le varianti restano come metodi `lk:Z`, `lk:dB`.
 - **Shift temporale:** ODYSSEY "vede" circa 2,5 min più tardi di CIRRUS a parità
   di etichetta. Sui 4 giorni gli accumuli sono poco sensibili allo shift.

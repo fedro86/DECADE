@@ -46,11 +46,33 @@ a 2 km. I valori si campionano **una sola volta** dal campo a 2 km nei punti di
 partenza dei pixel a 1 km, quindi upscaling e avvezione sono un'unica
 interpolazione bilineare. Ad `a = 0` il metodo si riduce al semplice upscaling.
 
-**Blending in Z lineare (default).** Mediare in dB un pixel con eco e uno
-asciutto fa scendere il valore sotto la soglia di rilevazione ai bordi delle
-celle. Mediando in Z (undetect = 0) l'RMSE a metà intervallo scende da 4,3 a
-3,0 dBZ e il bias da −1,4 a −0,4 dBZ sul caso sintetico. La variante in dB resta
-selezionabile come metodo `lk:dB`.
+**Conservazione della massa (default).** Due scelte, valutate in R con
+Marshall-Palmer (Z = 200 R^1,6):
+
+- **Upscaling conservativo** (`mass_correction=True`). Interpolare in dBZ perde
+  pioggia, perché R è convessa in dBZ. Per ogni pixel a 2 km si calcola una
+  correzione in dB che rende la media in R dei suoi 4 sottopixel uguale a R del
+  pixel ODYSSEY; la correzione segue i valori anche lungo le traiettorie.
+- **Blending in R** (`blend_space="R"`). La media tra F0 e F1 avvettati si fa in
+  R. Un pixel asciutto pesa 0, quindi i bordi delle celle non scendono sotto
+  soglia come succede mediando in dB. Mediando in Z, invece, si aggiunge pioggia
+  dove F0 e F1 avvettati non coincidono, perché R è concava in Z.
+
+Sui 4 giorni reali (Belgio, 380 coppie) il volume dell'output rispetto a
+(1−a)·V(F0) + a·V(F1):
+
+| | α = 0 | α = 1/3 |
+|---|---|---|
+| bilineare, blending in Z (default precedente) | 0,918 | 0,959 |
+| correzione + blending in Z | 0,999 | 1,065 |
+| **correzione + blending in R (default)** | **0,999** | **1,011** |
+
+Rispetto a CIRRUS la correzione raddoppia l'energia a piccola scala (da 0,17 a
+0,33) e riduce l'RMSE degli accumuli orari a 25 km (da 1,12 a 1,07 mm), con un
+RMSE in dBZ leggermente più alto (12,90 contro 12,79 a metà intervallo). Sul caso
+sintetico il blending in R ha RMSE in dBZ più alto di quello in Z a metà
+intervallo (3,7 contro 2,9) ma CSI migliore. Le varianti restano selezionabili
+come metodi `lk:Z` e `lk:dB`, o con `mass_correction=false` nella configurazione.
 
 **Copertura radar.** La copertura non viene avvettata. Dove un'eco entra da fuori
 copertura si usa la sola sorgente valida, o in mancanza di entrambe
@@ -65,7 +87,7 @@ nell'archivio pubblico (1–5/7/2024), per tre metodi:
 |---|---|
 | `nearest` | frame ODYSSEY più vicino, upscalato (persistenza) |
 | `linear` | media euleriana di F0 e F1 |
-| `lk` | interpolazione advettiva (eventualmente `lk:dB`) |
+| `lk` | interpolazione advettiva (varianti `lk:Z`, `lk:dB`) |
 
 Le metriche sono stratificate per `alpha`, cioè la posizione nell'intervallo di
 15 min. **L'errore ad `alpha = 0` è il "pavimento"**: lì non c'è interpolazione
@@ -145,18 +167,22 @@ moto noto (traslazione + rotazione, ~60 km/h) e crescita/decadimento. Lo degrada
 
 - lo sfasamento stimato sia −2,5 min;
 - LK batta `nearest` e `linear` in RMSE a tutti gli istanti interpolati;
-- LK batta `linear` in CSI a 30 dBZ.
+- LK batta `linear` in CSI a 30 dBZ;
+- con i default il volume di pioggia resti entro il 2% di quello di "ODYSSEY" a
+  ogni `alpha`, e l'errore sui blocchi 2×2 ad `alpha = 0` sia sotto l'1%.
 
 ## Risultati sui dati reali (1–5/7/2024, Belgio)
 
 - ODYSSEY ha circa **metà del volume di pioggia** di CIRRUS (scarto di 3,5–5 dB su
   tutti i quantili, POD a 10 dBZ circa 0,69). È una differenza tra prodotti, già
   presente al pavimento.
-- L'upscaling bilineare in dBZ perde circa l'**8% del volume** rispetto a ODYSSEY
-  (disuguaglianza di Jensen).
+- L'upscaling bilineare in dBZ perdeva circa l'**8% del volume** rispetto a
+  ODYSSEY; con i default attuali la perdita è sotto l'1% (vedi sopra).
 - Negli accumuli orari i metodi sono quasi equivalenti; negli istantanei a metà
-  intervallo LK batte `nearest` (RMSE 12,7 contro 13,6 dBZ).
-- Il campo interpolato ha circa il 18% dell'energia a piccola scala di CIRRUS.
+  intervallo LK batte `nearest` (RMSE 12,9 contro 13,8 dBZ con i default).
+- Il campo interpolato ha circa un terzo dell'energia a piccola scala di CIRRUS.
+- ODYSSEY DBZH contiene punti anomali fino a 128 dBZ (clutter): ogni conversione
+  in R va limitata, la validazione usa 55 dBZ.
 
 ## Limiti
 

@@ -4,11 +4,13 @@ Idea chiave: il moto e le traiettorie si calcolano sulla griglia grossolana (2 k
 dove il campo di velocita' e' liscio e il costo e' 4 volte minore; i valori vengono
 poi campionati UNA sola volta dal campo a 2 km nei punti di partenza dei pixel a 1 km.
 Upscaling e avvezione sono quindi un'unica interpolazione (niente doppio smoothing),
-e per alpha=0 il metodo si riduce al semplice upscaling bilineare.
+e per alpha=0 il metodo si riduce al semplice upscaling bilineare, corretto in modo
+che la media in R di ogni blocco 2x2 sia uguale a R del pixel grossolano.
 
 Interpolazione temporale (advection-based, schema "forward/backward blending"):
     F(x, t0 + a*dt) = (1-a) * F0( x - a*V ) + a * F1( x + (1-a)*V )
 con traiettorie integrate a passo multiplo (punto medio) nel campo V stazionario.
+La media e' fatta in R di default, cosi' il volume di pioggia resta (1-a)V0 + aV1.
 Crescita/decadimento sono lineari nel riferimento lagrangiano.
 """
 from __future__ import annotations
@@ -33,10 +35,10 @@ class DownscaleConfig:
     rain_threshold_dbz: float | None = None   # es. 7 dBZ (~0.1 mm/h con Marshall-Palmer)
     spatial_interp: str = "linear"        # nearest | linear | cubic
     coverage_rule: str = "intersection"   # copertura in uscita: intersection | union
-    blend_space: str = "Z"                # media in "Z" lineare o in "R" (undetect = 0), oppure in "dB"
+    blend_space: str = "R"                # media in "R" (conserva la pioggia) o in "Z" lineare (undetect = 0), oppure in "dB"
     max_step_px: float = 2.0              # passo massimo delle sotto-traiettorie (px grossolani)
     context_pairs: int = 1                # coppie extra prima/dopo per la stima del moto
-    mass_correction: bool = False         # media 2x2 in R dell'upscaling = R del pixel grossolano
+    mass_correction: bool = True          # media 2x2 in R dell'upscaling = R del pixel grossolano
     zr_b: float = 1.6                     # esponente Z = a R^b (a si semplifica nei rapporti)
     lk: LKParams = field(default_factory=LKParams)
 

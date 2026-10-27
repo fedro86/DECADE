@@ -106,14 +106,16 @@ Varianti da valutare dopo, non di default:
   risultati:
   - ODYSSEY ha circa **metà del volume** di CIRRUS (scarto di 3,5–5 dB) e POD a
     10 dBZ di circa 0,69: è una differenza tra prodotti, già presente al pavimento;
-  - **l'upscaling bilineare in dBZ perde circa l'8% del volume** rispetto a
-    ODYSSEY (disuguaglianza di Jensen);
+  - **l'upscaling bilineare in dBZ perdeva circa l'8% del volume** rispetto a
+    ODYSSEY (disuguaglianza di Jensen), e il blending in Z ne aggiungeva circa il
+    6%. Ora i default sono upscaling conservativo + blending in R, che conservano
+    il volume entro l'1% a ogni `alpha` (`out_val_mc_off/` contro `out_val_mc_on/`);
   - negli accumuli orari i metodi sono quasi equivalenti; negli istantanei a metà
     intervallo LK batte `nearest` (RMSE 12,7 contro 13,6 dBZ);
-  - il campo interpolato ha circa il 18% dell'energia a piccola scala di CIRRUS.
+  - il campo interpolato ha circa un terzo dell'energia a piccola scala di CIRRUS
+    (era il 18% prima della correzione di massa).
 
 **Non ancora fatto**
-- Upscaling conservativo (media dei blocchi 2×2 preservata in R).
 - Flag `alpha` nell'output, shift −2,5 min in produzione, output Zarr.
 - Campionatore di finestre su ODYSSEY a 2 km.
 - Pipeline di addestramento e valutazione IRENE.
@@ -121,8 +123,8 @@ Varianti da valutare dopo, non di default:
 
 ## Prossimi passi (in quest'ordine)
 
-1. **Upscaling conservativo.** Variante che preserva la media dei blocchi 2×2 in
-   R; confronto prima/dopo su `out_val_2024-07_BEL_mass`, stratificato per `alpha`.
+1. ~~**Upscaling conservativo.**~~ Fatto: default `mass_correction=True`,
+   `blend_space="R"`.
 2. **Output per il ML.** Flag `alpha`, etichette in convenzione CIRRUS (shift
    stimato), scrittura Zarr per finestre (dBZ in uint8 o float16, chunk per tempo).
 3. **Campionatore su ODYSSEY.** Filtro dei buchi e campionamento per importanza a

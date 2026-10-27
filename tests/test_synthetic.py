@@ -5,13 +5,15 @@ moto rigido (traslazione + rotazione) con crescita/decadimento euleriani.
   "CIRRUS"  : verita' a 1 km, etichetta T  = stato al tempo T
   "ODYSSEY" : media 2x2 a 2 km, etichetta NT = stato al tempo NT + 2.5 min
               (imita la finestra [NT-10, NT+5] contro (NT-10, NT])
-La validazione deve quindi trovare lo shift ottimo a -2.5 min, e LK deve battere
-nearest e linear negli istanti interpolati.
+La validazione deve quindi trovare lo shift ottimo a -2.5 min, LK deve battere
+nearest e linear negli istanti interpolati, e i default (correzione di massa e
+blending in R) devono conservare il volume di pioggia di "ODYSSEY".
 
 Uso:  python tests/test_synthetic.py [outdir]
 """
 from __future__ import annotations
 
+import csv
 import datetime as dt
 import os
 import sys
@@ -142,7 +144,7 @@ def main(out):
     t = time.time()
     summ = run_validation(ody, cir, T0, T0 + dt.timedelta(minutes=DURATION_MIN), out, cfg,
                           shifts=(0.0, -2.5, -5.0, 2.5), pair_stride=1, reader=npz_reader,
-                          methods=("nearest", "linear", "lk", "lk:dB"),
+                          methods=("nearest", "linear", "lk", "lk:Z", "lk:dB"),
                           fss_scales=(1, 5, 11, 21, 41), min_wet_frac=0.0)
     print(f"[validazione] {time.time() - t:.1f} s")
 
@@ -164,6 +166,17 @@ def main(out):
         lk, lin, nn = get("lk", -2.5, a), get("linear", -2.5, a), get("nearest", -2.5, a)
         assert lk["rmse"] < lin["rmse"] and lk["rmse"] < nn["rmse"], (a, lk["rmse"], lin["rmse"], nn["rmse"])
         assert lk["csi_30"] > lin["csi_30"], a
+
+    # conservazione della massa rispetto a "ODYSSEY" (default: correzione + blending in R)
+    with open(os.path.join(out, "mass_internal.csv")) as f:
+        mass = {(r["method"], round(float(r["alpha"]), 3)): r for r in csv.DictReader(f)}
+    for a in (0.0, 0.333, 0.667):
+        ratio = float(mass[("lk", a)]["crop_vol_ratio"])
+        print(f"[massa] lk alpha={a:.3f}: volume / riferimento = {ratio:.4f}")
+        assert abs(ratio - 1) < 0.02, (a, ratio)
+    b2 = float(mass[("lk", 0.0)]["block2_rel_mae"])
+    print(f"[massa] errore relativo medio sui blocchi 2x2 ad alpha=0: {b2:.4f}")
+    assert b2 < 0.01, b2
 
     # pipeline di produzione (scrittura su npz al posto di ODIM)
     files = pl.run_downscaling(ody, T0, T0 + dt.timedelta(hours=1), os.path.join(out, "ds"),
