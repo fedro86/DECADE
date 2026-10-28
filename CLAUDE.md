@@ -144,8 +144,10 @@ c'è solo NIMBUS, e il 13–15/5/2025 non c'è nessun prodotto).
   frame). Si leggono con `read_odim_composite` come i file interi, anche con
   `extent`, purché l'estensione stia dentro il ritaglio. CIRRUS ha giorni
   incompleti (ad es. 192 frame su 288 il 2/7/2024). `cirrus_bel` contiene
-  7/2024–12/2025 dai GeoTIFF (152.975 frame, 39 GB); il 2026 dagli HDF5 interi
-  (ritagli verificati identici a quelli da GeoTIFF su due istanti del 2025).
+  7/2024–12/2025 dai GeoTIFF, il 2026 dagli HDF5 interi (ritagli verificati
+  identici a quelli da GeoTIFF su due istanti del 2025). Al 27/10/2026: 238.863
+  frame, 58 GB, copertura 97,7% (14 giorni mancanti: 7–17/10/2024, 13–15/5/2025).
+  ODYSSEY: 400.337 frame, 37 GB.
 - **HDF5 CIRRUS interi:** circa 2,2–2,8 MB, chunk 760 × 880 gzip 9 (l'area del
   Belgio tocca 6 chunk su 30). Lettura a pezzi via HTTP range verificata
   identica, ma con `urllib` lenta in parallelo (1,2 file/s); il download intero
