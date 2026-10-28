@@ -150,6 +150,14 @@ c'è solo NIMBUS, e il 13–15/5/2025 non c'è nessun prodotto).
   Belgio tocca 6 chunk su 30). Lettura a pezzi via HTTP range verificata
   identica, ma con `urllib` lenta in parallelo (1,2 file/s); il download intero
   va a 16–20 file/s (circa 40 MB/s).
+- **Campi di qualità:** ODYSSEY `DBZH_QIND` ha `QIND` in `dataset2` (0–1 a passi
+  di 0,1, `nodata` dove non c'è eco; sugli echi del Belgio + 350 km mediana
+  0,1–0,3). CIRRUS ha `dataset1/data1/quality1` (`pl.imgw.quality.qi_total`),
+  quasi binario: circa il 90% degli echi europei vale 0, circa l'8% vale 1. Non
+  è ancora chiaro cosa significhi, quindi non va usato come maschera. Nei
+  GeoTIFF la qualità è la banda 2, con interleave pixel e nelle stesse tile.
+  **I ritagli `*_bel` contengono solo la riflettività**: per avere la qualità
+  vanno rifatti, con lo stesso traffico di rete (scelta rinviata dall'utente).
 - **CIRRUS `how/comment`:** alcuni volumi sono estrapolati con LK da Météo-France
   (pysteps). Non è indicato quali radar.
 
