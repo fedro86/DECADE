@@ -9,6 +9,9 @@ Ogni frame diventa un HDF5 ritagliato leggibile da `read_odim_composite`, con lo
 stesso nome del file originale e l'offset del ritaglio in `where` (`crop_row0`, ...).
 Il download riprende da dove si era fermato; i fallimenti finiscono in `failed.txt`.
 
+Dal 2026 il bucket ha quasi solo gli HDF5: per gli istanti senza GeoTIFF si scarica
+l'HDF5 intero (circa 2,5 MB per CIRRUS) e lo si ritaglia in memoria.
+
 Esempio (Belgio + 350 km: 200 di area di campionamento + 150 di contesto per il moto):
   uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
       --ref "data/odyssey/OPERA@20240702T1200@0@DBZH_QIND.h5" \
@@ -23,9 +26,12 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import io
 import os
 import sys
 import time
+import urllib.parse
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 import h5py
@@ -97,6 +103,45 @@ def fetch_one(key, window, where_crop, out_dir, quantity):
     return 1
 
 
+def fetch_one_h5(key, window, where_crop, out_dir, quantity):
+    """Ripiego per gli istanti senza GeoTIFF: HDF5 intero in memoria, poi ritaglio."""
+    name = os.path.basename(key)
+    sub = os.path.join(out_dir, key[:7])
+    path = os.path.join(sub, name)
+    if os.path.exists(path):
+        return 0
+    os.makedirs(sub, exist_ok=True)
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(f"{BUCKET}/{urllib.parse.quote(key)}", timeout=120) as r:
+                buf = r.read()
+            break
+        except OSError:
+            if attempt == 3:
+                raise
+            time.sleep(2 * (attempt + 1))
+    r0, r1, c0, c1 = window
+    with h5py.File(io.BytesIO(buf), "r") as f:
+        tags = {}
+        for g, keys in (("what", WHAT_KEYS), ("dataset1/what", DS_WHAT_KEYS),
+                        ("dataset1/data1/what", ("quantity",)), ("how", ("nodes", "comment"))):
+            if g in f:
+                tags.update({k: v.decode() if isinstance(v, bytes) else str(v)
+                             for k, v in f[g].attrs.items() if k in keys})
+        d = f["dataset1/data1/data"]
+        if d.shape != (int(where_crop["full_ysize"]), int(where_crop["full_xsize"])):
+            raise ValueError(f"griglia inattesa {d.shape}")
+        what = {**f["dataset1/what"].attrs, **f["dataset1/data1/what"].attrs}
+        if (float(what.get("gain", 1)), float(what.get("offset", 0))) != (1.0, 0.0):
+            raise ValueError("gain/offset diversi da 1/0")
+        raw = d[r0:r1, c0:c1]
+    a = raw.astype(np.float32)
+    a[raw == what["nodata"]] = NODATA
+    a[raw == what["undetect"]] = UNDETECT
+    write_crop(path, a, tags, where_crop, quantity)
+    return 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--product", default="DBZH_QIND")
@@ -126,15 +171,20 @@ def main():
         while d < a.end:
             # un mese alla volta: elenco dei file, poi download in parallelo
             m_end = min((d.replace(day=1) + dt.timedelta(days=32)).replace(day=1), a.end)
-            keys = []
+            keys = []                                    # (chiave, funzione): GeoTIFF se c'è, se no HDF5
             while d < m_end:
-                keys += [k for k, _ in list_keys(d.strftime("%Y/%m/%d/OPERA/COMP/"))
-                         if k.endswith(f"@{a.product}.tiff")]
+                ks = {k for k, _ in list_keys(d.strftime("%Y/%m/%d/OPERA/COMP/"))}
+                for k in sorted(ks):
+                    if k.endswith(f"@{a.product}.tiff"):
+                        keys.append((k, fetch_one))
+                    elif k.endswith(f"@{a.product}.h5") and k[:-3] + ".tiff" not in ks:
+                        keys.append((k, fetch_one_h5))
                 d += dt.timedelta(days=1)
+            n_h5 = sum(fn is fetch_one_h5 for _, fn in keys)
             if a.dry_run:
-                print(f"{m_end:%Y-%m}: {len(keys)} file")
+                print(f"{(m_end - dt.timedelta(days=1)):%Y-%m}: {len(keys)} file, di cui {n_h5} solo HDF5")
                 continue
-            futs = {ex.submit(fetch_one, k, window, where_crop, a.out, a.quantity): k for k in keys}
+            futs = {ex.submit(fn, k, window, where_crop, a.out, a.quantity): k for k, fn in keys}
             for fu, k in futs.items():
                 try:
                     if fu.result():
@@ -146,7 +196,7 @@ def main():
                     failed.write(f"{k}\t{e}\n")
                     failed.flush()
             el = time.time() - t_start
-            print(f"{(m_end - dt.timedelta(days=1)):%Y-%m}: {len(keys)} file | totale scaricati {n_ok}, "
+            print(f"{(m_end - dt.timedelta(days=1)):%Y-%m}: {len(keys)} file ({n_h5} da HDF5) | totale scaricati {n_ok}, "
                   f"gia' presenti {n_skip}, falliti {n_fail} | {el/60:.1f} min, {n_ok/max(el, 1):.1f} file/s",
                   flush=True)
 

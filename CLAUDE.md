@@ -52,7 +52,7 @@ uv run python scripts/opera_ds_cli.py validate \
 | `opera_ds/sampling.py` | scelta delle finestre su ODYSSEY a 2 km: `SamplerConfig`, `sample_block`, `block_times` |
 | `scripts/opera_ds_cli.py` | sottocomandi `downscale`, `validate`, `sample` e `windows`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
 | `scripts/fetch_ord_archive.py` | download dal bucket pubblico ORD |
-| `scripts/fetch_cog_crop.py` | download di un'area sola: legge a pezzi i GeoTIFF e scrive HDF5 ritagliati con l'offset in `where` |
+| `scripts/fetch_cog_crop.py` | download di un'area sola: legge a pezzi i GeoTIFF (o, se mancano, scarica l'HDF5 intero e lo ritaglia in memoria) e scrive HDF5 ritagliati con l'offset in `where` |
 | `scripts/make_region_mask.py` | maschera di un paese (Natural Earth 1:10m) sulla griglia di un file ODIM |
 
 - `reader(path, quantity) -> Frame` è iniettabile ovunque; con il ritaglio si usa
@@ -144,7 +144,8 @@ c'è solo NIMBUS, e il 13–15/5/2025 non c'è nessun prodotto).
   frame). Si leggono con `read_odim_composite` come i file interi, anche con
   `extent`, purché l'estensione stia dentro il ritaglio. CIRRUS ha giorni
   incompleti (ad es. 192 frame su 288 il 2/7/2024). `cirrus_bel` contiene
-  per ora 7/2024–12/2025 (152.975 frame, 39 GB): il 2026 c'è solo come HDF5.
+  7/2024–12/2025 dai GeoTIFF (152.975 frame, 39 GB); il 2026 dagli HDF5 interi
+  (ritagli verificati identici a quelli da GeoTIFF su due istanti del 2025).
 - **HDF5 CIRRUS interi:** circa 2,2–2,8 MB, chunk 760 × 880 gzip 9 (l'area del
   Belgio tocca 6 chunk su 30). Lettura a pezzi via HTTP range verificata
   identica, ma con `urllib` lenta in parallelo (1,2 file/s); il download intero

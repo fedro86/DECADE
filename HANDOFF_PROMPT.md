@@ -117,7 +117,9 @@ Varianti da valutare dopo, non di default:
 
 - Archivi ritagliati sul Belgio + 350 km dal bucket pubblico (lettura a pezzi
   dei GeoTIFF): ODYSSEY `DBZH_QIND` 9/2012–7/2024 in `data/odyssey_bel/`, CIRRUS
-  `DBZH` 7/2024–10/2026 in `data/cirrus_bel/`.
+  `DBZH` 7/2024–10/2026 in `data/cirrus_bel/` (il 2026 dagli HDF5 interi: il
+  bucket dal 2026 non ha GeoTIFF). Per aggiornare CIRRUS basta rilanciare
+  `fetch_cog_crop.py` con una data di fine più recente.
 
 **Non ancora fatto**
 - Pipeline di addestramento e valutazione IRENE.
