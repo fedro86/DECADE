@@ -134,12 +134,22 @@ whole files, also with `extent` as long as the extent is inside the crop.
 - `data/mask_BEL_1km.npy`: Belgium mask on the full CIRRUS grid (Natural Earth
   1:10m), made with `make_region_mask.py`.
 
-## Other sources
+## Inventory of sources and licences
 
-| source | what | notes |
-|---|---|---|
-| MeteoGate ORD API (`https://api.meteogate.eu/eu-eumetnet-weather-radar`, OGC EDR) | OPERA products | **last 24 hours only**, also with a key (which raises the limit to 2000 requests/hour). Useful for recent CIRRUS metadata, not for history. Credentials in `.env` |
-| ArcoDataHub `opera-plus-it-vmi.zarr` (FBK, CC BY-SA 4.0) | VMI in dBZ, 1 km / 5 min from 1/7/2024, OPERA plus Italian DPC radars | in **EPSG:3035**, 3819 × 4411, not the native OPERA grid. `_FillValue` −9999, `undetect` −9998. One chunk is a whole frame (about 100–130 MB compressed, about 45 s per frame): reading only Belgium costs as much as reading Europe. Credentials in `.env` |
-| RODEO-ML (`s3://ecmwf-rodeo-benchmark`, ECMWF) | precipitation accumulations, 1 h and 6 h, 2013–2023 | accumulations only |
-| RMI open data (`opendata.meteo.be`, WMS `radar:belgian_rainfall_composite`) | Belgian composite, 5 min | only the last ~13 hours; national, so outside the method |
-| VMM (Flemish Environment Agency) | open radar products from the same radars, from June 2021 | validation reference for Belgium (see [roadmap.md](roadmap.md)); not yet examined here |
+Every source we know of, used or not; which ones enter the method is decided
+in [roadmap.md](roadmap.md) (*Constraints*). Licences checked on 3/11/2026 on
+the pages linked; "not stated" means no licence was found in the provider's
+own documentation.
+
+| source | content | period | licence | notes |
+|---|---|---|---|---|
+| OPERA ORD bucket (EUMETNET) | ODYSSEY, CIRRUS, NIMBUS composites | 2012 → now | CC BY 4.0 | see *OPERA public archive* above |
+| MeteoGate ORD API (`https://api.meteogate.eu/eu-eumetnet-weather-radar`, OGC EDR) | the same OPERA products | **last 24 hours only** | CC BY 4.0 (OPERA data) | also with a key (which raises the limit to 2000 requests/hour). Useful for recent CIRRUS metadata, not for history. Credentials in `.env` |
+| [EURADCLIM 3.0](https://dataplatform.knmi.nl/dataset/rad-opera-24h-rainfall-accumulation-euradclim-3-0) (KNMI Data Platform) | OPERA rain accumulations adjusted with rain gauges, 1 h and 24 h, 2 km | 2013–2023 | CC BY 4.0 | versions 1.0 and 2.0 are deprecated; a yearly rerun is expected |
+| [ECA&D](https://www.ecad.eu) (KNMI) | daily station series, including precipitation | from the 19th century, varies by station | **non-commercial research and education only**; results must be published in the open literature | about 85% of the series can be downloaded; E-OBS (gridded) has the [same terms](https://ewds.climate.copernicus.eu/licences/licence-to-use-E-OBS-products) |
+| [RODEO-ML](https://github.com/ecmwf/rodeo-ai-static-datasets) (`s3://ecmwf-rodeo-benchmark`, ECMWF) | OPERA precipitation accumulations, 1 h and 6 h; ECA&D-based verification data | 2013–2023 | per dataset, not stated in the repository ("open data licenses where applicable") | accumulations only |
+| ArcoDataHub `opera-plus-it-vmi.zarr` (FBK) | VMI in dBZ, 1 km / 5 min, OPERA plus Italian DPC radars | from 1/7/2024 | CC BY-SA 4.0 | in **EPSG:3035**, 3819 × 4411, not the native OPERA grid. `_FillValue` −9999, `undetect` −9998. One chunk is a whole frame (about 100–130 MB compressed, about 45 s per frame): reading only Belgium costs as much as reading Europe. Credentials in `.env` |
+| [RADCLIM](https://publish.geo.be/geonetwork/srv/api/records/RMI_DATASET_RADCLIM?language=all) (RMI) | radar rainfall for Belgium and surroundings merged with rain gauges (kriging with external drift): 5 min and 1 h accumulations, 1 km, 700 × 700, Belgian Lambert 2008, ODIM HDF5 and GeoTIFF | 2017–2022 (metadata record) | CC BY 4.0 | radars Wideumont, Jabbeke (RMI), Helchteren (VMM), Avesnois (Météo-France); gauges of SPW, VMM and WL; quality decreases outside Belgium ([user guide](https://opendata.meteo.be/cases/202107/radclim_userguide.pdf)) |
+| RMI open data (`opendata.meteo.be`, WMS `radar:belgian_rainfall_composite`) | Belgian composite, 5 min | last ~13 hours only | CC BY 4.0 for RMI open data services (radar layer not checked) | |
+| VMM via [waterinfo.be](https://waterinfo.vlaanderen.be) (KiWIS web service) | composite of Helchteren (VMM), Jabbeke (RMI) and Herwijnen (KNMI), CAPPI at 1 km height, 5 min: rain intensity (`DPSRI_1km_cappi`, apparently not gauge-adjusted), 1 h and 24 h accumulations adjusted with 43 VMM gauges (`PAC_*_adj`), NSE and RMSE of the accumulations | from June 2021 (the service documentation shows requests for 2018) | not stated for the radar rasters; VMM precipitation series are under the Flemish [Modellicentie voor gratis hergebruik v1.0](https://data.vlaanderen.be/id/licentie/modellicentie-gratis-hergebruik/v1.0) (free reuse with attribution) | anonymous access is limited; a token is mandatory for automated requests (hydrometrie@waterinfo.be). [Service documentation](https://waterinfo.vlaanderen.be/download/9f5ee0c9-dafa-46de-958b-7cac46eb8c23?dl=0), version 02/2022 |
+| [Natural Earth](https://www.naturalearthdata.com) 1:10m | country borders for the region masks | | public domain | |

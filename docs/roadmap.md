@@ -32,7 +32,7 @@ on Leonardo Booster. The motivation is in the [README](../README.md).
 - **Only pan-European sources in the method** (OPERA, ECA&D, EURADCLIM), so that
   it scales to the whole OPERA domain. National products only as validation.
 - **Belgium is the pilot.** Validation reference: open VMM radar products
-  ([data.md](data.md), *Other sources*). Validation against private Belgian archives is run
+  ([data.md](data.md), *Inventory of sources and licences*). Validation against private Belgian archives is run
   by their owners through the injectable `reader`.
 - **Production runs on Leonardo Booster** (EuroHPC, CINECA) as Slurm batch
   jobs, without notebooks. Compute nodes have no internet access: all input
@@ -190,6 +190,15 @@ allows it:
   before DECADE, not in the proposal: parked unless decided otherwise.
 
 ## Open questions (external)
+
+- **Licence of the VMM radar rasters** (not stated by waterinfo.be), whether the
+  intensity product is gauge-adjusted, and since when the rasters exist (June
+  2021 or earlier). To ask hydrometrie@waterinfo.be, together with a token.
+- **Period of the RADCLIM copy available to the project:** about 2018–2024
+  according to the team, 2017–2022 in the metadata record. To check.
+- **ECA&D terms** (non-commercial research and education only) against an
+  openly released archive: if gauges are used to correct it, check with
+  eca@knmi.nl what the release may contain.
 
 - How much does IRENE degrade with fewer years of data? Asked to the authors,
   answer unknown.
