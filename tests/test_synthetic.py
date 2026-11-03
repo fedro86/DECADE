@@ -9,7 +9,8 @@ La validazione deve quindi trovare lo shift ottimo a -2.5 min, LK deve battere
 nearest e linear negli istanti interpolati, e i default (correzione di massa e
 blending in R) devono conservare il volume di pioggia di "ODYSSEY".
 
-Uso:  python tests/test_synthetic.py [outdir]
+Uso:  uv run pytest                                  (cartella temporanea)
+      uv run python tests/test_synthetic.py [outdir]  (output conservato)
 """
 from __future__ import annotations
 
@@ -23,13 +24,11 @@ import time
 import numpy as np
 from scipy.ndimage import map_coordinates
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-
-from opera_ds import DownscaleConfig, Frame, LKParams, estimate_motion  # noqa: E402
-from opera_ds import pipeline as pl  # noqa: E402
-from opera_ds.validate import run_validation  # noqa: E402
-from opera_ds.sampling import SamplerConfig, block_times, sample_block  # noqa: E402
-from opera_ds.windows import Window, WindowStore, dbz_to_rr, make_window  # noqa: E402
+from opera_ds import DownscaleConfig, Frame, LKParams, estimate_motion
+from opera_ds import pipeline as pl
+from opera_ds.validate import run_validation
+from opera_ds.sampling import SamplerConfig, block_times, sample_block
+from opera_ds.windows import Window, WindowStore, dbz_to_rr, make_window
 
 NY, NX = 600, 800             # griglia fine (1 km)
 FLOOR, DET = 0.0, 12.0        # undetect sotto DET dBZ
@@ -120,7 +119,7 @@ def build_archive(root):
     return ody, cir
 
 
-def test_motion():
+def motion_error():
     """Errore del campo LK rispetto al moto vero (griglia 2 km, px/15 min)."""
     f = [np.where(COV2, truth(m).reshape(NY // 2, 2, NX // 2, 2).mean(axis=(1, 3)), np.nan)
          for m in (0, 15, 30)]
@@ -141,7 +140,7 @@ def test_motion():
 
 def main(out):
     os.makedirs(out, exist_ok=True)
-    rel = test_motion()
+    rel = motion_error()
     assert rel < 0.35, f"errore relativo del moto troppo alto: {rel:.2f}"
 
     root = tempfile.mkdtemp(dir=out)
@@ -230,11 +229,11 @@ def main(out):
     assert rel < 1e-3, rel
     print(f"[finestre] {g['RR'].shape} float16, alpha {alpha[:3]}, coincide col dominio intero ad alpha=0")
 
-    test_sampler(ody, cfg)
+    check_sampler(ody, cfg)
     print("TUTTI I TEST SUPERATI")
 
 
-def test_sampler(ody, cfg):
+def check_sampler(ody, cfg):
     """Campionatore su "ODYSSEY" a 2 km: buchi, frazione di NaN, indipendenza dai blocchi."""
     scfg = SamplerConfig(T=12, H=128, W=128, step_px=16, max_nan_frac=0.2, q_min=1.0)
     n = scfg.frames_needed
@@ -273,6 +272,10 @@ def test_sampler(ody, cfg):
     assert make_window(gap, w, cfg, context_km=60, reader=npz_reader, domain_fine=(NY, NX)) is not None
     print(f"[campionatore] {len(full)} finestre su {len(starts)} partenze, uguali con blocchi di 1 h; "
           f"buco escluso ({len(holed)} finestre)")
+
+
+def test_synthetic(tmp_path):
+    main(str(tmp_path))
 
 
 if __name__ == "__main__":

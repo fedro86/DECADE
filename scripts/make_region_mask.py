@@ -13,15 +13,12 @@ from __future__ import annotations
 import argparse
 import io
 import os
-import sys
 import urllib.request
 import zipfile
 
 import numpy as np
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-
-from opera_ds.odim_io import read_odim_composite  # noqa: E402
+from opera_ds.odim_io import read_odim_composite
 
 NE_URL = "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip"
 

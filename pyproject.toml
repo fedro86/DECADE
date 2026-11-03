@@ -1,7 +1,8 @@
 [project]
 name = "opera-ds"
 version = "0.1.0"
-description = "Downscaling spazio-temporale OPERA ODYSSEY (2 km / 15 min) -> 1 km / 5 min"
+description = "Pan-European radar datasets from EUMETNET OPERA: ODYSSEY (2 km / 15 min) downscaled to 1 km / 5 min"
+readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "numpy",
@@ -19,5 +20,21 @@ dependencies = [
 [project.optional-dependencies]
 pysteps = ["pysteps"]
 
-[tool.uv]
-package = false
+[dependency-groups]
+dev = [
+    "jupyterlab",
+    "ipykernel",
+    "pytest",
+    "pre-commit",
+    "nbstripout",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["opera_ds"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

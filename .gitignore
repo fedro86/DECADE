@@ -1,6 +1,27 @@
+# secrets
 .env
+
+# environment
 .venv/
-data/
-out*/
 __pycache__/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# data and outputs: never committed (see README, "Data")
+data/
+results/
+out*/
+synthetic_out/
+*.zarr/
+*.h5
+*.tiff
+*.npy
+*.npz
+*.part
 *.log
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store

@@ -28,7 +28,6 @@ import argparse
 import datetime as dt
 import io
 import os
-import sys
 import time
 import urllib.parse
 import urllib.request
@@ -37,10 +36,8 @@ from concurrent.futures import ThreadPoolExecutor
 import h5py
 import numpy as np
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-
-from opera_ds.odim_io import bbox_extent, crop_where, extent_window, read_odim_composite  # noqa: E402
-from fetch_ord_archive import BUCKET, list_keys  # noqa: E402
+from opera_ds.odim_io import bbox_extent, crop_where, extent_window, read_odim_composite
+from opera_ds.ord import BUCKET, list_keys
 
 GDAL_ENV = dict(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tiff",
                 GDAL_HTTP_MULTIRANGE="YES", GDAL_HTTP_MERGE_CONSECUTIVE_RANGES="YES", VSI_CACHE="FALSE",

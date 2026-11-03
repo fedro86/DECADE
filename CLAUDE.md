@@ -1,8 +1,26 @@
 # CLAUDE.md
 
-Dataset radar paneuropeo da OPERA: pioggia a 2 km / 15 min e dati per nowcasting
-ML a 1 km / 5 min. Obiettivo, piano e stato sono in `HANDOFF_PROMPT.md`; qui ci
-sono fatti verificati sui dati, comandi e convenzioni. Rispondi in italiano.
+Progetto **DECADE** (repo `github.com/fedro86/DECADE`): archivio OPERA armonizzato
+a 1 km / 5 min dal 2012 per il nowcasting ML (IRENE), con pilota sul Belgio e
+addestramento su Leonardo Booster; in parallelo pioggia a 2 km / 15 min.
+Obiettivo, piano e stato sono in `docs/handoff.md`; qui ci sono fatti verificati
+sui dati, comandi e convenzioni. Rispondi in italiano; README, `CONTRIBUTING.md`
+e notebook sono in inglese, per i colleghi.
+
+## Organizzazione della repo
+
+- `opera_ds/` è la libreria (installata in modalità editable da `uv sync`),
+  `scripts/` i punti d'ingresso da riga di comando, `notebooks/` l'esplorazione
+  dei colleghi, `tests/` il test sintetico (eseguito dalla CI), `configs/` i
+  parametri, `docs/` piano e figure.
+- **I notebook esplorano, gli script producono.** La produzione gira su HPC come
+  job batch, senza notebook: un metodo provato in un notebook entra nella
+  pipeline solo come funzione in `opera_ds/`, script in `scripts/` e test.
+  I notebook importano da `opera_ds`, non definiscono logica di produzione.
+- `data/` e `results/` sono fuori da git (o in `$OPERA_DATA_DIR`,
+  `$OPERA_RESULTS_DIR`; vedi `opera_ds/paths.py`). Gli output dei notebook
+  vengono tolti al commit da `nbstripout` (pre-commit).
+- Gli script non manipolano `sys.path`: importano `opera_ds` installato.
 
 ## Vincoli del progetto
 
@@ -17,8 +35,10 @@ sono fatti verificati sui dati, comandi e convenzioni. Rispondi in italiano.
 ## Comandi
 
 ```bash
-uv sync                                                    # ambiente (Python 3.12, vedi pyproject.toml)
-uv run python tests/test_synthetic.py <cartella>           # deve stampare TUTTI I TEST SUPERATI
+uv sync                                                    # ambiente (Python 3.12) + gruppo dev (Jupyter, pytest, pre-commit)
+uv run pytest                                              # test sintetico, circa 3 min
+uv run python tests/test_synthetic.py <cartella>           # stesso test con output conservato: TUTTI I TEST SUPERATI
+uv run pre-commit run --all-files                          # nbstripout e controlli (anche in CI)
 uv run python scripts/fetch_ord_archive.py --product DBZH_QIND --start 2024-07-01 --end 2024-07-06 --out data/odyssey
 uv run python scripts/make_region_mask.py --ref <file CIRRUS .h5> --country BEL --out data/mask_BEL_1km.npy
 ```
@@ -32,7 +52,7 @@ uv run python scripts/opera_ds_cli.py validate \
   --start 2024-07-01 --end 2024-07-06 \
   --bbox 2.5 49.45 6.45 51.55 --buffer-km 200 --region-mask data/mask_BEL_1km.npy \
   --shifts 0 -2.5 -5 2.5 --methods nearest linear lk lk:dB \
-  --pair-stride 1 --workers 12 --out <cartella nuova>
+  --pair-stride 1 --workers 12 --out results/<cartella nuova>
 ```
 
 - Usa sempre `uv run python`, mai `python`.
@@ -50,6 +70,8 @@ uv run python scripts/opera_ds_cli.py validate \
 | `opera_ds/validate.py` | metriche in dBZ, in R per scala, conservazione interna, accumuli orari |
 | `opera_ds/windows.py` | finestre per il ML: `Window`, `make_window`, `WindowStore` (Zarr in formato IRENE), `dbz_to_rr` |
 | `opera_ds/sampling.py` | scelta delle finestre su ODYSSEY a 2 km: `SamplerConfig`, `sample_block`, `block_times` |
+| `opera_ds/ord.py` | bucket ORD: `ord_key`, `list_keys`, `fetch`, `download(t, product, out_dir)` |
+| `opera_ds/paths.py` | `DATA_DIR`, `RESULTS_DIR` (variabili d'ambiente o cartelle della repo) |
 | `scripts/opera_ds_cli.py` | sottocomandi `downscale`, `validate`, `sample` e `windows`; `--bbox`/`--buffer-km` ritagliano in lettura e ritagliano anche `--region-mask` |
 | `scripts/fetch_ord_archive.py` | download dal bucket pubblico ORD |
 | `scripts/fetch_cog_crop.py` | download di un'area sola: legge a pezzi i GeoTIFF (o, se mancano, scarica l'HDF5 intero e lo ritaglia in memoria) e scrive HDF5 ritagliati con l'offset in `where` |

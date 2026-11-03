@@ -1,237 +1,315 @@
-# Dataset radar paneuropeo da OPERA
+# DECADE – a harmonised decade of OPERA radar data
 
-Strumenti per costruire, a partire dall'archivio pubblico EUMETNET OPERA, dati
-radar omogenei per tutta l'Europa, usando il Belgio come banco di prova. Due linee
-di prodotto:
+**DE**ep-learning nowCasting from **A** harmonised **DE**cade of radar data.
 
-- **dati per nowcasting ML a 1 km / 5 min**: CIRRUS (dal 7/2024) per rifinitura e
-  test, ODYSSEY (2012–2024, 2 km / 15 min) interpolato a 1 km / 5 min per il
-  pre-addestramento;
-- **archivio di pioggia a 2 km / 15 min**: ODYSSEY più NIMBUS, sulla stessa
-  griglia.
+Deep-learning nowcasting models such as IRENE (FBK, Camilletti et al., 2026) are
+trained on multi-year radar archives at 1 km / 5 min. At European scale, the
+EUMETNET OPERA composites exist at that resolution only since July 2024
+(CIRRUS). The 2012–2024 legacy archive (ODYSSEY) covers a decade, but at 2 km /
+15 min. DECADE builds a harmonised OPERA archive at 1 km / 5 min from 2012
+onwards and measures, over a Belgian pilot domain, whether pre-training IRENE on
+it improves nowcasts compared with training on the current products alone.
 
-Obiettivo, piano ed esperimento sono descritti in `HANDOFF_PROMPT.md`; i fatti
-verificati sui prodotti OPERA (griglie, codifiche, finestre temporali, periodi
-disponibili) sono in `CLAUDE.md`.
+This repository holds the data side of the project: reading OPERA composites,
+temporal super-resolution of ODYSSEY by optical flow, validation against CIRRUS,
+and the extraction of training windows in IRENE format. Only pan-European
+sources are used in the method (OPERA, ECA&D, EURADCLIM), so that it scales from
+Belgium to the whole OPERA domain.
 
-## Metodo di downscaling (ODYSSEY → 1 km / 5 min)
+| research question | status in this repo |
+|---|---|
+| 1. Bring ODYSSEY to 1 km / 5 min, consistent with CIRRUS | LK optical-flow interpolation with mass conservation (CPU, OpenCV), validated on 1–5/7/2024. To do: GPU (PyTorch) version, quantile-mapping correction, year-by-year consistency checks, validation against VMM |
+| 2. Value of legacy data for training IRENE (configurations A, B, C) | window sampler and Zarr store in IRENE format. Training happens on Leonardo Booster with the IRENE code |
+| 3. Hydrological value against STEPS and the Flood4Cast LK nowcast | not started |
 
-**Griglie.** CIRRUS usa lo stesso dominio e la stessa proiezione LAEA di ODYSSEY,
-a risoluzione doppia (3800×4400 contro 1900×2200): ogni pixel a 2 km corrisponde
-a 2×2 pixel a 1 km. Il pixel fine `j` si trova alla coordinata `(j+0.5)/2 − 0.5`
-della griglia grossolana (centri allineati). La validazione controlla
-l'allineamento dai metadati `where` e lo scrive in `grid_check.txt`.
+The plan and the current state (in Italian) are in
+[`docs/handoff.md`](docs/handoff.md). Verified facts about the OPERA products
+(grids, encodings, time windows, gaps in the archive) are in
+[`CLAUDE.md`](CLAUDE.md), also in Italian.
 
-**Moto (Lucas-Kanade, a 2 km).** Stesso schema di `pysteps.motion.lucaskanade`:
-feature di Shi-Tomasi → LK piramidale → controllo forward-backward → rimozione
-outlier locali → declustering → interpolazione IDW + smoothing. I vettori di
-ogni coppia vengono riusati per le coppie adiacenti (contesto di ±1 coppia).
-Due differenze rispetto ai default di pysteps, entrambe emerse dai test:
+## Getting started
 
-- LK lavora su un campo **passa-alto** (σ = 15 px): la crescita/decadimento delle
-  celle non viene scambiata per moto. Sul caso sintetico l'errore medio sul moto
-  scende da 5,1 a 2,0 px/15 min.
-- 5000 feature invece di 1000, pensate per il dominio europeo intero.
+You need [`uv`](https://docs.astral.sh/uv/). It installs the right Python (3.12)
+and every dependency, including JupyterLab.
 
-Il backend `pysteps` resta disponibile (`"lk": {"backend": "pysteps"}`).
+```bash
+git clone https://github.com/fedro86/DECADE.git
+cd DECADE
+uv sync                      # creates .venv with opera_ds installed in editable mode
+uv run pre-commit install    # strips notebook outputs at every commit
+uv run jupyter lab           # then open notebooks/01-quickstart.ipynb
+```
 
-**Interpolazione temporale.** Per una frazione `a` dell'intervallo:
+In VS Code, select the interpreter `.venv/bin/python` as the notebook kernel.
+Always run Python through `uv run` (for example `uv run python scripts/...`), so
+that it uses the project environment.
+
+The quickstart notebook downloads about 10 MB from the public archive and runs in
+under a minute: it reads ODYSSEY and CIRRUS over Belgium, interpolates one
+ODYSSEY pair to 5 min and compares it with CIRRUS.
+
+## Repository layout
+
+```
+opera_ds/        the library: everything that must run in production lives here
+scripts/         command-line entry points (download, validation, production, ML windows)
+notebooks/       exploration and figures, built on opera_ds (outputs are not committed)
+tests/           synthetic end-to-end test, run by CI on every push
+configs/         parameter files for the CLI (--config)
+docs/            plan (handoff.md) and reference figures
+data/            downloaded data, not in git        (or $OPERA_DATA_DIR)
+results/         validation and experiment outputs, not in git  (or $OPERA_RESULTS_DIR)
+```
+
+**Notebooks explore, scripts produce.** The archive will be produced and the
+models trained on HPC (Leonardo Booster), as batch jobs without notebooks. A
+method tried in a notebook becomes part of the pipeline only once it is moved
+into `opera_ds/`, exposed through a script in `scripts/` and covered by a test.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## Data
+
+All OPERA data come from the public ORD bucket
+`https://s3.waw3-1.cloudferro.com/openradar-archive/` (CC BY 4.0, no
+credentials):
+
+| product | file | grid | step | period |
+|---|---|---|---|---|
+| ODYSSEY max reflectivity | `DBZH_QIND.h5` | 1900 × 2200, 2 km | 15 min | 4/9/2012 → 5/7/2024 |
+| ODYSSEY rain rate | `QIND_RATE.h5` | 1900 × 2200, 2 km | 15 min | same |
+| CIRRUS max reflectivity | `DBZH.h5` | 3800 × 4400, 1 km | 5 min | from 1/7/2024 |
+| NIMBUS rain rate | `RATE.h5` | 1900 × 2200, 2 km | 15 min | from 5/7/2024 |
+
+All products share the same LAEA projection and corners. In Python,
+`opera_ds.ord.download(time, product, out_dir)` fetches a single file; the
+scripts below fetch whole periods. Data and results are never committed: they
+live in `data/` and `results/` (ignored by git) or in the folders set by
+`OPERA_DATA_DIR` and `OPERA_RESULTS_DIR`. Credentials for the optional sources go
+in `.env` (template in `.env.example`).
+
+## Downscaling method (ODYSSEY → 1 km / 5 min)
+
+**Grids.** CIRRUS uses the same domain and LAEA projection as ODYSSEY at twice
+the resolution (3800 × 4400 against 1900 × 2200): each 2 km pixel covers 2 × 2
+pixels at 1 km. The fine pixel `j` lies at coordinate `(j+0.5)/2 − 0.5` of the
+coarse grid (aligned centres). Validation checks the alignment from the `where`
+metadata and writes it to `grid_check.txt`.
+
+**Motion (Lucas-Kanade, at 2 km).** Same scheme as
+`pysteps.motion.lucaskanade`: Shi-Tomasi features → pyramidal LK →
+forward-backward check → local outlier removal → declustering → IDW
+interpolation and smoothing. The vectors of each pair are reused for the
+adjacent pairs (context of ±1 pair). Two differences from the pysteps defaults,
+both found in testing:
+
+- LK runs on a **high-pass** field (σ = 15 px), so that growth and decay of cells
+  are not mistaken for motion. On the synthetic case the mean motion error drops
+  from 5.1 to 2.0 px / 15 min.
+- 5000 features instead of 1000, meant for the whole European domain.
+
+The `pysteps` backend remains available (`"lk": {"backend": "pysteps"}`).
+
+**Temporal interpolation.** For a fraction `a` of the interval:
 
 ```
 F(x, t0 + a·15') = (1−a) · F0(x − a·V) + a · F1(x + (1−a)·V)
 ```
 
-Le traiettorie vengono integrate col metodo del punto medio sul campo stazionario
-a 2 km. I valori si campionano **una sola volta** dal campo a 2 km nei punti di
-partenza dei pixel a 1 km, quindi upscaling e avvezione sono un'unica
-interpolazione bilineare. Ad `a = 0` il metodo si riduce al semplice upscaling.
+Trajectories are integrated with the midpoint method in the stationary field at
+2 km. Values are sampled **once** from the 2 km field at the departure points of
+the 1 km pixels, so upscaling and advection are a single bilinear interpolation.
+At `a = 0` the method reduces to plain upscaling.
 
-**Conservazione della massa (default).** Due scelte, valutate in R con
-Marshall-Palmer (Z = 200 R^1,6):
+**Mass conservation (default).** Two choices, evaluated in R with
+Marshall-Palmer (Z = 200 R^1.6):
 
-- **Upscaling conservativo** (`mass_correction=True`). Interpolare in dBZ perde
-  pioggia, perché R è convessa in dBZ. Per ogni pixel a 2 km si calcola una
-  correzione in dB che rende la media in R dei suoi 4 sottopixel uguale a R del
-  pixel ODYSSEY; la correzione segue i valori anche lungo le traiettorie.
-- **Blending in R** (`blend_space="R"`). La media tra F0 e F1 avvettati si fa in
-  R. Un pixel asciutto pesa 0, quindi i bordi delle celle non scendono sotto
-  soglia come succede mediando in dB. Mediando in Z, invece, si aggiunge pioggia
-  dove F0 e F1 avvettati non coincidono, perché R è concava in Z.
+- **Conservative upscaling** (`mass_correction=True`). Interpolating in dBZ
+  loses rain, because R is convex in dBZ. For each 2 km pixel a correction in dB
+  makes the mean R of its 4 sub-pixels equal to the R of the ODYSSEY pixel; the
+  correction follows the values along the trajectories.
+- **Blending in R** (`blend_space="R"`). The average of the advected F0 and F1 is
+  taken in R. A dry pixel weighs 0, so cell edges do not drop below threshold as
+  they do when averaging in dB. Averaging in Z instead adds rain where the
+  advected F0 and F1 do not coincide, because R is concave in Z.
 
-Sui 4 giorni reali (Belgio, 380 coppie) il volume dell'output rispetto a
+On the 4 real days (Belgium, 380 pairs), volume of the output relative to
 (1−a)·V(F0) + a·V(F1):
 
 | | α = 0 | α = 1/3 |
 |---|---|---|
-| bilineare, blending in Z (default precedente) | 0,918 | 0,959 |
-| correzione + blending in Z | 0,999 | 1,065 |
-| **correzione + blending in R (default)** | **0,999** | **1,011** |
+| bilinear, blending in Z (previous default) | 0.918 | 0.959 |
+| correction + blending in Z | 0.999 | 1.065 |
+| **correction + blending in R (default)** | **0.999** | **1.011** |
 
-Rispetto a CIRRUS la correzione raddoppia l'energia a piccola scala (da 0,17 a
-0,33) e riduce l'RMSE degli accumuli orari a 25 km (da 1,12 a 1,07 mm), con un
-RMSE in dBZ leggermente più alto (12,90 contro 12,79 a metà intervallo). Sul caso
-sintetico il blending in R ha RMSE in dBZ più alto di quello in Z a metà
-intervallo (3,7 contro 2,9) ma CSI migliore. Le varianti restano selezionabili
-come metodi `lk:Z` e `lk:dB`, o con `mass_correction=false` nella configurazione.
+Against CIRRUS the correction doubles the small-scale energy (from 0.17 to 0.33)
+and lowers the RMSE of hourly accumulations at 25 km (from 1.12 to 1.07 mm),
+with a slightly higher RMSE in dBZ (12.90 against 12.79 mid-interval). On the
+synthetic case blending in R has a higher dBZ RMSE than blending in Z
+mid-interval (3.7 against 2.9) but a better CSI. The variants remain available as
+methods `lk:Z` and `lk:dB`, or with `mass_correction=false` in the configuration.
 
-**Copertura radar.** La copertura non viene avvettata. Dove un'eco entra da fuori
-copertura si usa la sola sorgente valida, o in mancanza di entrambe
-l'interpolazione euleriana.
+**Radar coverage.** Coverage is not advected. Where an echo enters from outside
+coverage, the only valid source is used, or, if neither is valid, the Eulerian
+interpolation.
 
-## Validazione
+## Validation
 
-Il confronto è con CIRRUS, nei soli giorni in cui i due prodotti coesistono
-nell'archivio pubblico (1–5/7/2024), per tre metodi:
+The comparison is with CIRRUS, on the only days when both products are in the
+public archive (1–5/7/2024), for three methods:
 
-| metodo | cosa fa |
+| method | what it does |
 |---|---|
-| `nearest` | frame ODYSSEY più vicino, upscalato (persistenza) |
-| `linear` | media euleriana di F0 e F1 |
-| `lk` | interpolazione advettiva (varianti `lk:Z`, `lk:dB`) |
+| `nearest` | nearest ODYSSEY frame, upscaled (persistence) |
+| `linear` | Eulerian average of F0 and F1 |
+| `lk` | advection-based interpolation (variants `lk:Z`, `lk:dB`) |
 
-Le metriche sono stratificate per `alpha`, cioè la posizione nell'intervallo di
-15 min. **L'errore ad `alpha = 0` è il "pavimento"**: lì non c'è interpolazione
-temporale, quindi misura upscaling e differenze tra i prodotti. Quello che conta
-per l'interpolazione temporale è l'errore *in più* agli altri istanti.
+Metrics are stratified by `alpha`, the position within the 15 min interval.
+**The error at `alpha = 0` is the floor**: there is no temporal interpolation
+there, so it measures upscaling and the differences between products. What
+matters for temporal interpolation is the *extra* error at the other times.
 
-File prodotti:
+Output files:
 
-- `summary.csv`: bias, MAE, RMSE e correlazione in dBZ sui pixel bagnati;
-  POD/FAR/CSI/frequency bias a 10/20/30/40 dBZ; FSS a 20/30 dBZ; rapporto di
-  energia alle piccole scale; rapporto dei volumi e errori di R (mm/h) a 1, 2, 5,
-  10 e 25 km (colonne `r*`);
-- `mass_internal.csv`: conservazione rispetto a ODYSSEY stesso, senza le
-  differenze tra prodotti (volume dell'output contro (1−a)·V(F0) + a·V(F1), e
-  media dei blocchi 2×2 ad `a = 0`);
-- `accum_1h.csv`: accumuli orari contro CIRRUS sugli istanti disponibili, per
-  scala;
-- `per_time.csv`, `qq.json`, `grid_check.txt` e i grafici.
+- `summary.csv`: bias, MAE, RMSE and correlation in dBZ on wet pixels;
+  POD/FAR/CSI/frequency bias at 10/20/30/40 dBZ; FSS at 20/30 dBZ; small-scale
+  energy ratio; volume ratio and R errors (mm/h) at 1, 2, 5, 10 and 25 km (`r*`
+  columns);
+- `mass_internal.csv`: conservation relative to ODYSSEY itself, without the
+  differences between products (output volume against (1−a)·V(F0) + a·V(F1), and
+  2 × 2 block means at `a = 0`);
+- `accum_1h.csv`: hourly accumulations against CIRRUS on the available times, by
+  scale;
+- `per_time.csv`, `qq.json`, `grid_check.txt` and the plots.
 
-R si ottiene con Marshall-Palmer (Z = 200 R^1,6), limitando i dBZ a 55.
+R is obtained with Marshall-Palmer (Z = 200 R^1.6), capping dBZ at 55.
 
-**Sfasamento temporale.** ODYSSEY usa la finestra [NT−10, NT+5], CIRRUS
-(NT−10, NT]: a parità di etichetta, ODYSSEY "vede" circa 2,5 min più tardi.
-`--shifts` prova più sfasamenti e `time_shift.png` mostra quale minimizza
-l'errore.
+**Time shift.** ODYSSEY uses the window [NT−10, NT+5], CIRRUS (NT−10, NT]: for
+the same label, ODYSSEY "sees" about 2.5 min later. `--shifts` tries several
+shifts and `time_shift.png` shows which one minimises the error.
 
-## Uso
+![Validation overview, 1–5/7/2024, Belgium](docs/figures/validation_overview.png)
 
-Dipendenze gestite con `uv` (`pyproject.toml`): `uv sync`, poi sempre
-`uv run python ...`.
+## Command-line usage
 
 ```bash
-# dati dal bucket pubblico ORD
+# data from the public ORD bucket
 uv run python scripts/fetch_ord_archive.py --product DBZH_QIND \
   --start 2024-07-01 --end 2024-07-06 --out data/odyssey
 uv run python scripts/fetch_ord_archive.py --product DBZH \
   --start 2024-07-01 --end 2024-07-06 --out data/cirrus
 
-# solo l'area del Belgio + 350 km, leggendo a pezzi i GeoTIFF (circa 3 h per 12 anni di ODYSSEY)
+# only Belgium + 350 km, reading the GeoTIFFs in pieces (about 3 h for 12 years of ODYSSEY)
 uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
   --ref "data/odyssey/OPERA@20240702T1200@0@DBZH_QIND.h5" \
   --bbox 2.5 49.45 6.45 51.55 --buffer-km 350 \
   --start 2012-09-01 --end 2024-07-06 --out data/odyssey_bel --threads 32
 
-# maschera del Belgio sulla griglia CIRRUS a 1 km
+# Belgium mask on the CIRRUS 1 km grid
 uv run python scripts/make_region_mask.py --ref "data/cirrus/OPERA@20240702T1205@0@DBZH.h5" \
   --country BEL --out data/mask_BEL_1km.npy
 
-# validazione, con ritaglio in lettura (Belgio + 200 km)
+# validation, cropping on read (Belgium + 200 km)
 uv run python scripts/opera_ds_cli.py validate \
   --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" --cirrus-glob "data/cirrus/*@DBZH.h5" \
   --time-regex "@(\d{8}T\d{4})@" --time-format "%Y%m%dT%H%M" \
   --start 2024-07-01 --end 2024-07-06 \
   --bbox 2.5 49.45 6.45 51.55 --buffer-km 200 --region-mask data/mask_BEL_1km.npy \
   --shifts 0 -2.5 -5 2.5 --methods nearest linear lk lk:dB \
-  --pair-stride 1 --workers 12 --out out_val
+  --pair-stride 1 --workers 12 --out results/val_2024-07_BEL
 
-# produzione
+# production
 uv run python scripts/opera_ds_cli.py downscale \
   --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" \
   --time-regex "@(\d{8}T\d{4})@" --time-format "%Y%m%dT%H%M" \
   --start 2024-07-01 --end 2024-07-02 \
-  --bbox 2.5 49.45 6.45 51.55 --buffer-km 200 --workers 8 --out out_ds
-```
+  --bbox 2.5 49.45 6.45 51.55 --buffer-km 200 --workers 8 --out results/ds
 
-```bash
-# scelta delle finestre su ODYSSEY a 2 km: filtro dei buchi e campionamento per importanza
+# choice of training windows on ODYSSEY at 2 km: gap filter and importance sampling
 uv run python scripts/opera_ds_cli.py sample \
   --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" \
   --time-regex "@(\d{8}T\d{4})@" --time-format "%Y%m%dT%H%M" \
-  --start 2024-07-01 --end 2024-07-06 --workers 10 --out finestre.csv
+  --start 2024-07-01 --end 2024-07-06 --workers 10 --out results/windows.csv
 
-# finestre per il ML: store Zarr in formato IRENE da un CSV con t_start,row0,col0
+# ML windows: Zarr store in IRENE format from a CSV with t_start,row0,col0
 uv run python scripts/opera_ds_cli.py windows \
   --odyssey-glob "data/odyssey/*@DBZH_QIND.h5" \
   --time-regex "@(\d{8}T\d{4})@" --time-format "%Y%m%dT%H%M" \
-  --windows-csv finestre.csv --T 24 --H 256 --W 256 --context-km 150 \
-  --workers 8 --out windows.zarr
+  --windows-csv results/windows.csv --T 24 --H 256 --W 256 --context-km 150 \
+  --workers 8 --out results/windows.zarr
 ```
 
-- `sample` segue lo schema di `importance_sampler` di IRENE, ma lavora
-  direttamente sui file ODYSSEY a 2 km. Una finestra di T frame a 5 min richiede
-  ⌊(T−1)·5/15⌋ + 2 frame ODYSSEY consecutivi (9 per T = 24): se ne manca uno
-  viene scartata. Poi si scarta se la frazione fuori copertura supera
-  `--max-nan-frac` (default 0,64%, come IRENE), e si accetta con probabilità
-  q = min(1, q_min + m · media(1 − e^(−R/s))). Il CSV ha `t_start`, `row0`,
-  `col0` (griglia a 1 km), `q`, `rain_score`, `nan_frac`; accanto c'è un JSON
-  con parametri e statistiche. `--bbox`/`--buffer-km` limitano l'area.
-- Ogni frame prodotto porta `alpha` (0 = frame ODYSSEY vero, 1/3 e 2/3 =
-  interpolati). Nei file ODIM sta in `dataset1/how`, insieme a `interpolated`,
-  `time_shift_min`, `source_t0` e `method`.
-- Le etichette di default sono i tempi ODYSSEY. `--time-shift -2.5` le porta in
-  convenzione CIRRUS, ma allora tutti i frame sono interpolati (α = 1/6, 1/2,
-  5/6). Per il pre-addestramento conviene lasciare 0.
-- Lo store delle finestre ha `RR` (n, T, H, W) in mm/h float16 (NaN fuori
-  copertura, dBZ limitati a [0, 60] come IRENE), `alpha` e `time` (n, T),
-  `row0` e `col0` (n,) sulla griglia OPERA a 1 km; gli attributi descrivono
-  griglia, Z-R e configurazione. Le finestre con frame ODYSSEY mancanti vengono
-  scartate. Il moto si stima su un ritaglio con `--context-km` per lato.
-- `--time-regex` deve catturare il timestamp nel nome del file; se lo si omette,
-  il tempo viene letto dagli attributi ODIM, più lentamente.
-- `--bbox` e `--buffer-km` ritagliano in lettura una finestra allineata a 2 km,
-  identica per le due griglie. Se `--region-mask` è sulla griglia intera, viene
-  ritagliata allo stesso modo.
-- `--config config_example.json` cambia i parametri di `DownscaleConfig` e di LK.
-- Gli accumuli orari della validazione richiedono `--pair-stride 1`.
+- `sample` follows IRENE's `importance_sampler`, but works directly on the
+  ODYSSEY files at 2 km. A window of T frames at 5 min needs
+  ⌊(T−1)·5/15⌋ + 2 consecutive ODYSSEY frames (9 for T = 24): if one is missing
+  the window is discarded. It is also discarded if the fraction outside coverage
+  exceeds `--max-nan-frac` (default 0.64%, as IRENE), and accepted with
+  probability q = min(1, q_min + m · mean(1 − e^(−R/s))). The CSV has `t_start`,
+  `row0`, `col0` (1 km grid), `q`, `rain_score`, `nan_frac`; a JSON next to it
+  holds parameters and statistics. `--bbox`/`--buffer-km` restrict the area.
+- Every produced frame carries `alpha` (0 = real ODYSSEY frame, 1/3 and 2/3 =
+  interpolated). In the ODIM files it is in `dataset1/how`, together with
+  `interpolated`, `time_shift_min`, `source_t0` and `method`.
+- Default labels are the ODYSSEY times. `--time-shift -2.5` moves them to the
+  CIRRUS convention, but then all frames are interpolated (α = 1/6, 1/2, 5/6).
+  For pre-training, leave it at 0.
+- The window store has `RR` (n, T, H, W) in mm/h float16 (NaN outside coverage,
+  dBZ clipped to [0, 60] as in IRENE), `alpha` and `time` (n, T), `row0` and
+  `col0` (n,) on the OPERA 1 km grid; the attributes describe grid, Z-R and
+  configuration. Windows with missing ODYSSEY frames are discarded. Motion is
+  estimated on a crop with `--context-km` on each side.
+- `--time-regex` must capture the timestamp in the file name; without it the
+  time is read from the ODIM attributes, more slowly.
+- `--bbox` and `--buffer-km` crop on read a window aligned to 2 km, identical
+  for the two grids. If `--region-mask` is on the full grid, it is cropped the
+  same way.
+- `--config configs/config_example.json` changes the parameters of
+  `DownscaleConfig` and LK.
+- Hourly accumulations in the validation need `--pair-stride 1`.
 
-Output della produzione: ODIM HDF5 2.4, DBZH uint16 (gain 0.01, offset −50),
-gzip.
+Production output: ODIM HDF5 2.4, DBZH uint16 (gain 0.01, offset −50), gzip.
 
-## Test
+## Tests
 
-`uv run python tests/test_synthetic.py out_test/` genera un campo multiscala con
-moto noto (traslazione + rotazione, ~60 km/h) e crescita/decadimento. Lo degrada a
-"ODYSSEY" (2 km, 15 min, sfasato di +2,5 min) e lo usa come "CIRRUS" a 1 km /
-5 min. Il test verifica che:
+```bash
+uv run pytest                                   # about 3 min
+uv run python tests/test_synthetic.py out_test  # same test, keeps the outputs
+```
 
-- lo sfasamento stimato sia −2,5 min;
-- LK batta `nearest` e `linear` in RMSE a tutti gli istanti interpolati;
-- LK batta `linear` in CSI a 30 dBZ;
-- con i default il volume di pioggia resti entro il 2% di quello di "ODYSSEY" a
-  ogni `alpha`, e l'errore sui blocchi 2×2 ad `alpha = 0` sia sotto l'1%.
+The test generates a multiscale field with known motion (translation and
+rotation, about 60 km/h) and growth/decay. It degrades it to "ODYSSEY" (2 km,
+15 min, shifted by +2.5 min) and uses it as "CIRRUS" at 1 km / 5 min. It checks
+that:
 
-## Risultati sui dati reali (1–5/7/2024, Belgio)
+- the estimated shift is −2.5 min;
+- LK beats `nearest` and `linear` in RMSE at every interpolated time;
+- LK beats `linear` in CSI at 30 dBZ;
+- with the defaults the rain volume stays within 2% of that of "ODYSSEY" at every
+  `alpha`, and the 2 × 2 block error at `alpha = 0` is below 1%;
+- the window sampler and the IRENE-format store behave as expected.
 
-- ODYSSEY ha circa **metà del volume di pioggia** di CIRRUS (scarto di 3,5–5 dB su
-  tutti i quantili, POD a 10 dBZ circa 0,69). È una differenza tra prodotti, già
-  presente al pavimento.
-- L'upscaling bilineare in dBZ perdeva circa l'**8% del volume** rispetto a
-  ODYSSEY; con i default attuali la perdita è sotto l'1% (vedi sopra).
-- Negli accumuli orari i metodi sono quasi equivalenti; negli istantanei a metà
-  intervallo LK batte `nearest` (RMSE 12,9 contro 13,8 dBZ con i default).
-- Il campo interpolato ha circa un terzo dell'energia a piccola scala di CIRRUS.
-- ODYSSEY DBZH contiene punti anomali fino a 128 dBZ (clutter): ogni conversione
-  in R va limitata, la validazione usa 55 dBZ.
+## Results on real data (1–5/7/2024, Belgium)
 
-## Limiti
+- ODYSSEY has about **half the rain volume** of CIRRUS (a gap of 3.5–5 dB at all
+  quantiles, POD at 10 dBZ about 0.69). It is a difference between products,
+  already present at the floor.
+- Bilinear upscaling in dBZ lost about **8% of the volume** relative to ODYSSEY;
+  with the current defaults the loss is below 1% (see above).
+- In hourly accumulations the methods are almost equivalent; for instantaneous
+  fields mid-interval LK beats `nearest` (RMSE 12.9 against 13.8 dBZ with the
+  defaults).
+- The interpolated field has about a third of the small-scale energy of CIRRUS.
+- ODYSSEY DBZH contains outliers up to 128 dBZ (clutter): every conversion to R
+  must be capped; the validation uses 55 dBZ.
 
-- **Il dettaglio sotto i 2 km non viene creato.** Per recuperare la variabilità
-  servirebbe un downscaling stocastico (es. RainFARM) o appreso.
-- **La dinamica dentro i 15 min è sintetica**: due frame su tre sono combinazioni
-  di quelli veri. Per il ML vanno marcati e la loss va calcolata sui frame veri.
-- **La sovrapposizione ODYSSEY/CIRRUS è di soli 4 giorni estivi** nell'archivio
-  pubblico, senza i CIRRUS ai quarti d'ora; per la pioggia è nulla.
-- **Il moto è stazionario nell'intervallo.** Con sistemi molto veloci (oltre
-  ~120 km/h) LK può agganciarsi a un match sbagliato.
-- **Lo sfasamento non è ancora applicato in produzione.**
+## Limitations
+
+- **Detail below 2 km is not created.** Recovering that variability would need a
+  stochastic (e.g. RainFARM) or learned downscaling.
+- **The dynamics within the 15 min are synthetic**: two frames out of three are
+  combinations of real ones. For ML they must be flagged, and the loss computed
+  on real frames.
+- **The ODYSSEY/CIRRUS overlap is only 4 summer days** in the public archive,
+  without CIRRUS at the quarter hours; for rain it is zero.
+- **Motion is stationary within the interval.** With very fast systems (above
+  about 120 km/h) LK can lock onto a wrong match.
+- **The time shift is not yet applied in production.**

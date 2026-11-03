@@ -13,37 +13,9 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import os
-import re
-import urllib.parse
-import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-BUCKET = "https://s3.waw3-1.cloudferro.com/openradar-archive"
-
-
-def list_keys(prefix: str) -> list[tuple[str, int]]:
-    keys, token = [], None
-    while True:
-        q = {"list-type": "2", "prefix": prefix, "max-keys": "1000"}
-        if token:
-            q["continuation-token"] = token
-        with urllib.request.urlopen(f"{BUCKET}/?{urllib.parse.urlencode(q)}", timeout=120) as r:
-            xml = r.read().decode()
-        keys += [(k, int(s)) for k, s in re.findall(r"<Key>([^<]+)</Key>.*?<Size>(\d+)</Size>", xml)]
-        m = re.search(r"<NextContinuationToken>([^<]+)<", xml)
-        if not m:
-            return keys
-        token = m.group(1)
-
-
-def fetch(key: str, size: int, out_dir: str) -> int:
-    path = os.path.join(out_dir, os.path.basename(key))
-    if os.path.exists(path) and os.path.getsize(path) == size:
-        return 0
-    tmp = path + ".part"
-    urllib.request.urlretrieve(f"{BUCKET}/{urllib.parse.quote(key)}", tmp)
-    os.replace(tmp, path)
-    return size
+from opera_ds.ord import fetch, list_keys
 
 
 def main():

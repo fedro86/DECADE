@@ -102,14 +102,14 @@ Varianti da valutare dopo, non di default:
   Belgio da Natural Earth, download dal bucket pubblico.
 - Metriche di massa: controlli interni contro ODYSSEY, volumi e accumuli orari in
   R contro CIRRUS, errori per scala.
-- Validazione 1–5/7/2024 sul Belgio (`out_val_2024-07_BEL_mass/`), con questi
+- Validazione 1–5/7/2024 sul Belgio (`results/out_val_2024-07_BEL_mass/`), con questi
   risultati:
   - ODYSSEY ha circa **metà del volume** di CIRRUS (scarto di 3,5–5 dB) e POD a
     10 dBZ di circa 0,69: è una differenza tra prodotti, già presente al pavimento;
   - **l'upscaling bilineare in dBZ perdeva circa l'8% del volume** rispetto a
     ODYSSEY (disuguaglianza di Jensen), e il blending in Z ne aggiungeva circa il
     6%. Ora i default sono upscaling conservativo + blending in R, che conservano
-    il volume entro l'1% a ogni `alpha` (`out_val_mc_off/` contro `out_val_mc_on/`);
+    il volume entro l'1% a ogni `alpha` (`results/out_val_mc_off/` contro `results/out_val_mc_on/`);
   - negli accumuli orari i metodi sono quasi equivalenti; negli istantanei a metà
     intervallo LK batte `nearest` (RMSE 12,7 contro 13,6 dBZ);
   - il campo interpolato ha circa un terzo dell'energia a piccola scala di CIRRUS

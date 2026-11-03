@@ -36,18 +36,15 @@ import functools
 import json
 import logging
 import os
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import numpy as np
 
-import numpy as np  # noqa: E402
-
-from opera_ds import DownscaleConfig, LKParams, index_files, run_downscaling, run_validation  # noqa: E402
-from opera_ds.odim_io import (bbox_extent, extent_window, full_grid_where, read_odim_composite,  # noqa: E402
+from opera_ds import DownscaleConfig, LKParams, index_files, run_downscaling, run_validation
+from opera_ds.odim_io import (bbox_extent, extent_window, full_grid_where, read_odim_composite,
                               refine_where)
-from opera_ds.pipeline import run_downscaling_parallel  # noqa: E402
-from opera_ds.sampling import SamplerConfig, block_times, sample_block  # noqa: E402
-from opera_ds.windows import Window, WindowStore, make_window, store_attrs  # noqa: E402
+from opera_ds.pipeline import run_downscaling_parallel
+from opera_ds.sampling import SamplerConfig, block_times, sample_block
+from opera_ds.windows import Window, WindowStore, make_window, store_attrs
 
 
 def load_cfg(path: str | None) -> DownscaleConfig:
