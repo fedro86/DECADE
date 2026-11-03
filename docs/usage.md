@@ -133,6 +133,14 @@ Leonardo Booster (EuroHPC, CINECA) runs jobs with Slurm. Facts from the
 
 ### 1. Environment (login node, the only step that runs there)
 
+Leonardo provides compilers, libraries and Python packages as environment
+modules (`module av`, `module load`). PyTorch and other machine-learning
+packages are in `cineca-ai`: `module load profile/deeplrn`, then
+`module av cineca-ai` lists the versions
+([CINECA documentation](https://docs.hpc.cineca.it/hpc/hpc_cineca-ai-hpyc.html)).
+How the project environment is built on top of the modules is still open
+([roadmap.md](roadmap.md), *Setup on Leonardo Booster*); until then:
+
 ```bash
 uv sync
 ```

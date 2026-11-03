@@ -49,6 +49,13 @@ on Leonardo Booster. The motivation is in the [README](../README.md).
   in [data.md](data.md)), as much as the default `$WORK` quota; the Belgian
   crops are about 95 GB. Decide what to copy and where (`$WORK`, `$FAST`,
   quota extension).
+- [ ] Python environment on Leonardo, built on the CINECA modules
+  ([usage.md](usage.md), *Running on Leonardo Booster*): choose the modules
+  (Python, CUDA, MPI, PyTorch from `cineca-ai`), pin the versions of
+  `pyproject.toml` to what they provide, and add our packages on top (e.g. a
+  virtual environment with `--system-site-packages`). Needed at the latest for
+  the GPU version (WP1) and for training (WP3), which rely on the cluster's
+  CUDA and interconnect libraries.
 - [ ] Slurm job scripts for `downscale`, `sample` and `windows`, then for
   training (WP3).
 
