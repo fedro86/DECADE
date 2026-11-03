@@ -174,7 +174,7 @@ def main(out):
         assert lk["csi_30"] > lin["csi_30"], a
 
     # conservazione della massa rispetto a "ODYSSEY" (default: correzione + blending in R)
-    with open(os.path.join(out, "mass_internal.csv")) as f:
+    with open(os.path.join(out, "mass_internal.csv"), encoding="utf-8") as f:
         mass = {(r["method"], round(float(r["alpha"]), 3)): r for r in csv.DictReader(f)}
     for a in (0.0, 0.333, 0.667):
         ratio = float(mass[("lk", a)]["crop_vol_ratio"])

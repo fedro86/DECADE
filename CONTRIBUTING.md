@@ -15,8 +15,8 @@ changes to `pyproject.toml`.
 
 ## Notebooks
 
-- Start JupyterLab with `uv run jupyter lab`, or in VS Code pick
-  `.venv/bin/python` as the kernel.
+- Start JupyterLab with `uv run jupyter lab`, or in VS Code pick the `.venv`
+  kernel (see the README).
 - Name new notebooks `NN-<initials>-<topic>.ipynb`, e.g.
   `02-ab-quantile-mapping.ipynb`, and add a line to `notebooks/README.md`.
 - Start every notebook with
@@ -54,12 +54,23 @@ changes to `pyproject.toml`.
 4. Make the notebook call the new function, so that exploration and production
    use the same code.
 
-Production code must not depend on notebooks, interactive input or paths of a
-specific machine.
+Production code must not depend on notebooks or interactive input.
 
-Nowhere in the repository (code, notebooks, documentation) write a path of a
-specific machine: use paths relative to the repository, `DATA_DIR` and
-`RESULTS_DIR`, or a URL.
+## Portability
+
+Production runs on Linux HPC; colleagues work on Linux, macOS and Windows. CI
+runs the tests on Linux and Windows.
+
+- Nowhere in the repository (code, notebooks, documentation) write a path of a
+  specific machine: use paths relative to the repository, `DATA_DIR` and
+  `RESULTS_DIR`, or a URL.
+- No shell commands, aliases or OS-specific tools in code or notebooks: use
+  Python (`pathlib`, `shutil`, `glob`).
+- Open text files with `encoding="utf-8"`.
+- Code that runs several processes must work with the `spawn` start method
+  (Windows, macOS): workers and `reader`s are module-level functions or
+  `functools.partial` of them, never lambdas or functions defined in a notebook.
+  Scripts keep their `if __name__ == "__main__":` guard.
 
 ## Code map
 

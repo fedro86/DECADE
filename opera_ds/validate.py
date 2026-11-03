@@ -425,7 +425,7 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
         w2 = reader(ody_files[pairs[0]], quantity).where
         w1 = reader(cir_files[t_c], quantity).where
         issues = check_grid_alignment(w2, w1, cfg.factor)
-        with open(os.path.join(out_dir, "grid_check.txt"), "w") as f:
+        with open(os.path.join(out_dir, "grid_check.txt"), "w", encoding="utf-8") as f:
             f.write("\n".join(issues) if issues else "OK: griglie allineate\n")
         for i in issues:
             log.warning("griglia: %s", i)
@@ -455,18 +455,18 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
 def write_reports(acc: Accumulator, out_dir: str):
     summ = acc.summary()
     if summ:
-        with open(os.path.join(out_dir, "summary.csv"), "w", newline="") as f:
+        with open(os.path.join(out_dir, "summary.csv"), "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=list(dict.fromkeys(k for r in summ for k in r)))
             w.writeheader(); w.writerows(summ)
     if acc.rows:
-        with open(os.path.join(out_dir, "per_time.csv"), "w", newline="") as f:
+        with open(os.path.join(out_dir, "per_time.csv"), "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=list(acc.rows[0].keys()))
             w.writeheader(); w.writerows(acc.rows)
     for name, rows in (("mass_internal.csv", acc.summary_internal()),
                        ("accum_1h.csv", acc.summary_hourly())):
         if rows:
             fields = list(dict.fromkeys(k for r in rows for k in r))
-            with open(os.path.join(out_dir, name), "w", newline="") as f:
+            with open(os.path.join(out_dir, name), "w", newline="", encoding="utf-8") as f:
                 w = csv.DictWriter(f, fieldnames=fields)
                 w.writeheader(); w.writerows(rows)
     qq = {}
@@ -477,7 +477,7 @@ def write_reports(acc: Accumulator, out_dir: str):
             c = np.cumsum(h) / max(np.sum(h), 1)
             return np.interp(qs, c, centers).tolist()
         qq["|".join(map(str, key))] = {"q": qs.tolist(), "pred": quant(hp), "obs": quant(ho)}
-    with open(os.path.join(out_dir, "qq.json"), "w") as f:
+    with open(os.path.join(out_dir, "qq.json"), "w", encoding="utf-8") as f:
         json.dump(qq, f)
     try:
         from .plots import make_plots

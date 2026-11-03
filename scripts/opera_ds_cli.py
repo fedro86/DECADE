@@ -50,7 +50,7 @@ from opera_ds.windows import Window, WindowStore, make_window, store_attrs
 def load_cfg(path: str | None) -> DownscaleConfig:
     cfg = DownscaleConfig()
     if path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             d = json.load(f)
         lk = d.pop("lk", {})
         cfg = dataclasses.replace(cfg, **d, lk=dataclasses.replace(LKParams(), **lk))
@@ -84,7 +84,7 @@ def _window_job(args):
 
 def run_windows(a, ody, cfg):
     """Produce le finestre del CSV in parallelo e le accoda allo store (un solo scrittore)."""
-    with open(a.windows_csv) as f:
+    with open(a.windows_csv, encoding="utf-8") as f:
         wins = [Window(dt.datetime.fromisoformat(r["t_start"]), int(r["row0"]), int(r["col0"]), a.T, a.H, a.W)
                 for r in csv.DictReader(f)]
     w1 = refine_where(read_odim_composite(next(iter(ody.values())), a.quantity).where, cfg.factor)
@@ -131,14 +131,14 @@ def run_sample(a, ody):
             stats[k] = stats.get(k, 0) + v
     rows.sort(key=lambda r: (r["t_start"], r["row0"], r["col0"]))
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
-    with open(a.out, "w", newline="") as f:
+    with open(a.out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["t_start", "row0", "col0", "q", "rain_score", "nan_frac"])
         w.writeheader(); w.writerows(rows)
     meta = {"csv": a.out, "odyssey_glob": a.odyssey_glob, "start": a.start.isoformat(), "end": a.end.isoformat(),
             "bbox": a.bbox, "buffer_km": a.buffer_km, "seed": a.seed, "block_days": a.block_days,
             "sampler": dataclasses.asdict(scfg), "frames_needed": scfg.frames_needed, "stats": stats,
             "created": dt.datetime.now().isoformat(timespec="seconds")}
-    with open(os.path.splitext(a.out)[0] + "_metadata.json", "w") as f:
+    with open(os.path.splitext(a.out)[0] + "_metadata.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
     logging.info("finestre accettate: %d | statistiche: %s", len(rows), stats)
 

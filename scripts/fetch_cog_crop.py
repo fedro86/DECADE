@@ -164,7 +164,7 @@ def main():
     failed_path = os.path.join(a.out, "failed.txt")
     t_start, n_ok, n_skip, n_fail = time.time(), 0, 0, 0
     d = a.start
-    with ThreadPoolExecutor(a.threads) as ex, open(failed_path, "a") as failed:
+    with ThreadPoolExecutor(a.threads) as ex, open(failed_path, "a", encoding="utf-8") as failed:
         while d < a.end:
             # un mese alla volta: elenco dei file, poi download in parallelo
             m_end = min((d.replace(day=1) + dt.timedelta(days=32)).replace(day=1), a.end)
