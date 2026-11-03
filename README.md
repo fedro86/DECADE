@@ -313,3 +313,8 @@ that:
 - **Motion is stationary within the interval.** With very fast systems (above
   about 120 km/h) LK can lock onto a wrong match.
 - **The time shift is not yet applied in production.**
+
+## License
+
+Code: [MIT](LICENSE). OPERA data from the ORD archive are licensed CC BY 4.0
+by EUMETNET; cite the source when you publish results or derived data.
