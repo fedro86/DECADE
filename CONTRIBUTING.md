@@ -134,8 +134,9 @@ Status ("done", "to do") is written only in `docs/roadmap.md`.
 
 - Do not push to `main`: create a branch (`git switch -c ab/quantile-mapping`),
   commit, push, and open a pull request.
-- CI runs on every pull request: notebook stripping, large-file check and the
-  synthetic test.
+- CI checks every pull request for notebook outputs and large files. The
+  synthetic test runs only when code, configuration or the environment change
+  (paths in `.github/workflows/tests.yml`), not for documentation or notebooks.
 - Keep pull requests small: one method or one notebook at a time.
 
 ## Language
