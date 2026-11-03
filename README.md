@@ -26,7 +26,8 @@ uv run pre-commit install    # strips notebook outputs at every commit
 uv run jupyter lab           # then open notebooks/01-quickstart.ipynb
 ```
 
-In VS Code, select `.venv/bin/python` as the notebook kernel. Run Python
+In VS Code, select the interpreter in `.venv` as the notebook kernel
+(`.venv/bin/python` on Linux and macOS, `.venv\Scripts\python.exe` on Windows). Run Python
 through `uv run` (for example `uv run python scripts/...`), so that it uses the
 project environment.
 

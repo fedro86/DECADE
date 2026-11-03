@@ -7,6 +7,10 @@ These are the entry points for batch jobs on HPC. Installation is in the
 
 Every script prints its full options with `--help`.
 
+The examples are written for bash (Linux, macOS, Git Bash). In Windows
+PowerShell, end continued lines with a backtick `` ` `` instead of `\`, or
+write the command on one line.
+
 ## Download
 
 ```bash

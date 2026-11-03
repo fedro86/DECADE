@@ -8,7 +8,7 @@ listed in the README, *Documentation*; do not copy it here.
 - Read `docs/roadmap.md` (goals, constraints, status, decisions) and the file
   that matches the task (`docs/data.md`, `docs/method.md`, `docs/usage.md`).
 - Follow `CONTRIBUTING.md`: notebooks explore, scripts produce; code map;
-  rules for changing the method; which file to update.
+  portability; rules for changing the method; which file to update.
 - When a task is finished, update `docs/roadmap.md` and the file that owns the
   topic, never two copies of the same fact.
 
@@ -21,7 +21,6 @@ listed in the README, *Documentation*; do not copy it here.
 
 - Always `uv run python`, never `python`. Dependencies with `uv sync`; tests
   with `uv run pytest`.
-- `ls` is an alias of `eza` and changes its output: in scripts use `find`.
 - Local data (not in git) are described in `docs/data.md`, *Derived datasets*.
 - IRENE webinar materials (FBK code and notebooks):
   https://github.com/DSIP-FBK/IT4LIA-FBK-Seminar
@@ -30,7 +29,7 @@ listed in the README, *Documentation*; do not copy it here.
 
 - **Credentials** are in `.env` (`ARCODATAHUB_USERNAME`, `ARCODATAHUB_ACCESS_KEY`,
   `METEOGATE_USERNAME`, `METEOGATE_ACCESS_KEY`). Read them from scripts, never
-  print them: to show the file use `sed -E 's/=.*/=<…>/' .env`.
+  print their values: to show the file, print only the variable names.
 - **The user's Belgian archive is private**: never ask for it. Validation on it
   is run by the user through the injectable `reader`.
 - **Large downloads and long runs**: estimate time and disk space, then ask for
