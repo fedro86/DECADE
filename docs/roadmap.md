@@ -100,10 +100,33 @@ convective events from the current products:
 
 A vs C is the value of the unlocked archive; B vs C isolates harmonisation.
 
+**Learning curve on the years of pre-training (extension of C).** Variants of C
+pre-trained on the last k years of harmonised ODYSSEY (years added backwards
+from 2024), each with the same fine-tuning and the same total number of
+training steps, so that the curve measures data diversity, not compute. A is
+the point k = 0 and C the point k = 12. A non-stationarity control compares two
+variants with the same number of years, old (2013–2014) against recent
+(2022–2023). Each variant is scored before fine-tuning (distance between the
+ODYSSEY and CIRRUS domains) and after (the number that decides). It shows how
+many years are worth harmonising, which sets the cost of the European
+extension (WP5).
+
+The work runs in phases; each phase starts only if the compute budget left
+allows it:
+
+| phase | trainings | seeds | runs |
+|---|---|---|---|
+| 1 | A, B, C | 3 | 9 |
+| 2 | C with k = 2 and k = 4, old/recent control | 1 | 3 |
+| 3 | C with k = 1, 2, 4, 8, old/recent control | 3 | 15 (12 more than phase 2) |
+
 - [ ] Data loader from the stores of WP2 into the IRENE code (ConvGRU-Ensemble).
 - [ ] Multi-node data-parallel training on Leonardo Booster.
-- [ ] Small run first to measure time and cost, then the three configurations.
-- [ ] At least 3 seeds per configuration.
+- [ ] Small run first, to measure the time and cost of one training and decide
+  how many phases fit in the budget.
+- [ ] Phase 1.
+- [ ] Phase 2.
+- [ ] Phase 3.
 
 ### WP4 – Verification
 
@@ -127,14 +150,11 @@ A vs C is the value of the unlocked archive; B vs C isolates harmonisation.
   interpolated.
 - **Output labels stay on ODYSSEY times** (shift 0), so that real frames remain
   real.
+- **WP3 runs in phases** (A/B/C, then a reduced learning curve, then the full
+  one), as far as the compute budget allows (decided 3/11/2026).
 
 ## Open decisions
 
-- **Learning curve on the years of pre-training.** An earlier plan pre-trained
-  on the last k years of ODYSSEY (k = 1, 2, 4, 8, 12), with a non-stationarity
-  control (2 old years against 2 recent ones), and measured each model before
-  and after fine-tuning. It is not in the DECADE proposal: drop it, or keep it
-  as an extension of configuration C?
 - **Loss only on real frames?** The earlier plan computed the loss only on
   frames with `alpha = 0`. Configuration C is meant to test the interpolated
   5 min sequences: decide whether the loss includes interpolated frames.
