@@ -34,10 +34,23 @@ on Leonardo Booster. The motivation is in the [README](../README.md).
 - **Belgium is the pilot.** Validation reference: open VMM radar products
   ([data.md](data.md), *Other sources*). Validation against private Belgian archives is run
   by their owners through the injectable `reader`.
-- **Production runs as batch jobs on HPC**, without notebooks.
+- **Production runs on Leonardo Booster** (EuroHPC, CINECA) as Slurm batch
+  jobs, without notebooks. Compute nodes have no internet access: all input
+  data are copied to the cluster storage first ([usage.md](usage.md), *Running
+  on Leonardo Booster*).
 - The harmonised archive and the code are released openly.
 
 ## Work packages and status
+
+### Setup on Leonardo Booster
+
+- [ ] Copy the inputs to the cluster. Whole files: about 0.4 TB of ODYSSEY
+  `DBZH_QIND` and 0.6 TB of CIRRUS `DBZH` (estimated from file counts and sizes
+  in [data.md](data.md)), as much as the default `$WORK` quota; the Belgian
+  crops are about 95 GB. Decide what to copy and where (`$WORK`, `$FAST`,
+  quota extension).
+- [ ] Slurm job scripts for `downscale`, `sample` and `windows`, then for
+  training (WP3).
 
 ### WP1 – Harmonisation of ODYSSEY
 
