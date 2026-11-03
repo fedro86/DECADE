@@ -119,8 +119,10 @@ Leonardo Booster (EuroHPC, CINECA) runs jobs with Slurm. Facts from the
 - **Compute nodes have no internet access.** Every input must be on the
   cluster storage before a job starts: ORD files, the Natural Earth shapes used
   by `make_region_mask.py`, Python packages.
-- **Login nodes stop a process after 10 min of CPU time**: enough for
-  `uv sync`, `make_region_mask.py` or a `--dry-run`, not for long downloads.
+- **Login nodes are not for running programs.** They stop a process after
+  10 min of CPU time and are shared by all users: use them only to install the
+  environment, submit jobs and start transfers on the data movers. Everything
+  else, even short, runs in a Slurm job.
 - **Data movers** (`data.leonardo.cineca.it`) have no CPU time limit but no
   interactive shell and no Python: only `scp`, `rsync`, `sftp`, `wget`, `curl`,
   `rclone` and `aws s3`. `$WORK` and the other storage variables are not
@@ -129,7 +131,7 @@ Leonardo Booster (EuroHPC, CINECA) runs jobs with Slurm. Facts from the
 - **Storage:** `$WORK` 1 TB per project by default (can be extended), `$FAST`
   1 TB per project, `$SCRATCH` deleted after 40 days without access.
 
-### 1. Environment (login node)
+### 1. Environment (login node, the only step that runs there)
 
 ```bash
 uv sync
@@ -144,7 +146,7 @@ The Python download scripts cannot run on the data movers. Two ways:
 
 ```bash
 # whole files of one year straight from the public bucket (no credentials);
-# run from a login node: $WORK is expanded there, before ssh
+# typed on a login node, runs on the data mover ($WORK is expanded before ssh)
 ssh -xt data.leonardo.cineca.it rclone copy \
   ":s3,provider=Other,endpoint='https://s3.waw3-1.cloudferro.com':openradar-archive/2013/" \
   "$WORK/opera/odyssey/2013" --include "*/*/OPERA/COMP/OPERA@*@0@DBZH_QIND.h5" \
@@ -156,9 +158,15 @@ rsync -PravzHS data/odyssey_bel/ <username>@data.leonardo.cineca.it:<absolute pa
 ```
 
 `rclone` keeps the bucket layout (`MM/DD/OPERA/COMP/` under the year), so the
-globs become recursive, e.g. `--odyssey-glob "<path>/**/*@DBZH_QIND.h5"`. Make
-the region mask on a login node (it downloads Natural Earth once into
-`--cache-dir`), or copy it.
+globs become recursive, e.g. `--odyssey-glob "<path>/**/*@DBZH_QIND.h5"`. The region
+mask downloads Natural Earth: make it on another machine and copy it, or fetch
+the shapes on the data mover and run `make_region_mask.py` in a job, which then
+finds them in `--cache-dir`:
+
+```bash
+ssh -xt data.leonardo.cineca.it wget -P "$WORK/opera/naturalearth" \
+  https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+```
 
 ### 3. Jobs (compute nodes)
 
