@@ -29,8 +29,8 @@ on Leonardo Booster. The motivation is in the [README](../README.md).
 
 ### Constraints
 
-- **Only pan-European sources in the method** (OPERA, ECA&D, EURADCLIM), so that
-  it scales to the whole OPERA domain. National products only as validation.
+- **Only pan-European sources in the method** (OPERA, EURADCLIM), so that it
+  scales to the whole OPERA domain. National products only as validation.
 - **Belgium is the pilot.** Validation reference: open VMM radar products
   ([data.md](data.md), *Inventory of sources and licences*). Validation against private Belgian archives is run
   by their owners through the injectable `reader`.
@@ -86,7 +86,8 @@ on Leonardo Booster. The motivation is in the [README](../README.md).
   ([data.md](data.md), *Known problems*) is not absorbed by the model.
 - [ ] Consistency over 2012–2024: rain-rate distributions, wet-pixel frequency
   and accumulation maps year by year; break-point tests on monthly
-  accumulations.
+  accumulations against EURADCLIM 3.0 (gauge-adjusted, 2013–2023), so that a
+  change of product is not mistaken for a wet year.
 - [ ] Validation over Belgium against VMM: bias, QQ, FSS, power
   spectra, accumulations; baselines are plain regridding and linear time
   interpolation.
@@ -172,6 +173,10 @@ allows it:
   real.
 - **WP3 runs in phases** (A/B/C, then a reduced learning curve, then the full
   one), as far as the compute budget allows (decided 3/11/2026).
+- **No ECA&D in DECADE.** The correction is anchored to CIRRUS, the Belgian
+  validation to VMM and RADCLIM, the consistency check to EURADCLIM (CC BY 4.0);
+  so the non-commercial ECA&D terms do not touch the release (decided
+  3/11/2026). ECA&D returns only with the parked rain archive.
 
 ## Open decisions
 
@@ -196,9 +201,6 @@ allows it:
   2021 or earlier). To ask hydrometrie@waterinfo.be, together with a token.
 - **Period of the RADCLIM copy available to the project:** about 2018–2024
   according to the team, 2017–2022 in the metadata record. To check.
-- **ECA&D terms** (non-commercial research and education only) against an
-  openly released archive: if gauges are used to correct it, check with
-  eca@knmi.nl what the release may contain.
 
 - How much does IRENE degrade with fewer years of data? Asked to the authors,
   answer unknown.
