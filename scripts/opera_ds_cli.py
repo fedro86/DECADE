@@ -5,16 +5,16 @@ Esempi
 ------
 # validazione nel periodo di sovrapposizione (una coppia ODYSSEY ogni ora, 8 processi)
 python scripts/opera_ds_cli.py validate \
-    --odyssey-glob "/data/opera/odyssey/**/*DBZH*.h5" \
-    --cirrus-glob  "/data/opera/cirrus/**/*DBZH*.h5" \
+    --odyssey-glob "data/odyssey/**/*DBZH*.h5" \
+    --cirrus-glob  "data/cirrus/**/*DBZH*.h5" \
     --time-regex "(\\d{12})" --time-format "%Y%m%d%H%M" \
     --start 2024-07-01 --end 2024-10-30 --shifts 0 -2.5 -5 2.5 \
     --pair-stride 4 --workers 8 --out validation_2024
 
 # produzione dell'archivio 1 km / 5 min
 python scripts/opera_ds_cli.py downscale \
-    --odyssey-glob "/data/opera/odyssey/2019/**/*DBZH*.h5" \
-    --time-regex "(\\d{12})" --start 2019-01-01 --end 2020-01-01 --out /data/opera_1km_5min/2019
+    --odyssey-glob "data/odyssey/2019/**/*DBZH*.h5" \
+    --time-regex "(\\d{12})" --start 2019-01-01 --end 2020-01-01 --out results/ds_2019
 
 # scelta delle finestre su ODYSSEY a 2 km (filtro dei buchi + campionamento per importanza)
 python scripts/opera_ds_cli.py sample \
