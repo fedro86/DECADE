@@ -130,6 +130,11 @@ Leonardo Booster (EuroHPC, CINECA) runs jobs with Slurm. Facts from the
   without a new certificate, but not from inside a batch job.
 - **Storage:** `$WORK` 1 TB per project by default (can be extended), `$FAST`
   1 TB per project, `$SCRATCH` deleted after 40 days without access.
+- **A job lasts at most 24 hours** in `boost_usr_prod` (up to 64 nodes). The
+  QoS `boost_qos_lprod` allows 4 days, with at most 8 nodes per project;
+  `boost_qos_dbg` allows 30 minutes for tests
+  ([CINECA documentation](https://docs.hpc.cineca.it/hpc/leonardo.html),
+  checked 3/11/2026).
 
 ### 1. Environment (login node, the only step that runs there)
 
@@ -181,6 +186,12 @@ ssh -xt data.leonardo.cineca.it wget -P "$WORK/opera/naturalearth" \
 Run the sub-commands of `opera_ds_cli.py` inside Slurm jobs, with `--workers`
 equal to the CPUs of the task (`$SLURM_CPUS_PER_TASK`) and every path on the
 cluster storage.
+
+Anything longer than the 24-hour limit runs as a chain of jobs, each started
+when the previous one ends (`sbatch --dependency=afterany:<job id>`), and must
+resume from partial results: production skips the chunks already written,
+training restarts from its last checkpoint. The current CLI does not resume yet
+([roadmap.md](roadmap.md), D1 and T1).
 
 ## Measured costs (16 cores, local disk)
 
