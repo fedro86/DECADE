@@ -274,7 +274,7 @@ def index_files(pattern: str, time_regex: str | None = None,
                 quantity: str = "DBZH") -> dict[dt.datetime, str]:
     """Indicizza i file per tempo nominale.
 
-    pattern     : glob, es. '/data/odyssey/**/*.h5' (ricorsivo)
+    pattern     : glob, es. 'data/odyssey/**/*.h5' (ricorsivo)
     time_regex  : regex con UN gruppo che cattura il timestamp nel nome file,
                   es. r'(\\d{12})'. Se None il tempo viene letto dagli attributi ODIM
                   (piu' lento: apre ogni file).

@@ -22,12 +22,9 @@ listed in the README, *Documentation*; do not copy it here.
 - Always `uv run python`, never `python`. Dependencies with `uv sync`; tests
   with `uv run pytest`.
 - `ls` is an alias of `eza` and changes its output: in scripts use `find`.
-- The sandbox's `XDG_CONFIG_HOME` is not the user's: for `gh` use
-  `GH_CONFIG_DIR=/home/fedro/.config/gh`, and push with
-  `git -c credential.helper= -c "credential.https://github.com.helper=!gh auth git-credential" push`.
 - Local data (not in git) are described in `docs/data.md`, *Derived datasets*.
 - IRENE webinar materials (FBK code and notebooks):
-  `/home/fedro/Code/personal/webinar-forecast-ai`.
+  https://github.com/DSIP-FBK/IT4LIA-FBK-Seminar
 
 ## Rules
 

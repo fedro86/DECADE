@@ -57,6 +57,10 @@ changes to `pyproject.toml`.
 Production code must not depend on notebooks, interactive input or paths of a
 specific machine.
 
+Nowhere in the repository (code, notebooks, documentation) write a path of a
+specific machine: use paths relative to the repository, `DATA_DIR` and
+`RESULTS_DIR`, or a URL.
+
 ## Code map
 
 | module | content |
