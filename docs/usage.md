@@ -110,6 +110,78 @@ uv run python scripts/opera_ds_cli.py windows \
   `DownscaleConfig` and of LK.
 - `--workers` sets the number of processes.
 
+## Running on Leonardo Booster
+
+Leonardo Booster (EuroHPC, CINECA) runs jobs with Slurm. Facts from the
+[CINECA documentation](https://docs.hpc.cineca.it/hpc/hpc_data_storage.html)
+(checked 3/11/2026):
+
+- **Compute nodes have no internet access.** Every input must be on the
+  cluster storage before a job starts: ORD files, the Natural Earth shapes used
+  by `make_region_mask.py`, Python packages.
+- **Login nodes are not for running programs.** They stop a process after
+  10 min of CPU time and are shared by all users: use them only to install the
+  environment, submit jobs and start transfers on the data movers. Everything
+  else, even short, runs in a Slurm job.
+- **Data movers** (`data.leonardo.cineca.it`) have no CPU time limit but no
+  interactive shell and no Python: only `scp`, `rsync`, `sftp`, `wget`, `curl`,
+  `rclone` and `aws s3`. `$WORK` and the other storage variables are not
+  defined there, so paths must be absolute. From a login node they are reached
+  without a new certificate, but not from inside a batch job.
+- **Storage:** `$WORK` 1 TB per project by default (can be extended), `$FAST`
+  1 TB per project, `$SCRATCH` deleted after 40 days without access.
+
+### 1. Environment (login node, the only step that runs there)
+
+Leonardo provides compilers, libraries and Python packages as environment
+modules (`module av`, `module load`). PyTorch and other machine-learning
+packages are in `cineca-ai`: `module load profile/deeplrn`, then
+`module av cineca-ai` lists the versions
+([CINECA documentation](https://docs.hpc.cineca.it/hpc/hpc_cineca-ai-hpyc.html)).
+How the project environment is built on top of the modules is still open
+([roadmap.md](roadmap.md), *Setup on Leonardo Booster*); until then:
+
+```bash
+uv sync
+```
+
+In job scripts set `UV_OFFLINE=1` and `UV_FROZEN=1`, so that `uv run` never
+tries to reach the network.
+
+### 2. Data (data mover)
+
+The Python download scripts cannot run on the data movers. Two ways:
+
+```bash
+# whole files of one year straight from the public bucket (no credentials);
+# typed on a login node, runs on the data mover ($WORK is expanded before ssh)
+ssh -xt data.leonardo.cineca.it rclone copy \
+  ":s3,provider=Other,endpoint='https://s3.waw3-1.cloudferro.com':openradar-archive/2013/" \
+  "$WORK/opera/odyssey/2013" --include "*/*/OPERA/COMP/OPERA@*@0@DBZH_QIND.h5" \
+  --transfers 16
+
+# files that already exist on another machine (e.g. the Belgian crops),
+# from that machine
+rsync -PravzHS data/odyssey_bel/ <username>@data.leonardo.cineca.it:<absolute path>/odyssey_bel/
+```
+
+`rclone` keeps the bucket layout (`MM/DD/OPERA/COMP/` under the year), so the
+globs become recursive, e.g. `--odyssey-glob "<path>/**/*@DBZH_QIND.h5"`. The region
+mask downloads Natural Earth: make it on another machine and copy it, or fetch
+the shapes on the data mover and run `make_region_mask.py` in a job, which then
+finds them in `--cache-dir`:
+
+```bash
+ssh -xt data.leonardo.cineca.it wget -P "$WORK/opera/naturalearth" \
+  https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+```
+
+### 3. Jobs (compute nodes)
+
+Run the sub-commands of `opera_ds_cli.py` inside Slurm jobs, with `--workers`
+equal to the CPUs of the task (`$SLURM_CPUS_PER_TASK`) and every path on the
+cluster storage.
+
 ## Measured costs (16 cores, local disk)
 
 | step | cost |

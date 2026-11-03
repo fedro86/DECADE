@@ -58,8 +58,8 @@ Production code must not depend on notebooks or interactive input.
 
 ## Portability
 
-Production runs on Linux HPC; colleagues work on Linux, macOS and Windows. CI
-runs the tests on Linux and Windows.
+Production runs on Linux HPC (Leonardo Booster); colleagues work on Linux,
+macOS and Windows. CI runs the tests on Linux and Windows.
 
 - Nowhere in the repository (code, notebooks, documentation) write a path of a
   specific machine: use paths relative to the repository, `DATA_DIR` and
@@ -67,6 +67,9 @@ runs the tests on Linux and Windows.
 - No shell commands, aliases or OS-specific tools in code or notebooks: use
   Python (`pathlib`, `shutil`, `glob`).
 - Open text files with `encoding="utf-8"`.
+- Processing code must not access the network: HPC compute nodes have no
+  internet ([docs/usage.md](docs/usage.md), *Running on Leonardo Booster*).
+  Downloads are separate steps (`scripts/fetch_*.py`).
 - Code that runs several processes must work with the `spawn` start method
   (Windows, macOS): workers and `reader`s are module-level functions or
   `functools.partial` of them, never lambdas or functions defined in a notebook.

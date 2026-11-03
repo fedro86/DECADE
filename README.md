@@ -59,7 +59,7 @@ Each topic lives in exactly one file; the others link to it.
 | [docs/roadmap.md](docs/roadmap.md) | the specification: goals, plan, what is done and what is left, decisions |
 | [docs/data.md](docs/data.md) | facts about the input data: sources, formats, time windows, gaps, known problems |
 | [docs/method.md](docs/method.md) | how the processing works and why, with the evidence and the validation results |
-| [docs/usage.md](docs/usage.md) | how to run the scripts, what they write, measured costs |
+| [docs/usage.md](docs/usage.md) | how to run the scripts, locally and on Leonardo Booster; what they write; measured costs |
 | [notebooks/README.md](notebooks/README.md) | list of notebooks |
 | [CLAUDE.md](CLAUDE.md) | instructions for the Claude Code agent only |
 
