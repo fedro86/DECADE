@@ -17,8 +17,9 @@ motivation is in the [README](../README.md).
 
 1. **Harmonisation.** Can ODYSSEY be brought to 1 km / 5 min, by optical-flow
    interpolation plus a statistical correction, consistently with the current
-   products, accurately enough for training and fast enough for the whole
-   continent?
+   products, accurately enough for training and with a cost per year of data
+   that makes the whole OPERA domain feasible (measured on Belgium,
+   extrapolated in C1)?
 2. **Value of the data.** How much does pre-training on the legacy decade
    improve a model trained on the current products alone, and how much of the
    gain comes from harmonisation rather than from data volume?
