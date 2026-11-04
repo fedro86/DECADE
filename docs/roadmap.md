@@ -17,8 +17,9 @@ motivation is in the [README](../README.md).
 
 1. **Harmonisation.** Can ODYSSEY be brought to 1 km / 5 min, by optical-flow
    interpolation plus a statistical correction, consistently with the current
-   products, accurately enough for training and fast enough for the whole
-   continent?
+   products, accurately enough for training and with a cost per year of data
+   that makes the whole OPERA domain feasible (measured on Belgium,
+   extrapolated in C1)?
 2. **Value of the data.** How much does pre-training on the legacy decade
    improve a model trained on the current products alone, and how much of the
    gain comes from harmonisation rather than from data volume?
@@ -256,7 +257,9 @@ size.
 ## Open decisions
 
 - **Level-correction bridge (H3):** pan-European, national or none; decided at
-  G1.
+  G1. With similar results the pan-European bridge is preferred, because the
+  method must apply to the whole OPERA domain. If a national bridge is chosen,
+  the decision states what would replace it in the other countries.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
   frames with `alpha = 0`, but configuration C is meant to test the
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training

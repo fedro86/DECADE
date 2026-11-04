@@ -20,9 +20,11 @@ still being built. The plan, what is done and the decisions are in
 Deep-learning nowcasting models such as IRENE are trained on multi-year radar
 archives at 1 km / 5 min. In Europe, the EUMETNET OPERA composites reach that
 resolution only since July 2024; the 2012–2024 legacy archive covers a decade
-at 2 km / 15 min. DECADE harmonises that decade to 1 km / 5 min and measures,
-over a Belgian pilot domain, whether pre-training IRENE on it improves
-nowcasts.
+at 2 km / 15 min. DECADE develops a method to harmonise that decade to
+1 km / 5 min, built only on pan-European data so that it can later be applied
+to the whole OPERA domain, and tests it on a Belgian pilot domain: it produces
+and releases the harmonised archive for Belgium + 350 km and measures whether
+pre-training IRENE on it improves nowcasts.
 
 This repository holds the data side: reading OPERA composites, optical-flow
 interpolation of the legacy archive, validation, and training windows in IRENE

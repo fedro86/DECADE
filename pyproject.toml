@@ -1,7 +1,7 @@
 [project]
 name = "opera-ds"
 version = "0.1.0"
-description = "Pan-European radar datasets from EUMETNET OPERA: ODYSSEY (2 km / 15 min) downscaled to 1 km / 5 min"
+description = "Harmonisation of the OPERA ODYSSEY archive (2 km / 15 min) to 1 km / 5 min with a method built on pan-European data, piloted over Belgium"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
