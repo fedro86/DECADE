@@ -70,38 +70,33 @@ is written (P1).
 
 Tickets below carry an id, an owner (F Federico, M Marìca, F+M both, M→F
 explored by Marìca and coded by Federico) and the planned dates; dates after
-February are indicative. Each phase of WP3 starts only if the compute budget
+February are indicative. Each id links to its GitHub issue, which holds the
+goal, scope, data and compute, how to verify and the acceptance criteria; a
+ticket is ticked here when its issue is closed. Each phase of WP3 starts only if the compute budget
 left allows it.
 
 ## Work packages and status
 
 ### Setup
 
-- [ ] **S0** Reproduction on Marìca's Windows machine, with growing data: synthetic
-  test, then 1–6/7/2024 whole files and `validate` (results must match
-  `docs/figures/summary.csv`), then crops for a few years. Long runs on the
-  workstation (M, 3–15/11).
-- [ ] **S6** SSH access to the Windows workstation, for development with VS Code
-  and Claude Code; remote desktop works meanwhile (F, 3–22/11).
-- [ ] **S4** Email to VMM: licence of the radar rasters, token, gauge adjustment
-  of the intensity, start date (F, 3–15/11).
-- [ ] **S5** Period of the team's RADCLIM copy, one file read and compared with
-  the OPERA grid (M, 3–22/11).
-- [ ] **S7** Pan-European bridge data: whether EURADCLIM is extended to 2024–2025
-  (KNMI), ERA5-Land over the Belgian domain (F, 3–22/11).
-- [ ] **S1** Python environment on the CINECA modules: choose the modules
-  (Python, CUDA, MPI, PyTorch from `cineca-ai`), pin the versions of
-  `pyproject.toml` to what they provide, add our packages on top (e.g. a
-  virtual environment with `--system-site-packages`); synthetic test in a job
-  (F, 18–29/11, if the call is won).
-- [ ] **S2** Copy the inputs to the cluster via the data movers. Whole files are
-  about 0.4 TB of ODYSSEY `DBZH_QIND` and 0.6 TB of CIRRUS `DBZH`, the Belgian
-  crops about 95 GB, the archive about 0.5 TB, against 1 TB of default `$WORK`
-  quota: copy the crops in Zarr (D7) (F, 23/11–6/12, if the call is won).
-- [ ] **S3** Slurm job scripts for production and training, chained so that each
-  job resumes from the previous one (F, 30/11–20/12, if the call is won).
-- [ ] **P1** Request for a smaller HPC allocation, which also prepares later
-  requests (F+M, 23/11–20/12, if the call is lost).
+- [ ] [**S0**](https://github.com/fedro86/DECADE/issues/9) Reproduce the
+  existing pipeline on Marìca's Windows machine (M, 3–15/11).
+- [ ] [**S6**](https://github.com/fedro86/DECADE/issues/10) Set up SSH access to
+  the Windows workstation (F, 3–22/11).
+- [ ] [**S4**](https://github.com/fedro86/DECADE/issues/11) Ask VMM about
+  licence, access token, gauge adjustment and start date (F, 3–15/11).
+- [ ] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
+  the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
+- [ ] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get EURADCLIM and
+  ERA5-Land over the Belgian domain (F, 3–22/11).
+- [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
+  environment on the CINECA modules (F, 18–29/11, if the call is won).
+- [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
+  Leonardo via the data movers (F, 23/11–6/12, if the call is won).
+- [ ] [**S3**](https://github.com/fedro86/DECADE/issues/16) Write chained,
+  resumable Slurm job scripts (F, 30/11–20/12, if the call is won).
+- [ ] [**P1**](https://github.com/fedro86/DECADE/issues/17) Write a request for
+  a smaller HPC allocation (F+M, 23/11–20/12, if the call is lost).
 
 ### WP1 – Harmonisation of ODYSSEY
 
@@ -114,73 +109,43 @@ left allows it.
 - [x] Synthetic end-to-end test, run by CI.
 - [x] Crops of Belgium + 350 km: ODYSSEY 2012–2024 and CIRRUS 2024–2026
   ([data.md](data.md), *Derived datasets*).
-- [ ] **H1** Interpolation on degraded CIRRUS: CIRRUS averaged in Z to 2 km,
-  one frame every 15 min with the ODYSSEY time-window offset, interpolated and
-  compared with the real 5 min frames over months of data. Measures the whole
-  2 km / 15 min → 1 km / 5 min chain without the product difference (M,
-  16–29/11).
-- [ ] **H2** Cleaning of outliers and artefacts: catalogue of the artefacts over
-  Belgium (outliers, clutter, radial spikes from 5 GHz interference, blocked
-  sectors, isolated echoes, echoes without clouds), then a known method for each
-  (thresholds and persistent-point masks on the model of EURADCLIM, spike
-  filters, despeckling, `QIND`, satellite cloud mask) ([data.md](data.md),
-  *Known problems*) (M→F, 16–29/11).
-- [ ] **H3** Level correction ODYSSEY → CIRRUS through a bridge dataset that is
-  stable across the change of product in 7/2024: ODYSSEY is calibrated on the
-  bridge before, CIRRUS after. Seasonal, wet-pixel frequency matched first.
-  Three variants: pan-European bridge (EURADCLIM if extended, otherwise
-  ERA5-Land), national bridge (VMM or RADCLIM), plain seasonal quantile mapping.
-  Each comparison uses the bridge's quantity and resolution; the bridge sets the
-  level, CIRRUS the shape at 1 km / 5 min. Needed because the IRENE input
-  normalisation is fixed (R → dBZ with Marshall-Palmer, clipped to [0, 60],
-  scaled to [−1, 1]): a level gap between products ([data.md](data.md),
-  *Known problems*) is not absorbed by the model. Variant chosen at G1 (M→F,
-  16/11–6/12).
-- [ ] **H6** Time shift in production (see *Open decisions*) (F+M, 30/11–6/12).
-- [ ] **H5** Validation over Belgium: intensity fields against VMM (bias, QQ,
-  FSS, power spectra), accumulations against RADCLIM; baselines are plain
-  regridding and linear time interpolation. A dataset used as bridge is no
-  longer independent (M, 7–24/1).
-- [ ] **H4** Consistency over 2012–2024: rain-rate distributions, wet-pixel
-  frequency and accumulation maps year by year; break-point tests on monthly
-  accumulations against EURADCLIM 3.0 (F, 3–4/2027).
-- [ ] **H8** Archive v1.1 with the corrections from H4 and H5 (F, 4–5/2027).
-- [ ] **H7** GPU implementation in PyTorch: gradients and local least squares as
-  convolutions, warping with `grid_sample`, many pairs per batch. Must match the
-  CPU version on the synthetic test. Optional for DECADE, needed for Europe (F,
-  5–7/2027).
+- [ ] [**H1**](https://github.com/fedro86/DECADE/issues/18) Measure
+  interpolation error on degraded CIRRUS (M, 16–29/11).
+- [ ] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
+  radar artefacts from ODYSSEY (M→F, 16–29/11).
+- [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Correct the ODYSSEY
+  → CIRRUS level difference through a bridge dataset (M→F, 16/11–6/12).
+- [ ] [**H6**](https://github.com/fedro86/DECADE/issues/21) Decide the time
+  shift used in production (F+M, 30/11–6/12).
+- [ ] [**H5**](https://github.com/fedro86/DECADE/issues/22) Validate archive v1
+  over Belgium against VMM and RADCLIM (M, 7–24/1).
+- [ ] [**H4**](https://github.com/fedro86/DECADE/issues/23) Check the
+  consistency of the archive over 2012–2024 (F, 3–4/2027).
+- [ ] [**H8**](https://github.com/fedro86/DECADE/issues/24) Produce archive v1.1
+  with the validation corrections (F, 4–5/2027).
+- [ ] [**H7**](https://github.com/fedro86/DECADE/issues/25) Port the
+  interpolation to GPU with PyTorch (F, 5–7/2027).
 
 ### WP2 – Archive and training data in IRENE format
 
 - [x] Window sampler on ODYSSEY at 2 km (`sample`).
 - [x] Zarr store of interpolated windows in IRENE format (`windows`).
-- [ ] **D7** Zarr for all inputs and outputs: convert the crops (about 640,000
-  one-frame HDF5 files), choose chunks (e.g. 24 × 256 × 256), compression, data
-  type and sharding by measuring size and read speed. If the archive chunks
-  align with the windows, store C can be a list of windows read directly from
-  the archive (F, 16–29/11).
-- [ ] **D3** Belgian convective test events 2024–2026, excluded from training
-  and validation (M, 3–29/11).
-- [ ] **D1** Production by time: each ODYSSEY frame read and each motion field
-  estimated once, archive chunks written directly, finished chunks skipped so
-  that an interrupted job resumes; identical to the current output on the same
-  dates; cost per year measured (today each window rereads its 9–11 ODYSSEY
-  files, see [usage.md](usage.md), *Measured costs*) (F, 30/11–13/12).
-- [ ] **D2** Window budget: tune `m`, `q_min`, `step_px`, `step_t` to what
-  training can use within the compute budget (the IRENE parameters give about
-  50 million windows) (M, 30/11–13/12).
-- [ ] **D4** CIRRUS store for fine-tuning and test: conversion to R, split in
-  alternating monthly blocks (e.g. one month in four for test, one for
-  validation) with a few days of margin, test events excluded (F, 7–20/12).
-- [ ] **D6** Harmonised archive v1 over Belgium + 350 km (reflectivity, `alpha`
-  on every frame, about 1.2 million frames, about 0.5 TB) and store C cut from
-  it. If D1 shows the whole archive does not fit in two weeks, windows first
-  and the archive in January (F, 7–20/12).
-- [ ] **D5** Raw ODYSSEY store for configuration B (regridded only; time step
-  as decided in T2), same windows and splits as C (F, 21/12–10/1).
-- [ ] **R1** Release of archive v1 with a version and a data sheet (content,
-  method, limits, licence, citation), in a repository that accepts about
-  0.5 TB (F, 1–21/2).
+- [ ] [**D7**](https://github.com/fedro86/DECADE/issues/26) Move all inputs and
+  outputs to Zarr (F, 16–29/11).
+- [ ] [**D3**](https://github.com/fedro86/DECADE/issues/27) Choose the Belgian
+  convective test events (M, 3–29/11).
+- [ ] [**D1**](https://github.com/fedro86/DECADE/issues/28) Produce the archive
+  by time, with resume (F, 30/11–13/12).
+- [ ] [**D2**](https://github.com/fedro86/DECADE/issues/29) Set the window
+  budget (M, 30/11–13/12).
+- [ ] [**D4**](https://github.com/fedro86/DECADE/issues/30) Build the CIRRUS
+  store with train, validation and test splits (F, 7–20/12).
+- [ ] [**D6**](https://github.com/fedro86/DECADE/issues/31) Produce harmonised
+  archive v1 and store C (F, 7–20/12).
+- [ ] [**D5**](https://github.com/fedro86/DECADE/issues/32) Build the raw
+  ODYSSEY store for configuration B (F, 21/12–10/1).
+- [ ] [**R1**](https://github.com/fedro86/DECADE/issues/33) Release archive v1
+  for Belgium (F, 1–21/2).
 
 ### WP3 – IRENE training (configurations A, B, C)
 
@@ -221,50 +186,52 @@ On the RTX 4090 alone (about 1/5 of a node, to be measured) phase 1 by the end
 of January is possible only with 1 seed and runs at about 40% of the planned
 size.
 
-- [ ] **T0** IRENE (ConvGRU-Ensemble) on the workstation with fake data shaped
-  like the stores; native Windows or WSL2 (F, 3–22/11).
-- [ ] **T2** Two method decisions (see *Open decisions*): loss on all frames or
-  only on real ones, and the time step of B (F+M, 23/11–6/12).
-- [ ] **T7** Data-parallel training on the 4 GPUs of a node (PyTorch DDP),
-  tried on the 4090 first (F, 23/11–13/12).
-- [ ] **T1** Data loader from the Zarr stores into the IRENE code, with
-  checkpoint and resume (weights, optimiser, random state, position in the
-  data) (F, 7–20/12).
-- [ ] **T3** Small run: measure the cost of a run, check that a run interrupted
-  and resumed matches a continuous one, decide phases and seeds (F, 14–20/12).
-- [ ] **T4** Phase 1 (F, 21/12–31/1).
-- [ ] **T5** Phase 2, if the budget allows (F, 3–4/2027).
-- [ ] **T6** Phase 3, Leonardo only (F, 5–8/2027).
+- [ ] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
+  4090 with fake data (F, 3–22/11).
+- [ ] [**T2**](https://github.com/fedro86/DECADE/issues/35) Decide the loss and
+  the time step of configuration B (F+M, 23/11–6/12).
+- [ ] [**T7**](https://github.com/fedro86/DECADE/issues/36) Train on 4 GPUs with
+  data parallelism (F, 23/11–13/12).
+- [ ] [**T1**](https://github.com/fedro86/DECADE/issues/37) Write the IRENE data
+  loader, with checkpoint and resume (F, 7–20/12).
+- [ ] [**T3**](https://github.com/fedro86/DECADE/issues/38) Run a small training
+  and measure the cost (F, 14–20/12).
+- [ ] [**T4**](https://github.com/fedro86/DECADE/issues/39) Train phase 1:
+  configurations A, B and C (F, 21/12–31/1).
+- [ ] [**T5**](https://github.com/fedro86/DECADE/issues/40) Train phase 2:
+  configuration C with 2 and 4 years (F, 3–4/2027).
+- [ ] [**T6**](https://github.com/fedro86/DECADE/issues/41) Train phase 3: the
+  full learning curve (F, 5–8/2027).
 
 ### WP4 – Verification
 
-- [ ] **V5** Basins and thresholds for question 3, to discuss with Vito:
-  accumulations over the Belgian basins hit by the test events, boundaries from
-  a pan-European source (EU-Hydro or HydroSHEDS); thresholds such as 10 and
-  20 mm/h and 1 h accumulations (F+M, 14–20/12).
-- [ ] **V1** STEPS and Flood4Cast LK nowcasts on the test events, same start
-  times, lead times and grid as IRENE (F+M, 7–31/1).
-- [ ] **V2** Scores with pysteps (CRPS, CSI, FSS by lead time) plus volume bias,
-  basin accumulations and thresholds; truth is CIRRUS, accumulations also
-  checked against RADCLIM and intensity against VMM (F+M, 7–31/1).
-- [ ] **V3** Analysis of A/B/C, first answer to question 2 (M, 1–21/2).
-- [ ] **V4** Full verification of all phases, answers to questions 2 and 3 (F,
-  5–9/2027).
+- [ ] [**V5**](https://github.com/fedro86/DECADE/issues/42) Agree basins and
+  thresholds for research question 3 with Vito (F+M, 14–20/12).
+- [ ] [**V1**](https://github.com/fedro86/DECADE/issues/43) Produce the STEPS
+  and Lucas-Kanade reference nowcasts (F+M, 7–31/1).
+- [ ] [**V2**](https://github.com/fedro86/DECADE/issues/44) Compute verification
+  scores with pysteps (F+M, 7–31/1).
+- [ ] [**V3**](https://github.com/fedro86/DECADE/issues/45) Analyse
+  configurations A, B and C (M, 1–21/2).
+- [ ] [**V4**](https://github.com/fedro86/DECADE/issues/46) Verify all trained
+  models (F, 5–9/2027).
 
 ### WP5 – Costs, release and publications
 
-- [ ] **C5** EGU 2027 abstract (deadline usually mid-January, to check) (F+M,
-  7–12/1).
-- [ ] **R2** Technical report of the intensive phase, written in `docs/` and
-  exported to PDF (F+M, 8–28/2).
-- [ ] **C6** Data paper on the Belgian archive (e.g. Earth System Science Data)
-  (F+M, 3–5/2027).
-- [ ] **C4** Paper on the results (F, 6–10/2027).
-- [ ] **C1** Measured costs of harmonisation and training on Leonardo Booster,
-  extrapolated to the whole OPERA domain. Current CPU costs are in
-  [usage.md](usage.md) (F, 8–9/2027).
-- [ ] **C2** Regular Access proposal for the whole OPERA domain (F, 9–10/2027).
-- [ ] **C3** Release of archive v1.1 and of the code (F, by 15/11/2027).
+- [ ] [**C5**](https://github.com/fedro86/DECADE/issues/47) Submit the EGU 2027
+  abstract (F+M, 7–12/1).
+- [ ] [**R2**](https://github.com/fedro86/DECADE/issues/48) Write the technical
+  report of the intensive phase (F+M, 8–28/2).
+- [ ] [**C6**](https://github.com/fedro86/DECADE/issues/49) Write the data paper
+  on the Belgian archive (F+M, 3–5/2027).
+- [ ] [**C4**](https://github.com/fedro86/DECADE/issues/50) Write the paper on
+  the results (F, 6–10/2027).
+- [ ] [**C1**](https://github.com/fedro86/DECADE/issues/51) Measure costs and
+  extrapolate them to Europe (F, 8–9/2027).
+- [ ] [**C2**](https://github.com/fedro86/DECADE/issues/52) Write the EuroHPC
+  Regular Access proposal (F, 9–10/2027).
+- [ ] [**C3**](https://github.com/fedro86/DECADE/issues/53) Release archive v1.1
+  and the code (F, by 15/11/2027).
 
 ## Decisions taken
 
