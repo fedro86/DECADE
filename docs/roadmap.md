@@ -67,6 +67,7 @@ is written (P1).
 | G1 | 6/12/2026 | method frozen: cleaning, level-correction bridge, time shift | Vito |
 | G2 | 20/12/2026 | archive v1 and training stores ready | Vito |
 | G3 | 28/2/2027 | archive tested with IRENE (phase 1), technical report | Vito |
+| G4 | 15/11/2027 (indicative) | final archive and results: archive v1.1 and code released, research questions answered, costs extrapolated to Europe; end of Leonardo access | — |
 
 Tickets below carry an id, an owner (F Federico, M Marìca, F+M both, M→F
 explored by Marìca and coded by Federico) and the planned dates; dates after
