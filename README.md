@@ -15,7 +15,7 @@ still being built. The plan, what is done and the decisions are in
 | [G1 · method frozen](https://github.com/fedro86/DECADE/milestone/1) | [![G1 · method frozen](https://img.shields.io/github/milestones/progress-percent/fedro86/DECADE/1?label=issues%20closed)](https://github.com/fedro86/DECADE/milestone/1) |
 | [G2 · archive v1 and stores](https://github.com/fedro86/DECADE/milestone/2) | [![G2 · archive v1 and stores](https://img.shields.io/github/milestones/progress-percent/fedro86/DECADE/2?label=issues%20closed)](https://github.com/fedro86/DECADE/milestone/2) |
 | [G3 · archive tested with IRENE](https://github.com/fedro86/DECADE/milestone/3) | [![G3 · archive tested with IRENE](https://img.shields.io/github/milestones/progress-percent/fedro86/DECADE/3?label=issues%20closed)](https://github.com/fedro86/DECADE/milestone/3) |
-| [After February](https://github.com/fedro86/DECADE/milestone/4) | [![After February](https://img.shields.io/github/milestones/progress-percent/fedro86/DECADE/4?label=issues%20closed)](https://github.com/fedro86/DECADE/milestone/4) |
+| [G4 · final archive and results](https://github.com/fedro86/DECADE/milestone/4) | [![G4 · final archive and results](https://img.shields.io/github/milestones/progress-percent/fedro86/DECADE/4?label=issues%20closed)](https://github.com/fedro86/DECADE/milestone/4) |
 
 Deep-learning nowcasting models such as IRENE are trained on multi-year radar
 archives at 1 km / 5 min. In Europe, the EUMETNET OPERA composites reach that
