@@ -256,7 +256,9 @@ size.
 ## Open decisions
 
 - **Level-correction bridge (H3):** pan-European, national or none; decided at
-  G1.
+  G1. With similar results the pan-European bridge is preferred, because the
+  method must apply to the whole OPERA domain. If a national bridge is chosen,
+  the decision states what would replace it in the other countries.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
   frames with `alpha = 0`, but configuration C is meant to test the
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training
