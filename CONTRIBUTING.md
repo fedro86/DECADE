@@ -138,6 +138,9 @@ Status ("done", "to do") is written only in `docs/roadmap.md`.
   synthetic test runs only when code, configuration or the environment change
   (paths in `.github/workflows/tests.yml`), not for documentation or notebooks.
 - Keep pull requests small: one method or one notebook at a time.
+- Work is tracked as GitHub issues, one per ticket of `docs/roadmap.md`, written
+  with the *Ticket* template (`.github/ISSUE_TEMPLATE/ticket.md`). Link the
+  pull request to its issue (`Closes #<n>`).
 
 ## Language
 
