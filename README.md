@@ -1,6 +1,6 @@
 # DECADE – a harmonised decade of OPERA radar data
 
-**DE**ep-learning nowCasting from **A** harmonised **DE**cade of radar data.
+**DE**ep-learning now**C**asting from **A** harmonised **DE**cade of radar data.
 
 ![status: in progress](https://img.shields.io/badge/status-in%20progress-orange)
 
