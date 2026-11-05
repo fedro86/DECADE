@@ -371,7 +371,8 @@ def _hour_finish(acc, hr, n_per_hour):
 
 def _worker(args):
     (pairs, ody_files, cir_files, cfg, shifts, methods, quantity, thr, fthr, fsc,
-     wet_dbz, min_wet_frac, region_mask_path, fss_every, reader, r_scales, r_cap_dbz) = args
+     wet_dbz, min_wet_frac, region_mask_path, fss_every, reader, r_scales, r_cap_dbz,
+     cirrus_reader) = args
     acc = Accumulator(thr, fthr, fsc, wet_dbz, r_scales, r_cap_dbz, cfg.dbz_floor)
     src = FrameSource(ody_files, cfg, quantity, reader=reader)
     region = np.load(region_mask_path) if region_mask_path else None
@@ -397,7 +398,7 @@ def _worker(args):
         for s, lst in targets.items():
             for T, a in lst:
                 try:
-                    fr = reader(cir_files[T], quantity)
+                    fr = cirrus_reader(cir_files[T], quantity)
                 except Exception as e:
                     log.warning("CIRRUS %s: %s", T, e)
                     continue
@@ -436,13 +437,17 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
                    thresholds=DEFAULT_THRESHOLDS, fss_thr=DEFAULT_FSS_THR,
                    fss_scales=DEFAULT_FSS_SCALES, wet_dbz=10.0, min_wet_frac=0.002,
                    pair_stride=4, fss_every=1, region_mask_path=None, workers=1,
-                   reader=read_odim_composite, r_scales=DEFAULT_R_SCALES, r_cap_dbz=55.0):
+                   reader=read_odim_composite, r_scales=DEFAULT_R_SCALES, r_cap_dbz=55.0,
+                   cirrus_reader=None):
     """pair_stride: usa una coppia ODYSSEY ogni N (4 = una all'ora). Gli accumuli
     orari richiedono pair_stride=1, altrimenti le ore restano senza istanti.
     region_mask_path: .npy bool (griglia 1 km) per limitare l'area (es. escludere la
     Spagna, che in CIRRUS e' estrapolata con LK).
-    r_scales, r_cap_dbz: scale (km) e limite in dBZ per le metriche in R."""
+    r_scales, r_cap_dbz: scale (km) e limite in dBZ per le metriche in R.
+    cirrus_reader: reader of the truth files (`cir_files`); default `reader`. A different
+    one is needed when the coarse input is degraded CIRRUS (`read_degraded`, H1)."""
     cfg = cfg or DownscaleConfig()
+    cirrus_reader = cirrus_reader or reader
     os.makedirs(out_dir, exist_ok=True)
     step = dt.timedelta(minutes=cfg.dt_in_min)
     pairs = [t for t in ody_files if start <= t < end and (t + step) in ody_files]
@@ -455,7 +460,7 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
     t_c = next((t for t in cir_files if start <= t < end), None)
     if t_c is not None:
         w2 = reader(ody_files[pairs[0]], quantity).where
-        w1 = reader(cir_files[t_c], quantity).where
+        w1 = cirrus_reader(cir_files[t_c], quantity).where
         issues = check_grid_alignment(w2, w1, cfg.factor)
         with open(os.path.join(out_dir, "grid_check.txt"), "w", encoding="utf-8") as f:
             f.write("\n".join(issues) if issues else "OK: griglie allineate\n")
@@ -466,7 +471,8 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
     chunks = [list(c) for c in np.array_split(np.array(pairs, dtype=object), workers)]
     args = [(c, ody_files, cir_files, cfg, tuple(shifts), tuple(methods), quantity,
              tuple(thresholds), tuple(fss_thr), tuple(fss_scales), wet_dbz, min_wet_frac,
-             region_mask_path, fss_every, reader, tuple(r_scales), r_cap_dbz) for c in chunks if c]
+             region_mask_path, fss_every, reader, tuple(r_scales), r_cap_dbz, cirrus_reader)
+            for c in chunks if c]
     acc_args = (thresholds, fss_thr, fss_scales, wet_dbz, tuple(r_scales), r_cap_dbz, cfg.dbz_floor)
     acc = Accumulator(*acc_args)
     edge_hours: dict = {}
