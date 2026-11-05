@@ -133,8 +133,8 @@ input that is easier or harder to interpolate.
 Three degradations of each 2 × 2 block were compared with real ODYSSEY on
 1–5/7/2024: mean in linear Z (`zmean`), maximum (`max`) and the upper-left pixel
 (`sample`). ODYSSEY at NT is paired with CIRRUS at NT+5, the closest window
-([data.md](data.md), *Time windows*); 382 pairs, values capped at 60 dBZ against
-the ODYSSEY outliers. Distributions of wet pixels (≥ 10 dBZ) are compared by
+([data.md](data.md), *Time windows*); 382 pairs, values capped at 55 dBZ against
+the ODYSSEY outliers ([data.md](data.md), *Known problems*). Distributions of wet pixels (≥ 10 dBZ) are compared by
 shape, after removing the median offset, since the products differ in level;
 small-scale energy is the high-pass energy (Gaussian, σ = 2 px) relative to
 ODYSSEY.
@@ -142,17 +142,46 @@ ODYSSEY.
 | area | variant | median offset to ODYSSEY [dB] | QQ shape RMS [dB] | small-scale energy / ODYSSEY |
 |---|---|---:|---:|---:|
 | Belgium + 200 km | `zmean` | −0.04 | 0.39 | 1.39 |
-| | `max` | 0.70 | 0.78 | 1.64 |
+| | `max` | 0.70 | 0.78 | 1.63 |
 | | `sample` | −0.20 | 0.43 | 1.53 |
-| Belgium | `zmean` | 1.30 | 0.67 | 2.14 |
-| | `max` | 2.61 | 1.21 | 2.52 |
-| | `sample` | 0.86 | 0.63 | 2.26 |
+| Belgium | `zmean` | 1.30 | 0.67 | 2.13 |
+| | `max` | 2.61 | 1.21 | 2.50 |
+| | `sample` | 0.86 | 0.63 | 2.25 |
 
 - `zmean` is the closest to ODYSSEY: lowest small-scale energy everywhere, best
   or tied distribution shape. It is the degradation used in H1.
 - No degradation is smoother than ODYSSEY: real ODYSSEY has 1.4–2.1 times less
   small-scale energy than CIRRUS degraded by `zmean`. Degraded CIRRUS is
   therefore a rougher, not an easier, input than ODYSSEY.
+
+### Convective and stratiform pixels
+
+Scores can be split by precipitation type on each pixel of the truth, so no
+label per time is needed (`opera_ds/classify.py`, option `classifier` of
+`run_validation`). The rule is Steiner et al. (1995)
+([summary](sources/1995%20-%20Steiner%20-%20Climatological%20characterization%20of%20three-dimensional%20storm%20structure%20from%20operational%20radar%20and%20rain%20gauge%20data.md)),
+with its published parameters:
+
+| parameter | value | source |
+|---|---|---|
+| convective centre by intensity | ≥ 40 dBZ | Steiner 1995, section 6c; also the RMI storm threshold in Belgium, Goudenhoofdt and Delobbe 2013 ([summary](sources/2013%20-%20Goudenhoofdt%20-%20Statistical%20characteristics%20of%20convective%20storms%20in%20Belgium%20derived%20from%20volumetric%20weather%20radar%20observations.md)) |
+| background | mean in linear Z of the echo pixels within 11 km | Steiner 1995, section 6c |
+| convective centre by peakedness | above the background by ΔZ = 10 dB below 0 dBZ, 10 − Z_bg²/180 up to 42.43 dBZ, 0 above | Steiner 1995, Eq. 2 |
+| convective radius around a centre | 1 km below 25 dBZ of background, then 2, 3, 4 km every 5 dBZ, 5 km from 40 dBZ | Steiner 1995, Fig. 6b, "medium" |
+The rule is applied to the truth at its own resolution (CIRRUS, 1 km). Echo
+pixels are those above the floor of the validation fields; everything with echo
+that is not convective is stratiform.
+
+Known limits: the method was tuned on a 2 km grid, and Steiner 1995 (section 6d)
+reports that run on a finer grid than it was tuned on it finds too much
+convective area; `classes_on_coarse_grid(..., factor=2)` would classify on the
+2 km grid instead. It was tuned on a tropical radar at a fixed 3 km height.
+OPERA `DBZH` is a maximum-reflectivity composite, so a bright band above
+40 dBZ can be labelled convective, mostly in the cold season; this is checked
+on January in H1. Season (December–February against June–August) is kept as a
+second, coarse split, as in Imhoff et al. (2020)
+([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
+where summer nowcast errors are about three times the winter ones.
 
 ### Synthetic test
 

@@ -85,7 +85,8 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `opera_ds/motion.py` | LK on OpenCV (pysteps scheme), high-pass, cache of sparse vectors |
 | `opera_ds/interp.py` | `DownscaleConfig`, `PairInterpolator.get(alpha, method)` with methods `nearest`, `linear`, `lk` and suffixes `:Z`, `:dB` |
 | `opera_ds/pipeline.py` | `FrameSource`, `output_times`, `run_downscaling`, `run_downscaling_parallel` |
-| `opera_ds/validate.py` | validation metrics |
+| `opera_ds/validate.py` | validation metrics; `degrade_frame`, `read_degraded` (CIRRUS degraded to the ODYSSEY grid) |
+| `opera_ds/classify.py` | convective / stratiform pixels after Steiner et al. (1995): `steiner_convective`, `obs_classes` |
 | `opera_ds/sampling.py` | window selection on ODYSSEY: `SamplerConfig`, `sample_block`, `block_times` |
 | `opera_ds/windows.py` | ML windows: `Window`, `make_window`, `WindowStore`, `dbz_to_rr` |
 | `opera_ds/plots.py` | validation figures |

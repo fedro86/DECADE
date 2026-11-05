@@ -391,7 +391,7 @@ def _hour_finish(acc, hr, n_per_hour):
 def _worker(args):
     (pairs, ody_files, cir_files, cfg, shifts, methods, quantity, thr, fthr, fsc,
      wet_dbz, min_wet_frac, region_mask_path, fss_every, reader, r_scales, r_cap_dbz,
-     cirrus_reader) = args
+     cirrus_reader, classifier) = args
     acc = Accumulator(thr, fthr, fsc, wet_dbz, r_scales, r_cap_dbz, cfg.dbz_floor)
     src = FrameSource(ody_files, cfg, quantity, reader=reader)
     region = np.load(region_mask_path) if region_mask_path else None
@@ -428,6 +428,7 @@ def _worker(args):
                 # gli istanti asciutti entrano negli accumuli (falsi allarmi di massa),
                 # non nelle metriche istantanee
                 wet = np.count_nonzero(obs[obs_cov] >= wet_dbz) >= min_wet_frac * obs_cov.sum()
+                classes = classifier(obs) if (classifier is not None and wet) else {}
                 obs = np.where(obs_cov, obs, cfg.dbz_floor)
                 do_fss = (count % fss_every) == 0
                 hr = hours.setdefault(floor_time(T, 60), {})
@@ -439,6 +440,8 @@ def _worker(args):
                         mask &= region
                     if wet:
                         acc.add((m, s, a), T, val, obs, mask, do_fss)
+                        for name, cmask in classes.items():
+                            acc.add((f"{m}|{name}", s, a), T, val, obs, mask & cmask, do_fss)
                     _hour_add(hr, (m, s), acc.rain(val), Ro, mask, win)
                 if wet:
                     count += 1
@@ -457,14 +460,18 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
                    fss_scales=DEFAULT_FSS_SCALES, wet_dbz=10.0, min_wet_frac=0.002,
                    pair_stride=4, fss_every=1, region_mask_path=None, workers=1,
                    reader=read_odim_composite, r_scales=DEFAULT_R_SCALES, r_cap_dbz=55.0,
-                   cirrus_reader=None):
+                   cirrus_reader=None, classifier=None):
     """pair_stride: usa una coppia ODYSSEY ogni N (4 = una all'ora). Gli accumuli
     orari richiedono pair_stride=1, altrimenti le ore restano senza istanti.
     region_mask_path: .npy bool (griglia 1 km) per limitare l'area (es. escludere la
     Spagna, che in CIRRUS e' estrapolata con LK).
     r_scales, r_cap_dbz: scale (km) e limite in dBZ per le metriche in R.
     cirrus_reader: reader of the truth files (`cir_files`); default `reader`. A different
-    one is needed when the coarse input is degraded CIRRUS (`read_degraded`, H1)."""
+    one is needed when the coarse input is degraded CIRRUS (`read_degraded`, H1).
+    classifier: optional, maps the truth field (dBZ, `Frame.to_field`, NaN outside
+    coverage) to {class name: bool mask}, e.g. `opera_ds.classify.obs_classes`; the
+    instantaneous scores are then also accumulated on each class, under the method name
+    "<method>|<class>". Must be picklable (a module-level function or a partial of one)."""
     cfg = cfg or DownscaleConfig()
     cirrus_reader = cirrus_reader or reader
     os.makedirs(out_dir, exist_ok=True)
@@ -490,7 +497,8 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
     chunks = [list(c) for c in np.array_split(np.array(pairs, dtype=object), workers)]
     args = [(c, ody_files, cir_files, cfg, tuple(shifts), tuple(methods), quantity,
              tuple(thresholds), tuple(fss_thr), tuple(fss_scales), wet_dbz, min_wet_frac,
-             region_mask_path, fss_every, reader, tuple(r_scales), r_cap_dbz, cirrus_reader)
+             region_mask_path, fss_every, reader, tuple(r_scales), r_cap_dbz, cirrus_reader,
+             classifier)
             for c in chunks if c]
     acc_args = (thresholds, fss_thr, fss_scales, wet_dbz, tuple(r_scales), r_cap_dbz, cfg.dbz_floor)
     acc = Accumulator(*acc_args)
