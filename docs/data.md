@@ -20,9 +20,12 @@ e.g. 1/10/2012 and 15/10/2024; CIRRUS is missing from 7 to 17/10/2024 (only
 NIMBUS exists), and on 13–15/5/2025 there is no product at all.
 
 CIRRUS `DBZH` in 2025 (checked over the whole year with the Belgian crop):
-1,329 of the 105,120 time steps at 5 min are missing from the bucket:
+1,329 of the 105,120 time steps at 5 min are missing from the bucket. A row
+gives the first and the last missing time step, not a continuous gap: the
+first row spans 389 time steps, of which 243 are missing; the other rows are
+continuous.
 
-| from | to | time steps |
+| from | to | missing |
 |---|---|---:|
 | 1/1/2025 06:50 | 2/1/2025 15:10 | 243 |
 | 18/2/2025 22:20 | 19/2/2025 06:55 | 104 |
