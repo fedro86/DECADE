@@ -25,3 +25,7 @@ synthetic_out/
 .vscode/
 .idea/
 .DS_Store
+
+# literature: summaries (.md) are shared, the articles themselves are not (copyright)
+docs/sources/*
+!docs/sources/*.md
