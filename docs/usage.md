@@ -193,16 +193,24 @@ resume from partial results: production skips the chunks already written,
 training restarts from its last checkpoint. The current CLI does not resume yet
 ([roadmap.md](roadmap.md), D1 and T1).
 
-## Measured costs (16 cores, local disk)
+## Measured costs
 
-| step | cost |
-|---|---|
-| `validate`, Belgium + 200 km, 4 days, 4 methods, 4 shifts | about 21 min with 12 processes |
-| `sample`, whole domain | 5 days in 43 s with 10 processes, so about 10 h for 12 years of ODYSSEY |
-| windows selected with the IRENE parameters | about 56,000 in 5 days, so about 50 million over 12 years |
-| `windows` | about 8 s of CPU and 1.1–1.6 MB per 24 × 256 × 256 window |
-| `fetch_cog_crop.py`, Belgium + 350 km | about 3 h for 12 years of ODYSSEY with 32 threads |
-| synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions |
+Two machines: a Linux machine with 16 cores and local disk, and the Windows
+workstation (Windows 11, Intel i9-13900KF, 32 threads, 64 GB RAM, local disk;
+measured in November 2026 for S0). "—" means not measured on that machine.
+
+| step | 16 cores | workstation |
+|---|---|---|
+| `validate`, Belgium + 200 km, 4 days, 4 methods, 4 shifts | about 21 min with 12 processes | 4.4 min with 12 processes |
+| `sample`, whole domain | 5 days in 43 s with 10 processes, so about 10 h for 12 years of ODYSSEY | — |
+| `windows` | about 8 s of CPU and 1.1–1.6 MB per 24 × 256 × 256 window | — |
+| `fetch_ord_archive.py`, whole files of both products, 1–6/7/2024 | — | 3.1 GB in 5 min |
+| `fetch_cog_crop.py`, Belgium + 350 km, ODYSSEY | about 3 h for 12 years with 32 threads | 15 min and 3.0 GB for one year (2023) with 32 threads |
+| `fetch_cog_crop.py`, Belgium + 350 km, CIRRUS | — | 1.2 h and 25.5 GB (258 kB per frame) for one year (2025) with 32 threads |
+| synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions | 3.9 min |
+
+With the IRENE parameters `sample` selects about 56,000 windows in 5 days, so
+about 50 million over 12 years.
 
 Each window currently rereads and decompresses its 9–11 whole ODYSSEY files:
 see [roadmap.md](roadmap.md) for the planned grouping by time.

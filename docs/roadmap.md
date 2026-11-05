@@ -81,7 +81,7 @@ left allows it.
 
 ### Setup
 
-- [ ] [**S0**](https://github.com/fedro86/DECADE/issues/9) Reproduce the
+- [x] [**S0**](https://github.com/fedro86/DECADE/issues/9) Reproduce the
   existing pipeline on Marìca's Windows machine (M, 3–15/11).
 - [ ] [**S6**](https://github.com/fedro86/DECADE/issues/10) Set up SSH access to
   the Windows workstation (F, 3–22/11).

@@ -19,6 +19,17 @@ only** (GeoTIFFs only on 19/5 and 26/10/2026, partial). Some days are missing,
 e.g. 1/10/2012 and 15/10/2024; CIRRUS is missing from 7 to 17/10/2024 (only
 NIMBUS exists), and on 13–15/5/2025 there is no product at all.
 
+CIRRUS `DBZH` in 2025 (checked over the whole year with the Belgian crop):
+1,329 of the 105,120 time steps at 5 min are missing from the bucket:
+
+| from | to | time steps |
+|---|---|---:|
+| 1/1/2025 06:50 | 2/1/2025 15:10 | 243 |
+| 18/2/2025 22:20 | 19/2/2025 06:55 | 104 |
+| 13/5/2025 00:00 | 16/5/2025 01:55 | 888 |
+| 14/8/2025 09:00 | 14/8/2025 09:55 | 12 |
+| isolated, on 22 other days | | 82 |
+
 | product | file | grid | step | period in the bucket |
 |---|---|---|---|---|
 | ODYSSEY max reflectivity | `DBZH_QIND.h5` | 1900 × 2200, 2 km | 15 min | 4/9/2012 → 5/7/2024 05:45 |
