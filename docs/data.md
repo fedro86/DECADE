@@ -25,27 +25,33 @@ NIMBUS exists), and on 13–15/5/2025 there is no product at all.
 | ODYSSEY rain rate | `QIND_RATE.h5` | 1900 × 2200, 2 km | 15 min | same |
 | ODYSSEY 1 h accumulation | `ACRR_QIND.h5` | 1900 × 2200, 2 km | 15 min | same |
 | CIRRUS max reflectivity | `DBZH.h5` | 3800 × 4400, 1 km | 5 min | from 1/7/2024 |
-| NIMBUS rain rate | `RATE.h5` | 1900 × 2200, 2 km | 15 min | from 5/7/2024 06:00 |
+| NIMBUS rain rate | `RATE.h5` | 1900 × 2200, 2 km | 15 min | from 5/7/2024 06:15 |
 | NIMBUS 1 h accumulation | `ACRR.h5` | 1900 × 2200, 2 km | 15 min | same |
 
-The last ODYSSEY time step is 5/7/2024 06:00 for all three products; on that
-day `DBZH_QIND` has no file at 05:30 (checked by listing and HEAD requests).
+On 5/7/2024 the last ODYSSEY time step is 06:00 for all three products and the
+first NIMBUS time step is 06:15 for both; `DBZH_QIND` has no file at 05:30
+(checked by listing and HEAD requests).
 
 ODYSSEY `DBZH_QIND` in 2023 (checked over the whole year with the Belgian
-crop): 632 of the 35,040 time steps at 15 min are missing from the bucket:
+crop): 632 of the 35,040 time steps at 15 min are missing from the bucket. A
+row gives the first and the last missing time step, not a continuous gap: the
+30/10/2023 row spans 47 time steps, of which 21 are missing; the other rows are
+continuous.
 
-| from | to | time steps |
+| from | to | missing |
 |---|---|---:|
+| 6/7/2023 07:30 | 6/7/2023 07:45 | 2 |
 | 30/10/2023 00:15 | 30/10/2023 11:45 | 21 |
 | 4/11/2023 00:00 | 10/11/2023 06:45 | 604 |
-| 6/7/2023 07:30 | 6/7/2023 07:45 | 2 |
 | isolated: 9/3 19:15, 6/7 08:30, 20/7 08:30, 1/8 11:45, 24/8 12:30 | | 5 |
 
 ### Overlap between products
 
 - Reflectivity: only 1–5/7/2024, and on those days only ODYSSEY exists at the
   quarter hours (CIRRUS at :00, :15, :30, :45 is missing).
-- Rain: ODYSSEY and NIMBUS share **one time step only**, 5/7/2024 06:00.
+- Rain: **no overlap** between ODYSSEY and NIMBUS. They are consecutive:
+  ODYSSEY ends at 5/7/2024 06:00 and NIMBUS starts at 06:15, the next time
+  step.
 - ODYSSEY was produced until 30/10/2024, but the public archive stops at
   5/7/2024.
 
