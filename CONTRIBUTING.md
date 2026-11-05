@@ -176,7 +176,10 @@ ticket in the roadmap.
 
 Further rules:
 
-- Never push to `main`.
+- Never push to `main`. On GitHub `main` is protected: changes arrive only
+  through a pull request with the notebook and large-file check green and one
+  approving review. Federico's own pull requests have no other reviewer, so he
+  merges them as administrator (`gh pr merge --admin`).
 - CI checks every pull request for notebook outputs and large files. The
   synthetic test runs only when code, configuration or the environment change
   (paths in `.github/workflows/tests.yml`), not for documentation or notebooks.
