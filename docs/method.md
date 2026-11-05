@@ -121,6 +121,39 @@ shifts are tried to find the one that minimises the error.
 
 ![Validation overview, 1–5/7/2024, Belgium](figures/validation_overview.png)
 
+### Degraded CIRRUS as a stand-in for ODYSSEY
+
+To measure the interpolation error over months with a known truth (H1),
+CIRRUS is degraded to the ODYSSEY grid (`opera_ds.validate.degrade_frame`) and
+kept every 15 min; the degraded frames are interpolated back to 5 min and scored
+against the real CIRRUS (`notebooks/02-mr-degraded-cirrus.ipynb`). The
+degradation should look like real ODYSSEY, otherwise it measures the error on an
+input that is easier or harder to interpolate.
+
+Three degradations of each 2 × 2 block were compared with real ODYSSEY on
+1–5/7/2024: mean in linear Z (`zmean`), maximum (`max`) and the upper-left pixel
+(`sample`). ODYSSEY at NT is paired with CIRRUS at NT+5, the closest window
+([data.md](data.md), *Time windows*); 382 pairs, values capped at 60 dBZ against
+the ODYSSEY outliers. Distributions of wet pixels (≥ 10 dBZ) are compared by
+shape, after removing the median offset, since the products differ in level;
+small-scale energy is the high-pass energy (Gaussian, σ = 2 px) relative to
+ODYSSEY.
+
+| area | variant | median offset to ODYSSEY [dB] | QQ shape RMS [dB] | small-scale energy / ODYSSEY |
+|---|---|---:|---:|---:|
+| Belgium + 200 km | `zmean` | −0.04 | 0.39 | 1.39 |
+| | `max` | 0.70 | 0.78 | 1.64 |
+| | `sample` | −0.20 | 0.43 | 1.53 |
+| Belgium | `zmean` | 1.30 | 0.67 | 2.14 |
+| | `max` | 2.61 | 1.21 | 2.52 |
+| | `sample` | 0.86 | 0.63 | 2.26 |
+
+- `zmean` is the closest to ODYSSEY: lowest small-scale energy everywhere, best
+  or tied distribution shape. It is the degradation used in H1.
+- No degradation is smoother than ODYSSEY: real ODYSSEY has 1.4–2.1 times less
+  small-scale energy than CIRRUS degraded by `zmean`. Degraded CIRRUS is
+  therefore a rougher, not an easier, input than ODYSSEY.
+
 ### Synthetic test
 
 `tests/test_synthetic.py` builds a multiscale field with known motion

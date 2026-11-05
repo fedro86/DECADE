@@ -53,36 +53,55 @@ HIST_BINS = np.arange(-10.0, 75.5, 0.5)
 MIN_HOUR_FRAC = 0.5      # accumulo orario solo con almeno meta' degli istanti a 5 min
 
 
-def degrade_frame(frame: Frame, factor: int = 2) -> Frame:
+DEGRADE_HOWS = ("zmean", "max", "sample")
+
+
+def degrade_frame(frame: Frame, factor: int = 2, how: str = "zmean") -> Frame:
     """Degrade a fine composite (e.g. CIRRUS, 1 km) to a grid `factor` times coarser
     (e.g. 2 km, as ODYSSEY), for validating the interpolation against a known truth (H1).
 
-    Each coarse pixel is the mean in linear Z (mm^6 m^-3) of its factor x factor block,
-    with undetect counted as Z = 0, converted back to dBZ. A coarse pixel is covered only
-    if the whole block is covered, and is undetect if the whole block is undetect.
-    Input values in dBZ; output a Frame with the coarse 'where' (see `coarsen_where`).
-    Rows and columns must be multiples of `factor`."""
+    how = "zmean":  mean in linear Z (mm^6 m^-3) of the factor x factor block, undetect
+                    counted as Z = 0, converted back to dBZ;
+          "max":    maximum dBZ of the echoes in the block;
+          "sample": the upper-left pixel of the block, as if the coarse grid sampled the
+                    fine one.
+    For "zmean" and "max" a coarse pixel is covered only if the whole block is covered,
+    and is undetect if the whole block is undetect; for "sample" coverage and undetect
+    are those of the sampled pixel. Input values in dBZ; output a Frame with the coarse
+    'where' (see `coarsen_where`). Rows and columns must be multiples of `factor`."""
+    if how not in DEGRADE_HOWS:
+        raise ValueError(f"how = {how!r}, expected one of {DEGRADE_HOWS}")
     ny, nx = frame.values.shape
     if ny % factor or nx % factor:
         raise ValueError(f"shape {frame.values.shape} is not a multiple of {factor}")
+    where = coarsen_where(frame.where, factor)
+    if how == "sample":
+        return Frame(time=frame.time, values=frame.values[::factor, ::factor].copy(),
+                     coverage=frame.coverage[::factor, ::factor].copy(),
+                     undetect=frame.undetect[::factor, ::factor].copy(),
+                     where=where, path=frame.path, attrs=dict(frame.attrs))
     shape = (ny // factor, factor, nx // factor, factor)
     det = frame.coverage & ~frame.undetect
-    z = np.where(det, np.power(10.0, frame.values.astype(np.float64) / 10.0), 0.0)
-    z_mean = z.reshape(shape).mean(axis=(1, 3))
     coverage = frame.coverage.reshape(shape).all(axis=(1, 3))
     undetect = coverage & ~det.reshape(shape).any(axis=(1, 3))
-    values = np.zeros(z_mean.shape, np.float32)
     ok = coverage & ~undetect
-    values[ok] = 10.0 * np.log10(z_mean[ok])
+    values = np.zeros(coverage.shape, np.float32)
+    if how == "zmean":
+        z = np.where(det, np.power(10.0, frame.values.astype(np.float64) / 10.0), 0.0)
+        values[ok] = 10.0 * np.log10(z.reshape(shape).mean(axis=(1, 3))[ok])
+    else:
+        v = np.where(det, frame.values, -np.inf).reshape(shape).max(axis=(1, 3))
+        values[ok] = v[ok]
     return Frame(time=frame.time, values=values, coverage=coverage, undetect=undetect,
-                 where=coarsen_where(frame.where, factor), path=frame.path, attrs=dict(frame.attrs))
+                 where=where, path=frame.path, attrs=dict(frame.attrs))
 
 
-def read_degraded(path: str, quantity: str = "DBZH", factor: int = 2, extent=None) -> Frame:
+def read_degraded(path: str, quantity: str = "DBZH", factor: int = 2, extent=None,
+                  how: str = "zmean") -> Frame:
     """`read_odim_composite` followed by `degrade_frame`. A module-level reader, so that
     `functools.partial(read_degraded, ...)` can be passed to `run_validation` as the
     reader of the coarse files and pickled for the worker processes."""
-    return degrade_frame(read_odim_composite(path, quantity, extent=extent), factor)
+    return degrade_frame(read_odim_composite(path, quantity, extent=extent), factor, how)
 
 
 def _box(a, k):

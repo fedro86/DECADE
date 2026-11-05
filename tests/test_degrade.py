@@ -59,6 +59,22 @@ def test_where_is_coarse_and_aligned():
     assert refine_where(coarsen_where(WHERE_FINE, 2), 2) == WHERE_FINE
 
 
-def test_odd_shape_is_rejected():
+def test_max_and_sample():
+    v = np.full((4, 6), 20.0)
+    v[0:2, 0:2] = [[10.0, 20.0], [30.0, 40.0]]
+    u = np.zeros((4, 6), bool)
+    u[0, 0] = True                                  # sampled pixel of block (0, 0) is undetect
+    mx = degrade_frame(_frame(v, undetect=u), how="max")
+    assert mx.values[0, 0] == pytest.approx(40.0) and not mx.undetect[0, 0]
+    assert np.allclose(mx.values[1:, :], 20.0)
+    sp = degrade_frame(_frame(v, undetect=u), how="sample")
+    assert sp.undetect[0, 0] and sp.values.shape == (2, 3)
+    assert np.allclose(sp.values[1:, :], 20.0)
+    assert sp.where == mx.where == coarsen_where(WHERE_FINE, 2)
+
+
+def test_odd_shape_and_unknown_how_are_rejected():
     with pytest.raises(ValueError):
         degrade_frame(_frame(np.zeros((3, 6))))
+    with pytest.raises(ValueError):
+        degrade_frame(_frame(np.zeros((4, 6))), how="median")
