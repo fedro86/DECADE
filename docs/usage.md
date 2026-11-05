@@ -48,7 +48,7 @@ uv run python scripts/opera_ds_cli.py validate \
   --pair-stride 1 --workers 12 --out results/val_2024-07_BEL
 ```
 
-About 21 min with 12 processes for these 4 days. Output folder:
+Run time for these 4 days on each machine: see *Measured costs*. Output folder:
 
 | file | content |
 |---|---|
