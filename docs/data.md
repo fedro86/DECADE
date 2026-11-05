@@ -28,9 +28,17 @@ NIMBUS exists), and on 13–15/5/2025 there is no product at all.
 | NIMBUS rain rate | `RATE.h5` | 1900 × 2200, 2 km | 15 min | from 5/7/2024 06:15 |
 | NIMBUS 1 h accumulation | `ACRR.h5` | 1900 × 2200, 2 km | 15 min | same |
 
-On 5/7/2024 the last ODYSSEY time step is 06:00 for all three products and the
-first NIMBUS time step is 06:15 for both; `DBZH_QIND` has no file at 05:30
-(checked by listing and HEAD requests).
+The switch on 5/7/2024, from a listing of the bucket (h5 and tiff alike):
+
+| product | 05:15 | 05:30 | 05:45 | 06:00 | 06:15 |
+|---|---|---|---|---|---|
+| ODYSSEY `DBZH_QIND`, `QIND_RATE`, `ACRR_QIND` | yes | — | yes | yes | — |
+| NIMBUS `RATE`, `ACRR` | — | yes | — | — | yes |
+| CIRRUS `DBZH` | — | yes | — | — | yes |
+
+So the last ODYSSEY time step is 06:00 and NIMBUS runs continuously from 06:15;
+05:30 is a single NIMBUS and CIRRUS time step where all three ODYSSEY products
+are missing.
 
 ODYSSEY `DBZH_QIND` in 2023 (checked over the whole year with the Belgian
 crop): 632 of the 35,040 time steps at 15 min are missing from the bucket. A
@@ -48,10 +56,11 @@ continuous.
 ### Overlap between products
 
 - Reflectivity: only 1–5/7/2024, and on those days only ODYSSEY exists at the
-  quarter hours (CIRRUS at :00, :15, :30, :45 is missing).
-- Rain: **no overlap** between ODYSSEY and NIMBUS. They are consecutive:
-  ODYSSEY ends at 5/7/2024 06:00 and NIMBUS starts at 06:15, the next time
-  step.
+  quarter hours (CIRRUS at :00, :15, :30, :45 is missing), except 5/7/2024
+  05:30, where CIRRUS exists and ODYSSEY does not.
+- Rain: **no overlap** between ODYSSEY and NIMBUS: no time step has both. They
+  are consecutive: ODYSSEY ends at 5/7/2024 06:00 and NIMBUS runs from 06:15,
+  the next time step; the only earlier NIMBUS time step, 05:30, has no ODYSSEY.
 - ODYSSEY was produced until 30/10/2024, but the public archive stops at
   5/7/2024.
 
