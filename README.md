@@ -77,6 +77,7 @@ Each topic lives in exactly one file; the others link to it.
 | [docs/data.md](docs/data.md) | facts about the input data: sources, formats, time windows, gaps, known problems |
 | [docs/method.md](docs/method.md) | how the processing works and why, with the evidence and the validation results |
 | [docs/usage.md](docs/usage.md) | how to run the scripts, locally and on Leonardo Booster; what they write; measured costs |
+| [docs/sources/](docs/sources/README.md) | summaries of the literature behind the choices (articles not shared) |
 | [notebooks/README.md](notebooks/README.md) | list of notebooks |
 | [CLAUDE.md](CLAUDE.md) | instructions for the Claude Code agent only |
 

@@ -48,3 +48,12 @@ listed in the README, *Documentation*; do not copy it here.
   confirmation.
 - **Data contradicting `docs/data.md`**: stop and tell the user before adapting
   the code.
+- **Numbers need sources.** Before proposing a threshold, parameter or
+  classification rule, search the literature (`CONTRIBUTING.md`, *Literature
+  before numbers*): save open-access PDFs in `docs/sources/` as
+  `YEAR - AUTHOR - TITLE.pdf` (never committed) and write the summary `.md`
+  with the same name, in your own words, saying what was read in full and
+  what only in the abstract. Never present a number without its source.
+- **Articles you cannot download** (paywall, login, blocked site): ask the user
+  to download them into `docs/sources/` under any name. When they have, rename
+  each PDF to `YEAR - AUTHOR - TITLE.pdf` and write its summary.
