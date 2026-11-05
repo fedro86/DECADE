@@ -113,6 +113,17 @@ Rules the code relies on:
 - If real data contradict [docs/data.md](docs/data.md), report it before
   adapting the code, and correct the page.
 
+## Literature before numbers
+
+Every method choice that rests on a number (a threshold, a parameter, a
+classification rule) starts with a literature search: where the number comes
+from, who uses it on similar data (Belgium, Benelux, OPERA), and its known
+limits. Each source gets a summary in `docs/sources/`, named
+`YEAR - AUTHOR - TITLE.md`; the PDF goes next to it with the same name and is
+never committed (git ignores everything in that folder except `.md`). The
+rules and a template are in [docs/sources/README.md](docs/sources/README.md).
+`docs/method.md` then cites the summaries next to the number.
+
 ## Documentation: what goes where
 
 Each topic lives in one file only; elsewhere, link to it. Before adding a
@@ -127,6 +138,7 @@ paragraph, check that it is not already written somewhere else.
 | change installation or the folder layout | `README.md` |
 | change how we work, or add a module | `CONTRIBUTING.md` |
 | add a notebook | `notebooks/README.md` |
+| read an article or report used for a choice | `docs/sources/<YEAR - AUTHOR - TITLE>.md` |
 
 Status ("done", "to do") is written only in `docs/roadmap.md`.
 
