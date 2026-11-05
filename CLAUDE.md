@@ -12,6 +12,18 @@ listed in the README, *Documentation*; do not copy it here.
 - When a task is finished, update `docs/roadmap.md` and the file that owns the
   topic, never two copies of the same fact.
 
+## Git and GitHub
+
+- Follow `CONTRIBUTING.md`, *Issues, branches and pull requests*. Use `gh` for
+  GitHub operations.
+- When work on a ticket starts, create its branch and its draft pull request
+  without asking; commit and push to that branch as the work goes.
+- Never commit or push to `main`, never merge, never close an issue by hand.
+- Before marking a pull request ready and requesting a review, show the user
+  the filled description and ask.
+- Problems outside the ticket: open an issue with the *Problem* template, with
+  labels and milestone, and tell the user.
+
 ## Language
 
 - Answer the user in Italian.
