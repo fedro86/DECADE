@@ -18,7 +18,7 @@ changes to `pyproject.toml`.
 - Start JupyterLab with `uv run jupyter lab`, or in VS Code pick the `.venv`
   kernel (see the README).
 - Name new notebooks `NN-<initials>-<topic>.ipynb`, e.g.
-  `02-ab-quantile-mapping.ipynb`, and add a line to `notebooks/README.md`.
+  `02-mr-quantile-mapping.ipynb`, and add a line to `notebooks/README.md`.
 - Start every notebook with
 
   ```python
@@ -130,17 +130,60 @@ paragraph, check that it is not already written somewhere else.
 
 Status ("done", "to do") is written only in `docs/roadmap.md`.
 
-## Git workflow
+## Issues, branches and pull requests
 
-- Do not push to `main`: create a branch (`git switch -c ab/quantile-mapping`),
-  commit, push, and open a pull request.
+Every ticket of `docs/roadmap.md` is a GitHub issue written with the *Ticket*
+template (`.github/ISSUE_TEMPLATE/ticket.md`). Work on it goes through one
+branch and one pull request:
+
+1. **Start.** From an up-to-date `main`, create a branch named
+   `<initials>/<id>-<topic>` (e.g. `mr/s0-reproduce`), push it and open a
+   **draft** pull request at once, titled like the issue and linked to it:
+
+   ```bash
+   git switch main && git pull
+   git switch -c mr/s0-reproduce
+   git push -u origin mr/s0-reproduce
+   gh pr create --draft --title "S0 · Reproduce the existing pipeline" --body "Closes #9"
+   ```
+
+   The draft shows what is in progress; discussion about the work goes there.
+2. **Work.** Commit and push to the branch often. Attach figures that are not in
+   git to the pull request. If `main` moves on, merge it into the branch.
+3. **Problems found on the way** that are not part of the ticket become new
+   issues with the *Problem* template (`.github/ISSUE_TEMPLATE/problem.md`),
+   with `area:` and `who:` labels and the milestone of the ticket they block;
+   mention them in the pull request.
+4. **Ready for review.** When the acceptance criteria of the issue are met:
+   tick the ticket in `docs/roadmap.md` and update the file that owns the result,
+   in the same pull request; fill the description from
+   `.github/pull_request_template.md`; then mark the pull request ready and ask
+   Federico for a review, which notifies him:
+
+   ```bash
+   gh pr ready
+   gh pr edit --add-reviewer fedro86
+   ```
+
+   Tickets labelled `review:vito` are also sent to Vito.
+5. **Review and merge.** Requested changes are new commits on the same branch;
+   ask for a review again when they are done. Federico merges when CI is green
+   and the review is approved; the merge closes the issue and deletes the branch.
+
+A ticket whose result is not a file (an email, a decision) still gets a short
+pull request: it records the result in the file that owns it and ticks the
+ticket in the roadmap.
+
+Further rules:
+
+- Never push to `main`. On GitHub `main` is protected: changes arrive only
+  through a pull request with the notebook and large-file check green and one
+  approving review. Federico's own pull requests have no other reviewer, so he
+  merges them as administrator (`gh pr merge --admin`).
 - CI checks every pull request for notebook outputs and large files. The
   synthetic test runs only when code, configuration or the environment change
   (paths in `.github/workflows/tests.yml`), not for documentation or notebooks.
-- Keep pull requests small: one method or one notebook at a time.
-- Work is tracked as GitHub issues, one per ticket of `docs/roadmap.md`, written
-  with the *Ticket* template (`.github/ISSUE_TEMPLATE/ticket.md`). Link the
-  pull request to its issue (`Closes #<n>`).
+- Keep pull requests small: one ticket, one method or one notebook at a time.
 
 ## Language
 
