@@ -243,6 +243,22 @@ def refine_where(where_coarse: dict, factor: int) -> dict:
     return w
 
 
+def coarsen_where(where_fine: dict, factor: int) -> dict:
+    """Inverse of `refine_where`: 'where' metadata of the grid `factor` times coarser
+    with the same extent (corners unchanged). Sizes and crop offsets must be multiples
+    of `factor`."""
+    w = dict(where_fine)
+    for k in ("xsize", "ysize", "full_xsize", "full_ysize", "crop_row0", "crop_col0"):
+        if k in w:
+            if int(w[k]) % factor:
+                raise ValueError(f"{k} = {w[k]} is not a multiple of {factor}")
+            w[k] = int(w[k]) // factor
+    for k in ("xscale", "yscale"):
+        if k in w:
+            w[k] = float(w[k]) * factor
+    return w
+
+
 def check_grid_alignment(where_coarse: dict, where_fine: dict, factor: int,
                          tol_deg: float = 1e-3) -> list[str]:
     """Restituisce una lista di incongruenze (vuota = griglie allineate)."""
