@@ -1,4 +1,4 @@
-"""Grafici del report di validazione (PNG statici)."""
+"""Figures of the validation report (static PNG)."""
 from __future__ import annotations
 
 import os
@@ -10,11 +10,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-# ordine fisso: il colore segue il metodo, non il rango
+# fixed order: the colour follows the method, not its rank
 STYLE = {
-    "nearest": dict(color="#2a78d6", marker="o", label="nearest (frame piu' vicino)"),
-    "linear": dict(color="#eb6834", marker="s", label="linear (cross-fade euleriano)"),
-    "lk": dict(color="#1baf7a", marker="^", label="Lucas-Kanade (advettivo)"),
+    "nearest": dict(color="#2a78d6", marker="o", label="nearest (closest frame)"),
+    "linear": dict(color="#eb6834", marker="s", label="linear (Eulerian cross-fade)"),
+    "lk": dict(color="#1baf7a", marker="^", label="Lucas-Kanade (advective)"),
     "lk:dB": dict(color="#eda100", marker="D", label="Lucas-Kanade, blending in dB"),
     "linear:dB": dict(color="#e87ba4", marker="v", label="linear, blending in dB"),
 }
@@ -50,7 +50,7 @@ def make_plots(summary: list[dict], qq: dict, out_dir: str):
     shifts = sorted({r["shift_min"] for r in summary})
     methods = [m for m in STYLE if any(r["method"] == m for r in summary)]
 
-    # shift migliore = RMSE minimo del metodo lk mediato su tutti gli alpha
+    # best shift = lowest RMSE of the lk method, averaged over all alpha
     def mean_rmse(s, m="lk"):
         rs = by.get((m, s), [])
         return np.mean([r["rmse"] for r in rs]) if rs else np.inf
@@ -62,8 +62,8 @@ def make_plots(summary: list[dict], qq: dict, out_dir: str):
     for m in methods:
         rs = sorted(by[(m, best)], key=lambda r: r["alpha"])
         _line(ax, [r["alpha"] * 15 for r in rs], [r["rmse"] for r in rs], m)
-    _style_ax(ax, f"RMSE sui pixel bagnati (shift {best:+g} min)",
-              "minuti dopo il frame ODYSSEY t0", "RMSE [dBZ]")
+    _style_ax(ax, f"RMSE on wet pixels (shift {best:+g} min)",
+              "minutes after ODYSSEY frame t0", "RMSE [dBZ]")
     handles, labels = ax.get_legend_handles_labels()
 
     ax = axes[0, 1]
@@ -75,7 +75,7 @@ def make_plots(summary: list[dict], qq: dict, out_dir: str):
             continue
         w = np.array([r["n_times"] for r in rs], float)
         _line(ax, thr, [np.average([r[k] for r in rs], weights=w) for k in thr_keys], m)
-    _style_ax(ax, "CSI negli istanti interpolati", "soglia [dBZ]", "CSI")
+    _style_ax(ax, "CSI at interpolated times", "threshold [dBZ]", "CSI")
 
     ax = axes[1, 0]
     fss_keys = [k for k in summary[0] if k.startswith("fss_")]
@@ -92,28 +92,28 @@ def make_plots(summary: list[dict], qq: dict, out_dir: str):
         ax.set_xscale("log")
         ax.set_xticks(scales)
         ax.set_xticklabels([str(s) for s in scales])
-        _style_ax(ax, f"FSS a {t_first} negli istanti interpolati", "scala [km]", "FSS")
+        _style_ax(ax, f"FSS at {t_first} at interpolated times", "scale [km]", "FSS")
 
     ax = axes[1, 1]
     for m in methods:
         rs = sorted(by[(m, best)], key=lambda r: r["alpha"])
         _line(ax, [r["alpha"] * 15 for r in rs], [r["hf_energy_ratio"] for r in rs], m)
     ax.axhline(1.0, color=INK2, linewidth=1, linestyle="--")
-    ax.annotate("= variabilita' CIRRUS", (0.02, 1.0), xycoords=("axes fraction", "data"),
+    ax.annotate("= CIRRUS variability", (0.02, 1.0), xycoords=("axes fraction", "data"),
                 textcoords="offset points", xytext=(0, 4), fontsize=8, color=INK2)
-    _style_ax(ax, "Energia alle piccole scale (pred / CIRRUS)",
-              "minuti dopo il frame ODYSSEY t0", "rapporto")
+    _style_ax(ax, "Small-scale energy (pred / CIRRUS)",
+              "minutes after ODYSSEY frame t0", "ratio")
 
     fig.legend(handles, labels, loc="lower center", ncol=len(labels), frameon=False, fontsize=9)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     fig.savefig(os.path.join(out_dir, "validation_overview.png"), dpi=130)
     plt.close(fig)
 
-    # RMSE medio per shift: stima dello sfasamento temporale tra i due prodotti
+    # mean RMSE by shift: estimate of the time offset between the two products
     fig, ax = plt.subplots(figsize=(6, 4), facecolor="white")
     for m in methods:
         _line(ax, shifts, [mean_rmse(s, m) for s in shifts], m)
-    _style_ax(ax, "Sfasamento ODYSSEY vs CIRRUS", "shift applicato [min]", "RMSE medio [dBZ]")
+    _style_ax(ax, "Time offset ODYSSEY vs CIRRUS", "applied shift [min]", "mean RMSE [dBZ]")
     ax.legend(frameon=False, fontsize=8)
     fig.tight_layout()
     fig.savefig(os.path.join(out_dir, "time_shift.png"), dpi=130)
@@ -131,7 +131,7 @@ def make_plots(summary: list[dict], qq: dict, out_dir: str):
         st = STYLE[m]
         ax.plot(obs, pred, color=st["color"], linewidth=2, label=st["label"])
     ax.plot(lim, lim, color=INK2, linewidth=1, linestyle="--")
-    _style_ax(ax, "Q-Q pixel bagnati (istanti interpolati)", "CIRRUS [dBZ]", "downscaled [dBZ]")
+    _style_ax(ax, "Q-Q of wet pixels (interpolated times)", "CIRRUS [dBZ]", "downscaled [dBZ]")
     ax.legend(frameon=False, fontsize=8)
     fig.tight_layout()
     fig.savefig(os.path.join(out_dir, "qq.png"), dpi=130)
