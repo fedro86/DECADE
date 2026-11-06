@@ -16,8 +16,9 @@ updated version of the ODYSSEY compositing software, in ODIM HDF5 2.4.
 
 - **Compositing rule:** the value of a pixel is the maximum of all contributing
   single-scan reflectivity pixels (page 3, *Production method*).
-- **Time window:** [NT − 10 min, NT], updated every 5 min, 288 times a day
-  (page 2, section 4); consistent with `docs/data.md`, *Time windows*.
+- **Time window:** (NT − 10 min, NT], updated every 5 min, 288 times a day
+  (page 2, section 4, where it is written [NT − 10 min, NT]; the files declare
+  a start at NT − 9:59, `docs/data.md`, *Time windows for the label NT*).
 - **Grid:** 4400 × 3800 pixels at 1 km (page 2, section 4).
 - **Spain:** Spanish data come every 10 min and are extrapolated forward with
   Lucas–Kanade to 5 min (page 2, section 3).

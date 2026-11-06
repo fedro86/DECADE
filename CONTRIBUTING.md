@@ -90,12 +90,12 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `opera_ds/interp.py` | `DownscaleConfig`, `PairInterpolator.get(alpha, method)` with methods `nearest`, `linear`, `lk` and suffixes `:Z`, `:dB` |
 | `opera_ds/pipeline.py` | `FrameSource`, `output_times`, `run_downscaling`, `run_downscaling_parallel` |
 | `opera_ds/validate.py` | validation metrics; `degrade_frame`, `read_degraded` (CIRRUS degraded to the ODYSSEY grid) |
-| `opera_ds/classify.py` | convective / stratiform pixels after Steiner et al. (1995): `steiner_convective`, `obs_classes` |
+| `opera_ds/classify.py` | convective / stratiform pixels after Steiner et al. (1995): `steiner_convective`, `steiner_centres` (centres by intensity and by peakedness), `obs_classes`; ECCO convectivity after Dixon and Romatschke (2022): `ecco_convectivity`; `steiner_ecco_fields`, `intensity_centres_vs_ecco` |
 | `opera_ds/sampling.py` | window selection on ODYSSEY: `SamplerConfig`, `sample_block`, `block_times` |
 | `opera_ds/windows.py` | ML windows: `Window`, `make_window`, `WindowStore`, `dbz_to_rr` |
 | `opera_ds/plots.py` | validation figures |
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
-| `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py` | download and masks |
+| `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py` | download and masks; single-radar files for the radar positions of a day |
 
 Rules the code relies on:
 

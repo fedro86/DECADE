@@ -220,8 +220,16 @@ convective (section 6), so it is not a referee. Belgium, all CIRRUS frames:
 | January 2025 | 621,204 | 6.4% | 14.3% |
 | September 2025 | 756,918 | 13.9% | 22.6% |
 
+The question is real: OPERA applies no vertical-profile correction, so a bright
+band can reach the composite (Saltikoff et al. 2019, section 4,
+[summary](sources/2019%20-%20Saltikoff%20-%20OPERA%20the%20Radar%20Project.md)).
+But over the month ECCO does not point to more bright band in January than in
+September.
+
 Maps of the 15 January times with most disagreements (intensity centres that
-ECCO calls stratiform), all on the evening of 22/1/2025 (21:35–22:45, frames
+ECCO calls stratiform; that they all fall on one evening is a consequence of
+this selection rule, not a finding, and one episode cannot tell how common it
+is), all on the evening of 22/1/2025 (21:35–22:45, frames
 15 min before and after, radar positions from the single-radar files of that
 day): over Belgium, around the radars behel and bewid, a wide area of Steiner
 convective pixels hardly moves between 21:20 and 23:00, while ECCO calls it
@@ -285,10 +293,15 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
   pixels; on convective pixels its extra error is higher than `linear`'s.
 - June and July: `lk` has the lowest extra error over all pixels and in both
   classes.
-- Against the 4 days of real ODYSSEY (shift 0, *Results on 1–5/7/2024*), the
-  interpolated times there have RMSEs of 12.6–13.8 dBZ, against 6.3–7.2 dBZ for
-  degraded CIRRUS in January; the real ODYSSEY run has no `alpha` = 0, because
-  CIRRUS is missing at the quarter hours on those days.
+- Against the 4 days of real ODYSSEY (1–5/7/2024, shift 0, *Results on
+  1–5/7/2024*), compared with the same season, July 2025: the interpolated
+  times there have RMSEs of 12.6–13.8 dBZ, against 7.7–9.1 dBZ for degraded
+  CIRRUS. The gap is not only interpolation: real ODYSSEY also adds the
+  differences between the products and the time offset (with the same label,
+  ODYSSEY covers [NT−10, NT+5] and CIRRUS (NT−10, NT], [data.md](data.md),
+  *Time windows for the label NT*), which belong to H6. The real ODYSSEY run
+  has no `alpha` = 0, because CIRRUS is missing at the quarter hours on those
+  days.
 
 ### Synthetic test
 
