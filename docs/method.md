@@ -325,6 +325,11 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
 | | | `linear` | 2.61 | 7.08 | 7.11 | 6.59 | 2.71 |
 | | | `lk` | 2.61 | 5.98 | 5.93 | 5.35 | 2.28 |
 
+Days in the by-day counts (28 in January, 30 in October): no CIRRUS file is
+missing on the left-out days (288 a day). On 17/1 no time is wet by the
+criterion of `run_validation` (≥ 10 dBZ on at least 0.2% of the covered
+area), and on 16/1, 18/1 and 14/10 no interpolated time has convective pixels.
+
 By season (seasons as in Imhoff et al. 2020; RMSEs pooled over the months of
 the season, weighted by the number of wet pixels; DJF is January alone):
 
@@ -353,8 +358,8 @@ the season, weighted by the number of wet pixels; DJF is January alone):
 - October `lk` deficit on convective pixels, counted by day as for January:
   `lk` is worse than `linear` on 22 of 30 days, and the deficit is
   concentrated on a few days (28/10 alone carries 63% of the monthly deficit,
-  28/10 and 3/10 more than all of it, because `lk` is better on the other
-  days). The October days were not mapped, so nothing is said about the
+  28/10 and 3/10 more than all of it, because `lk` is better than `linear`
+  on 8 of the 30 days). The October days were not mapped, so nothing is said about the
   features on them.
 - Against the 4 days of real ODYSSEY (1–5/7/2024, shift 0, *Results on
   1–5/7/2024*), compared with the same season, July 2025: the interpolated
@@ -461,7 +466,8 @@ days. In January the maps of those days show stationary features centred on
 or near radars, consistent with `lk` moving stationary features that `linear`
 leaves in place (not tested; what the features are is left to H2, #19); the
 October days were not mapped. The same two months are the ones where `lk`
-loses against `linear` in the R errors at small blocks.
+loses against `linear` in the R errors: in January at every block size up to
+25 km, in October at 1, 2 and 5 km.
 
 ### Synthetic test
 
