@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from opera_ds.classify import (background_dbz, classes_on_coarse_grid, obs_classes,
+from opera_ds.classify import (CENTRES_ONLY, background_dbz, classes_on_coarse_grid, obs_classes,
                                peakedness_threshold, steiner_convective)
 
 
@@ -56,6 +56,16 @@ def test_coarse_grid_and_obs_field():
     assert c["convective"][19, 19] and c["stratiform"][12, 12]
     assert not (c["convective"] & c["stratiform"]).any()
     assert not c["convective"][0, 0] and not c["stratiform"][0, 0] and not c["stratiform"][5, 5]
-    # optional coarse grid: the classification is per 2 x 2 block
-    c2 = classes_on_coarse_grid(np.nan_to_num(obs), np.isfinite(obs) & (obs > 0), factor=2)
-    assert (c2["convective"][::2, ::2] == c2["convective"][1::2, 1::2]).all()
+    # default 2 km grid: the classification is per 2 x 2 block
+    assert (c["convective"][::2, ::2] == c["convective"][1::2, 1::2]).all()
+    c1 = obs_classes(obs, factor=1)
+    assert c1["convective"][19, 19]
+
+
+def test_centres_only_is_smaller():
+    dbz = np.full((40, 40), 20.0)
+    dbz[20, 20] = 45.0
+    echo = np.ones_like(dbz, bool)
+    med = classes_on_coarse_grid(dbz, echo, factor=1)["convective"]
+    cen = classes_on_coarse_grid(dbz, echo, factor=1, conv_radius=CENTRES_ONLY)["convective"]
+    assert cen.sum() == 1 and med.sum() > cen.sum() and (med | cen).sum() == med.sum()

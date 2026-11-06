@@ -168,14 +168,29 @@ with its published parameters:
 | background | mean in linear Z of the echo pixels within 11 km | Steiner 1995, section 6c |
 | convective centre by peakedness | above the background by ΔZ = 10 dB below 0 dBZ, 10 − Z_bg²/180 up to 42.43 dBZ, 0 above | Steiner 1995, Eq. 2 |
 | convective radius around a centre | 1 km below 25 dBZ of background, then 2, 3, 4 km every 5 dBZ, 5 km from 40 dBZ | Steiner 1995, Fig. 6b, "medium" |
-The rule is applied to the truth at its own resolution (CIRRUS, 1 km). Echo
-pixels are those above the floor of the validation fields; everything with echo
-that is not convective is stratiform.
+| grid | 2 km: the 1 km truth is degraded by `zmean`, classified, and each 2 km class copied to its 2 × 2 block | the parameters were tuned on 2 km, and a finer grid gives too much convective area (Steiner 1995, section 6d) |
 
-Known limits: the method was tuned on a 2 km grid, and Steiner 1995 (section 6d)
-reports that run on a finer grid than it was tuned on it finds too much
-convective area; `classes_on_coarse_grid(..., factor=2)` would classify on the
-2 km grid instead. It was tuned on a tropical radar at a fixed 3 km height.
+Echo pixels are those above the floor of the validation fields; everything with
+echo that is not convective is stratiform. 2 km is also the ODYSSEY grid, so the
+same classification can run on the archive.
+
+Convective share of the echo area over Belgium on the H1 test week
+(8–14/9/2025, 2,016 wet CIRRUS times), against Steiner 1995, Table 3 (Darwin,
+February 1988, 2 km):
+
+| grid | convective area | this week | Steiner 1995 |
+|---|---|---:|---:|
+| 1 km | medium radius | 25.4% | — |
+| 2 km | medium radius | 21.3% | 12% (case 2d) |
+| 2 km | centres only | 9.0% | 3% (case 2b) |
+
+- The 1 km grid gives a larger convective share than 2 km, as section 6d
+  reports; this is the reason for the 2 km grid.
+- The radius more than doubles the convective area (9.0% to 21.3%), against
+  four times in the paper (3% to 12%). A Darwin month and a Belgian September
+  week are not directly comparable.
+
+Known limits: the method was tuned on a tropical radar at a fixed 3 km height.
 OPERA `DBZH` is a maximum-reflectivity composite, so a bright band above
 40 dBZ can be labelled convective, mostly in the cold season; this is checked
 on January in H1. Season (December–February against June–August) is kept as a

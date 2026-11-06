@@ -2,9 +2,9 @@
 
 Source and parameters: docs/sources/1995 - Steiner - Climatological characterization of
 three-dimensional storm structure from operational radar and rain gauge data.md
-(section 6c, Eq. 2, Figs. 6b and 7). `obs_classes` classifies the field at its own
-resolution; `classes_on_coarse_grid` with factor > 1 classifies it on a coarser grid
-(the method was tuned on 2 km) and is available if that is chosen.
+(section 6c, Eq. 2, Figs. 6b and 7). The parameters were tuned on a 2 km grid, and a
+finer grid gives too much convective area (section 6d), so `obs_classes` classifies a
+1 km truth on the 2 km grid by default (review of #65).
 """
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ BACKGROUND_RADIUS_KM = 11.0   # background radius (Steiner 1995, section 6c)
 # convective radius by background reflectivity, "medium" curve of Steiner 1995, Fig. 6b:
 # (lower bound of background dBZ, radius km)
 MEDIUM_RADIUS = ((-np.inf, 1.0), (25.0, 2.0), (30.0, 3.0), (35.0, 4.0), (40.0, 5.0))
+# convective centres only, no surrounding area (case 2b of Steiner 1995, Table 3)
+CENTRES_ONLY = ((-np.inf, 0.0),)
 
 
 def _disk(radius_px: float) -> np.ndarray:
@@ -73,7 +75,7 @@ def steiner_convective(dbz: np.ndarray, echo: np.ndarray, pixel_km: float,
 
 
 def classes_on_coarse_grid(dbz_fine: np.ndarray, echo_fine: np.ndarray, pixel_km: float = 1.0,
-                           factor: int = 1) -> dict[str, np.ndarray]:
+                           factor: int = 1, conv_radius=MEDIUM_RADIUS) -> dict[str, np.ndarray]:
     """Convective and stratiform masks of a field with pixels of `pixel_km`. With
     factor = 1 the field is classified as it is; with factor > 1 it is classified on the
     grid `factor` times coarser (mean in linear Z over factor x factor blocks) and each
@@ -86,14 +88,15 @@ def classes_on_coarse_grid(dbz_fine: np.ndarray, echo_fine: np.ndarray, pixel_km
     zc = z.reshape(shape).mean(axis=(1, 3))
     echo_c = echo_fine.reshape(shape).any(axis=(1, 3))
     dbz_c = np.where(echo_c, 10.0 * np.log10(np.maximum(zc, 1e-12)), 0.0)
-    conv_c = steiner_convective(dbz_c, echo_c, pixel_km * factor)
+    conv_c = steiner_convective(dbz_c, echo_c, pixel_km * factor, conv_radius=conv_radius)
     conv = np.repeat(np.repeat(conv_c, factor, axis=0), factor, axis=1) & echo_fine
     return {"convective": conv, "stratiform": echo_fine & ~conv}
 
 
-def obs_classes(obs: np.ndarray, floor: float = 0.0, factor: int = 1, pixel_km: float = 1.0) -> dict[str, np.ndarray]:
+def obs_classes(obs: np.ndarray, floor: float = 0.0, factor: int = 2, pixel_km: float = 1.0,
+                conv_radius=MEDIUM_RADIUS) -> dict[str, np.ndarray]:
     """Classes of a truth field as used in the validation (`Frame.to_field`: undetect and
     values below the floor set to `floor`, NaN outside coverage): echo = above the floor.
-    Classified at the resolution of the field (factor = 1)."""
+    By default a 1 km field is classified on the 2 km grid (factor = 2)."""
     echo = np.isfinite(obs) & (obs > floor)
-    return classes_on_coarse_grid(np.nan_to_num(obs, nan=floor), echo, pixel_km, factor)
+    return classes_on_coarse_grid(np.nan_to_num(obs, nan=floor), echo, pixel_km, factor, conv_radius)
