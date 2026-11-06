@@ -40,7 +40,7 @@ import cv2
 import numpy as np
 
 from .interp import DownscaleConfig, block_repeat
-from .odim_io import check_grid_alignment, read_odim_composite
+from .odim_io import Frame, check_grid_alignment, coarsen_where, read_odim_composite
 from .pipeline import FrameSource, floor_time
 
 log = logging.getLogger(__name__)
@@ -51,6 +51,57 @@ DEFAULT_FSS_SCALES = (1, 5, 11, 21, 41, 81)     # km (lato della finestra, pixel
 DEFAULT_R_SCALES = (1, 2, 5, 10, 25)            # km (lato dei blocchi per R e accumuli)
 HIST_BINS = np.arange(-10.0, 75.5, 0.5)
 MIN_HOUR_FRAC = 0.5      # accumulo orario solo con almeno meta' degli istanti a 5 min
+
+
+DEGRADE_HOWS = ("zmean", "max", "sample")
+
+
+def degrade_frame(frame: Frame, factor: int = 2, how: str = "zmean") -> Frame:
+    """Degrade a fine composite (e.g. CIRRUS, 1 km) to a grid `factor` times coarser
+    (e.g. 2 km, as ODYSSEY), for validating the interpolation against a known truth (H1).
+
+    how = "zmean":  mean in linear Z (mm^6 m^-3) of the factor x factor block, undetect
+                    counted as Z = 0, converted back to dBZ;
+          "max":    maximum dBZ of the echoes in the block;
+          "sample": the upper-left pixel of the block, as if the coarse grid sampled the
+                    fine one.
+    For "zmean" and "max" a coarse pixel is covered only if the whole block is covered,
+    and is undetect if the whole block is undetect; for "sample" coverage and undetect
+    are those of the sampled pixel. Input values in dBZ; output a Frame with the coarse
+    'where' (see `coarsen_where`). Rows and columns must be multiples of `factor`."""
+    if how not in DEGRADE_HOWS:
+        raise ValueError(f"how = {how!r}, expected one of {DEGRADE_HOWS}")
+    ny, nx = frame.values.shape
+    if ny % factor or nx % factor:
+        raise ValueError(f"shape {frame.values.shape} is not a multiple of {factor}")
+    where = coarsen_where(frame.where, factor)
+    if how == "sample":
+        return Frame(time=frame.time, values=frame.values[::factor, ::factor].copy(),
+                     coverage=frame.coverage[::factor, ::factor].copy(),
+                     undetect=frame.undetect[::factor, ::factor].copy(),
+                     where=where, path=frame.path, attrs=dict(frame.attrs))
+    shape = (ny // factor, factor, nx // factor, factor)
+    det = frame.coverage & ~frame.undetect
+    coverage = frame.coverage.reshape(shape).all(axis=(1, 3))
+    undetect = coverage & ~det.reshape(shape).any(axis=(1, 3))
+    ok = coverage & ~undetect
+    values = np.zeros(coverage.shape, np.float32)
+    if how == "zmean":
+        z = np.where(det, np.power(10.0, frame.values.astype(np.float64) / 10.0), 0.0)
+        values[ok] = 10.0 * np.log10(z.reshape(shape).mean(axis=(1, 3))[ok])
+    else:
+        v = np.where(det, frame.values, -np.inf).reshape(shape).max(axis=(1, 3))
+        values[ok] = v[ok]
+    return Frame(time=frame.time, values=values, coverage=coverage, undetect=undetect,
+                 where=where, path=frame.path, attrs=dict(frame.attrs))
+
+
+def read_degraded(path: str, quantity: str = "DBZH", factor: int = 2, extent=None,
+                  how: str = "zmean") -> Frame:
+    """`read_odim_composite` followed by `degrade_frame`. A module-level reader, so that
+    `functools.partial(read_degraded, ...)` can be passed to `run_validation` as the
+    reader of the coarse files and pickled for the worker processes."""
+    return degrade_frame(read_odim_composite(path, quantity, extent=extent), factor, how)
 
 
 def _box(a, k):
@@ -339,7 +390,8 @@ def _hour_finish(acc, hr, n_per_hour):
 
 def _worker(args):
     (pairs, ody_files, cir_files, cfg, shifts, methods, quantity, thr, fthr, fsc,
-     wet_dbz, min_wet_frac, region_mask_path, fss_every, reader, r_scales, r_cap_dbz) = args
+     wet_dbz, min_wet_frac, region_mask_path, fss_every, reader, r_scales, r_cap_dbz,
+     cirrus_reader, classifier) = args
     acc = Accumulator(thr, fthr, fsc, wet_dbz, r_scales, r_cap_dbz, cfg.dbz_floor)
     src = FrameSource(ody_files, cfg, quantity, reader=reader)
     region = np.load(region_mask_path) if region_mask_path else None
@@ -365,7 +417,7 @@ def _worker(args):
         for s, lst in targets.items():
             for T, a in lst:
                 try:
-                    fr = reader(cir_files[T], quantity)
+                    fr = cirrus_reader(cir_files[T], quantity)
                 except Exception as e:
                     log.warning("CIRRUS %s: %s", T, e)
                     continue
@@ -376,6 +428,7 @@ def _worker(args):
                 # gli istanti asciutti entrano negli accumuli (falsi allarmi di massa),
                 # non nelle metriche istantanee
                 wet = np.count_nonzero(obs[obs_cov] >= wet_dbz) >= min_wet_frac * obs_cov.sum()
+                classes = classifier(obs) if (classifier is not None and wet) else {}
                 obs = np.where(obs_cov, obs, cfg.dbz_floor)
                 do_fss = (count % fss_every) == 0
                 hr = hours.setdefault(floor_time(T, 60), {})
@@ -387,6 +440,8 @@ def _worker(args):
                         mask &= region
                     if wet:
                         acc.add((m, s, a), T, val, obs, mask, do_fss)
+                        for name, cmask in classes.items():
+                            acc.add((f"{m}|{name}", s, a), T, val, obs, mask & cmask, do_fss)
                     _hour_add(hr, (m, s), acc.rain(val), Ro, mask, win)
                 if wet:
                     count += 1
@@ -404,13 +459,21 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
                    thresholds=DEFAULT_THRESHOLDS, fss_thr=DEFAULT_FSS_THR,
                    fss_scales=DEFAULT_FSS_SCALES, wet_dbz=10.0, min_wet_frac=0.002,
                    pair_stride=4, fss_every=1, region_mask_path=None, workers=1,
-                   reader=read_odim_composite, r_scales=DEFAULT_R_SCALES, r_cap_dbz=55.0):
+                   reader=read_odim_composite, r_scales=DEFAULT_R_SCALES, r_cap_dbz=55.0,
+                   cirrus_reader=None, classifier=None):
     """pair_stride: usa una coppia ODYSSEY ogni N (4 = una all'ora). Gli accumuli
     orari richiedono pair_stride=1, altrimenti le ore restano senza istanti.
     region_mask_path: .npy bool (griglia 1 km) per limitare l'area (es. escludere la
     Spagna, che in CIRRUS e' estrapolata con LK).
-    r_scales, r_cap_dbz: scale (km) e limite in dBZ per le metriche in R."""
+    r_scales, r_cap_dbz: scale (km) e limite in dBZ per le metriche in R.
+    cirrus_reader: reader of the truth files (`cir_files`); default `reader`. A different
+    one is needed when the coarse input is degraded CIRRUS (`read_degraded`, H1).
+    classifier: optional, maps the truth field (dBZ, `Frame.to_field`, NaN outside
+    coverage) to {class name: bool mask}, e.g. `opera_ds.classify.obs_classes`; the
+    instantaneous scores are then also accumulated on each class, under the method name
+    "<method>|<class>". Must be picklable (a module-level function or a partial of one)."""
     cfg = cfg or DownscaleConfig()
+    cirrus_reader = cirrus_reader or reader
     os.makedirs(out_dir, exist_ok=True)
     step = dt.timedelta(minutes=cfg.dt_in_min)
     pairs = [t for t in ody_files if start <= t < end and (t + step) in ody_files]
@@ -423,7 +486,7 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
     t_c = next((t for t in cir_files if start <= t < end), None)
     if t_c is not None:
         w2 = reader(ody_files[pairs[0]], quantity).where
-        w1 = reader(cir_files[t_c], quantity).where
+        w1 = cirrus_reader(cir_files[t_c], quantity).where
         issues = check_grid_alignment(w2, w1, cfg.factor)
         with open(os.path.join(out_dir, "grid_check.txt"), "w", encoding="utf-8") as f:
             f.write("\n".join(issues) if issues else "OK: griglie allineate\n")
@@ -434,7 +497,9 @@ def run_validation(ody_files, cir_files, start, end, out_dir, cfg: DownscaleConf
     chunks = [list(c) for c in np.array_split(np.array(pairs, dtype=object), workers)]
     args = [(c, ody_files, cir_files, cfg, tuple(shifts), tuple(methods), quantity,
              tuple(thresholds), tuple(fss_thr), tuple(fss_scales), wet_dbz, min_wet_frac,
-             region_mask_path, fss_every, reader, tuple(r_scales), r_cap_dbz) for c in chunks if c]
+             region_mask_path, fss_every, reader, tuple(r_scales), r_cap_dbz, cirrus_reader,
+             classifier)
+            for c in chunks if c]
     acc_args = (thresholds, fss_thr, fss_scales, wet_dbz, tuple(r_scales), r_cap_dbz, cfg.dbz_floor)
     acc = Accumulator(*acc_args)
     edge_hours: dict = {}

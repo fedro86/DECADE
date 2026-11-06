@@ -121,6 +121,348 @@ shifts are tried to find the one that minimises the error.
 
 ![Validation overview, 1–5/7/2024, Belgium](figures/validation_overview.png)
 
+### Degraded CIRRUS as a stand-in for ODYSSEY
+
+To measure the interpolation error over months with a known truth (H1),
+CIRRUS is degraded to the ODYSSEY grid (`opera_ds.validate.degrade_frame`) and
+kept every 15 min; the degraded frames are interpolated back to 5 min and scored
+against the real CIRRUS (`notebooks/02-mr-degraded-cirrus.ipynb`). The
+degradation should look like real ODYSSEY, otherwise it measures the error on an
+input that is easier or harder to interpolate.
+
+Three degradations of each 2 × 2 block were compared with real ODYSSEY on
+1–5/7/2024: mean in linear Z (`zmean`), maximum (`max`) and the upper-left pixel
+(`sample`). ODYSSEY at NT is paired with CIRRUS at NT+5, the closest window
+([data.md](data.md), *Time windows*); 382 pairs, values capped at 55 dBZ against
+the ODYSSEY outliers ([data.md](data.md), *Known problems*). Distributions of wet pixels (≥ 10 dBZ) are compared by
+shape, after removing the median offset, since the products differ in level;
+small-scale energy is the high-pass energy (Gaussian, σ = 2 px) relative to
+ODYSSEY.
+
+| area | variant | median offset to ODYSSEY [dB] | QQ shape RMS [dB] | small-scale energy / ODYSSEY |
+|---|---|---:|---:|---:|
+| Belgium + 200 km | `zmean` | −0.04 | 0.39 | 1.39 |
+| | `max` | 0.70 | 0.78 | 1.63 |
+| | `sample` | −0.20 | 0.43 | 1.53 |
+| Belgium | `zmean` | 1.30 | 0.67 | 2.13 |
+| | `max` | 2.61 | 1.21 | 2.50 |
+| | `sample` | 0.86 | 0.63 | 2.25 |
+
+- `zmean` is the closest to ODYSSEY: lowest small-scale energy everywhere, best
+  or tied distribution shape. It is the degradation used in H1.
+- No degradation is smoother than ODYSSEY: real ODYSSEY has 1.4–2.1 times less
+  small-scale energy than CIRRUS degraded by `zmean`. Degraded CIRRUS is
+  therefore a rougher, not an easier, input than ODYSSEY.
+- The OPERA product sheet describes the composite value as the maximum of all
+  contributing single-scan pixels
+  ([summary](sources/2024%20-%20EUMETNET%20-%20OPERA%20CIRRUS%20maximum%20reflectivity%20composite%20user%20product%20sheet.md)),
+  which is closer to the `max` degradation; yet `zmean` matches real ODYSSEY
+  better. This is measured, not explained.
+
+### Convective and stratiform pixels
+
+Scores can be split by precipitation type on each pixel of the truth, so no
+label per time is needed (`opera_ds/classify.py`, option `classifier` of
+`run_validation`). The rule is Steiner et al. (1995)
+([summary](sources/1995%20-%20Steiner%20-%20Climatological%20characterization%20of%20three-dimensional%20storm%20structure%20from%20operational%20radar%20and%20rain%20gauge%20data.md)),
+with its published parameters:
+
+| parameter | value | source |
+|---|---|---|
+| convective centre by intensity | ≥ 40 dBZ | Steiner 1995, section 6c; also the RMI storm threshold in Belgium, Goudenhoofdt and Delobbe 2013 ([summary](sources/2013%20-%20Goudenhoofdt%20-%20Statistical%20characteristics%20of%20convective%20storms%20in%20Belgium%20derived%20from%20volumetric%20weather%20radar%20observations.md)) |
+| background | mean in linear Z of the echo pixels within 11 km | Steiner 1995, section 6c |
+| convective centre by peakedness | above the background by ΔZ = 10 dB below 0 dBZ, 10 − Z_bg²/180 up to 42.43 dBZ, 0 above | Steiner 1995, Eq. 2 |
+| convective radius around a centre | 1 km below 25 dBZ of background, then 2, 3, 4 km every 5 dBZ, 5 km from 40 dBZ | Steiner 1995, Fig. 6b, "medium" |
+| grid | 2 km: the 1 km truth is degraded by `zmean`, classified, and each 2 km class copied to its 2 × 2 block | the parameters were tuned on 2 km, and a finer grid gives too much convective area (Steiner 1995, section 6d) |
+
+Echo pixels are those above the floor of the validation fields; everything with
+echo that is not convective is stratiform. 2 km is also the ODYSSEY grid, so the
+same classification can run on the archive.
+
+Convective share of the echo area over Belgium on the H1 test week
+(8–14/9/2025, 2,016 wet CIRRUS times), against Steiner 1995, Table 3 (Darwin,
+February 1988, 2 km):
+
+| grid | convective area | this week | Steiner 1995 |
+|---|---|---:|---:|
+| 1 km | medium radius | 25.4% | — |
+| 2 km | medium radius | 21.3% | 12% (case 2d) |
+| 2 km | centres only | 9.0% | 3% (case 2b) |
+
+- The 1 km grid gives a larger convective share than 2 km, as section 6d
+  reports; this is the reason for the 2 km grid.
+- The radius takes the convective share from 9.0% to 21.3% (×2.4), while in
+  the paper it goes from 3% to 12% (×4). The excess over Steiner is in the
+  centres (×3), not in the radius. A Darwin month and a Belgian September week
+  are not directly comparable.
+
+Known limits: the method was tuned on a tropical radar at a fixed 3 km height.
+OPERA `DBZH` is a maximum-reflectivity composite, so a bright band above
+40 dBZ can be labelled convective, mostly in the cold season. Check over
+Belgium, Steiner at 2 km, all CIRRUS frames of each period, convective centres
+counted on the 2 km grid (`steiner_centres`):
+
+| period | convective share of the echo area | centres by intensity (≥ 40 dBZ) | centres by peakedness only |
+|---|---:|---:|---:|
+| 8–14/9/2025 | 21.3% | 373,440 (79.5%) | 96,386 (20.5%) |
+| January 2025 | 14.5% | 621,204 (67.1%) | 305,013 (32.9%) |
+
+As a second opinion, the intensity centres were classified with ECCO
+(Dixon and Romatschke 2022,
+[summary](sources/2022%20-%20Dixon%20-%20Three-dimensional%20convective-stratiform%20echo-type%20classification%20and%20convectivity%20retrieval%20from%20radar%20reflectivity.md)),
+which separates echo types by horizontal texture, not intensity, with its OPERA
+2 km parameters (`ecco_convectivity`, `notebooks/03-mr-cirrus-analysis.ipynb`).
+ECCO has no winter validation and its authors report bright band classified as
+convective (section 6), so it is not a referee. Belgium, all CIRRUS frames:
+
+| month | Steiner intensity centres | ECCO stratiform (< 0.4) | ECCO mixed (0.4–0.5) |
+|---|---:|---:|---:|
+| January 2025 | 621,204 | 6.4% | 14.3% |
+| September 2025 | 756,918 | 13.9% | 22.6% |
+
+The question is real: OPERA applies no vertical-profile correction, so a bright
+band can reach the composite (Saltikoff et al. 2019, section 4,
+[summary](sources/2019%20-%20Saltikoff%20-%20OPERA%20the%20Radar%20Project.md)).
+But over the month ECCO does not point to more bright band in January than in
+September.
+
+Maps of the 15 January times with most disagreements (intensity centres that
+ECCO calls stratiform; that they all fall on one evening is a consequence of
+this selection rule, not a finding, and one episode cannot tell how common it
+is), all on the evening of 22/1/2025 (21:35–22:45, frames
+15 min before and after, radar positions from the single-radar files of that
+day): over Belgium, a wide patch of Steiner convective pixels centred near the
+radars behel and bewid hardly moves between 21:20 and 23:00, while ECCO calls
+it stratiform; it is a patch, not a ring around a radar. Over France, elongated cells
+move north-east from frame to frame and both methods call them convective. The
+stationary area looks like a bright band rather than convection; this is a
+single episode, not a conclusion.
+
+![Steiner and ECCO on 22/1/2025 at 21:55, 22:10 and 22:25](figures/cirrus-qc/steiner-ecco-20250122T2210.png)
+
+Where the January `lk` deficit on convective pixels comes from
+(`notebooks/03-mr-cirrus-analysis.ipynb`, section 4): `lk` is worse than
+`linear` on 22 of 28 days, but five days carry 70% of the monthly deficit (24,
+5, 25, 22 and 30 January; the first three 51%). One time per day, the one where
+`lk` loses most against `linear`, was mapped for these five days. On all of
+them, patches (not rings) of Steiner convective pixels stay centred on or near
+radars (behel, bewid, bejab, nldhl, nlhrw; not every radar on every day)
+through the three frames while the surrounding rain moves; around nldhl ECCO
+also draws a convective ring. The `lk` deficit is concentrated on days with
+stationary features centred on radars, consistent with `lk` moving stationary
+features that `linear` leaves in place; not tested. Described without a
+threshold; these maps show where the deficit comes from, not how the features
+are produced. On 24/1 the top panels also show a straight line east of nldhl,
+which looks like a radial spike from interference. What these features are is
+left to H2 (#19), which catalogues radar artefacts.
+
+![Steiner and ECCO on 24/1/2025 at 19:25, 19:40 and 19:55](figures/cirrus-qc/steiner-ecco-20250124T1940.png)
+
+Season (December–February against June–August) is kept as a
+second, coarse split, as in Imhoff et al. (2020)
+([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
+where summer nowcast errors are about three times the winter ones.
+
+### Interpolation error on degraded CIRRUS (H1)
+
+Set-up (`notebooks/02-mr-degraded-cirrus.ipynb`): CIRRUS degraded by `zmean`
+at :00, :15, :30, :45, interpolated back to 5 min by `nearest`, `linear` and
+`lk`, and scored against the real CIRRUS over Belgium, with the scores of
+`run_validation` and the Steiner classes at 2 km. No time shift: input and
+truth come from the same product, so there is no offset to imitate (the
+ODYSSEY–CIRRUS offset belongs to H6). Months: January, June, July, September
+and October 2025.
+
+RMSEs are on wet pixels, in dBZ. The interpolation error is the extra error over
+the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean of
+α = 1/3 and 2/3, with the ratio RMSE_α / RMSE_0.
+
+| month | pixels | method | α = 0 | α = 1/3 | α = 2/3 | extra | ratio |
+|---|---|---|---:|---:|---:|---:|---:|
+| January 2025 | all | `nearest` | 2.93 | 6.96 | 7.18 | 6.44 | 2.42 |
+| | | `linear` | 2.93 | 6.79 | 6.90 | 6.19 | 2.34 |
+| | | `lk` | 2.93 | 6.28 | 6.33 | 5.58 | 2.15 |
+| | convective | `nearest` | 4.57 | 7.94 | 8.19 | 6.65 | 1.76 |
+| | | `linear` | 4.57 | 7.15 | 7.20 | 5.53 | 1.57 |
+| | | `lk` | 4.57 | 8.36 | 8.48 | 7.07 | 1.84 |
+| | stratiform | `nearest` | 1.93 | 6.03 | 6.16 | 5.78 | 3.16 |
+| | | `linear` | 1.93 | 5.66 | 5.73 | 5.36 | 2.95 |
+| | | `lk` | 1.93 | 4.81 | 4.82 | 4.41 | 2.50 |
+| June 2025 | all | `nearest` | 3.69 | 8.94 | 9.02 | 8.19 | 2.44 |
+| | | `linear` | 3.69 | 8.77 | 8.95 | 8.06 | 2.40 |
+| | | `lk` | 3.69 | 7.65 | 7.61 | 6.68 | 2.07 |
+| | convective | `nearest` | 4.53 | 9.27 | 9.41 | 8.17 | 2.06 |
+| | | `linear` | 4.53 | 8.22 | 8.30 | 6.90 | 1.82 |
+| | | `lk` | 4.53 | 7.97 | 8.03 | 6.60 | 1.77 |
+| | stratiform | `nearest` | 2.73 | 7.66 | 7.76 | 7.21 | 2.83 |
+| | | `linear` | 2.73 | 7.20 | 7.28 | 6.70 | 2.65 |
+| | | `lk` | 2.73 | 6.22 | 6.20 | 5.58 | 2.28 |
+| July 2025 | all | `nearest` | 4.01 | 8.97 | 9.14 | 8.12 | 2.26 |
+| | | `linear` | 4.01 | 9.02 | 9.08 | 8.11 | 2.25 |
+| | | `lk` | 4.01 | 7.70 | 7.65 | 6.54 | 1.91 |
+| | convective | `nearest` | 4.27 | 9.09 | 9.09 | 8.02 | 2.13 |
+| | | `linear` | 4.27 | 8.15 | 8.22 | 6.98 | 1.92 |
+| | | `lk` | 4.27 | 7.28 | 7.27 | 5.89 | 1.70 |
+| | stratiform | `nearest` | 2.98 | 7.62 | 7.71 | 7.06 | 2.57 |
+| | | `linear` | 2.98 | 7.26 | 7.32 | 6.65 | 2.45 |
+| | | `lk` | 2.98 | 6.22 | 6.19 | 5.45 | 2.08 |
+| September 2025 | all | `nearest` | 3.75 | 8.60 | 8.67 | 7.78 | 2.30 |
+| | | `linear` | 3.75 | 8.45 | 8.55 | 7.62 | 2.26 |
+| | | `lk` | 3.75 | 7.41 | 7.41 | 6.39 | 1.97 |
+| | convective | `nearest` | 4.55 | 9.10 | 9.31 | 8.01 | 2.03 |
+| | | `linear` | 4.55 | 8.08 | 8.09 | 6.69 | 1.78 |
+| | | `lk` | 4.55 | 7.77 | 7.77 | 6.31 | 1.71 |
+| | stratiform | `nearest` | 2.81 | 7.25 | 7.30 | 6.71 | 2.59 |
+| | | `linear` | 2.81 | 6.78 | 6.81 | 6.19 | 2.42 |
+| | | `lk` | 2.81 | 5.98 | 5.97 | 5.27 | 2.13 |
+| October 2025 | all | `nearest` | 3.55 | 8.78 | 8.86 | 8.08 | 2.49 |
+| | | `linear` | 3.55 | 8.58 | 8.66 | 7.86 | 2.43 |
+| | | `lk` | 3.55 | 7.45 | 7.40 | 6.52 | 2.09 |
+| | convective | `nearest` | 4.65 | 9.19 | 9.28 | 7.98 | 1.99 |
+| | | `linear` | 4.65 | 8.03 | 8.04 | 6.55 | 1.73 |
+| | | `lk` | 4.65 | 8.30 | 8.28 | 6.87 | 1.78 |
+| | stratiform | `nearest` | 2.61 | 7.57 | 7.65 | 7.15 | 2.91 |
+| | | `linear` | 2.61 | 7.08 | 7.11 | 6.59 | 2.71 |
+| | | `lk` | 2.61 | 5.98 | 5.93 | 5.35 | 2.28 |
+
+By season (seasons as in Imhoff et al. 2020; RMSEs pooled over the months of
+the season, weighted by the number of wet pixels; DJF is January alone):
+
+| season | pixels | `nearest` | `linear` | `lk` |
+|---|---|---:|---:|---:|
+| DJF (January) | all | 6.44 | 6.19 | 5.58 |
+| | convective | 6.65 | 5.53 | 7.07 |
+| | stratiform | 5.78 | 5.36 | 4.41 |
+| JJA (June, July) | all | 8.15 | 8.09 | 6.60 |
+| | convective | 8.08 | 6.95 | 6.16 |
+| | stratiform | 7.13 | 6.68 | 5.51 |
+| SON (September, October) | all | 7.93 | 7.74 | 6.46 |
+| | convective | 7.99 | 6.62 | 6.59 |
+| | stratiform | 6.94 | 6.40 | 5.31 |
+| all five months | all | 7.61 | 7.46 | 6.28 |
+| | convective | 7.72 | 6.50 | 6.56 |
+| | stratiform | 6.67 | 6.19 | 5.12 |
+
+(extra error in dBZ, as defined above.)
+
+- January and October: `lk` has the lowest extra error over all pixels and on
+  stratiform pixels; on convective pixels its extra error is higher than
+  `linear`'s.
+- June, July and September: `lk` has the lowest extra error over all pixels
+  and in both classes.
+- October `lk` deficit on convective pixels, counted by day as for January:
+  `lk` is worse than `linear` on 22 of 30 days, and the deficit is
+  concentrated on a few days (28/10 alone carries 63% of the monthly deficit,
+  28/10 and 3/10 more than all of it, because `lk` is better on the other
+  days). The October days were not mapped, so nothing is said about the
+  features on them.
+- Against the 4 days of real ODYSSEY (1–5/7/2024, shift 0, *Results on
+  1–5/7/2024*), compared with the same season, July 2025: the interpolated
+  times there have RMSEs of 12.6–13.8 dBZ, against 7.7–9.1 dBZ for degraded
+  CIRRUS. The gap is not only interpolation: real ODYSSEY also adds the
+  differences between the products and the time offset (with the same label,
+  ODYSSEY covers [NT−10, NT+5] and CIRRUS (NT−10, NT], [data.md](data.md),
+  *Time windows for the label NT*), which belong to H6. The real ODYSSEY run
+  has no `alpha` = 0, because CIRRUS is missing at the quarter hours on those
+  days.
+
+Scores by scale (same runs; `alpha` = 0, the floor, is the same for all
+methods; `alpha` = 2/3 differs from 1/3 by at most 0.005 in FSS and 0.052 mm/h
+in the R errors, so only 1/3 is shown). FSS by window size, the window being
+the side of the square in km:
+
+FSS at 20 dBZ
+
+| month | method, `alpha` | 1 km | 5 km | 11 km | 21 km | 41 km | 81 km |
+|---|---|---:|---:|---:|---:|---:|---:|
+| January 2025 | all, 0 | 0.963 | 0.996 | 0.999 | 0.999 | 1.000 | 1.000 |
+| | `nearest`, 1/3 | 0.875 | 0.945 | 0.973 | 0.988 | 0.995 | 0.998 |
+| | `linear`, 1/3 | 0.882 | 0.947 | 0.973 | 0.987 | 0.993 | 0.995 |
+| | `lk`, 1/3 | 0.912 | 0.973 | 0.989 | 0.994 | 0.997 | 0.998 |
+| June 2025 | all, 0 | 0.943 | 0.994 | 0.998 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.807 | 0.913 | 0.958 | 0.980 | 0.992 | 0.996 |
+| | `linear`, 1/3 | 0.813 | 0.914 | 0.957 | 0.978 | 0.987 | 0.991 |
+| | `lk`, 1/3 | 0.861 | 0.957 | 0.982 | 0.991 | 0.995 | 0.997 |
+| July 2025 | all, 0 | 0.939 | 0.994 | 0.998 | 0.999 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.824 | 0.934 | 0.971 | 0.986 | 0.994 | 0.997 |
+| | `linear`, 1/3 | 0.829 | 0.933 | 0.968 | 0.982 | 0.987 | 0.990 |
+| | `lk`, 1/3 | 0.868 | 0.963 | 0.984 | 0.991 | 0.995 | 0.996 |
+| September 2025 | all, 0 | 0.930 | 0.992 | 0.997 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.797 | 0.914 | 0.958 | 0.980 | 0.991 | 0.996 |
+| | `linear`, 1/3 | 0.806 | 0.917 | 0.959 | 0.979 | 0.988 | 0.991 |
+| | `lk`, 1/3 | 0.842 | 0.953 | 0.980 | 0.990 | 0.995 | 0.996 |
+| October 2025 | all, 0 | 0.941 | 0.994 | 0.998 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.806 | 0.912 | 0.958 | 0.980 | 0.992 | 0.996 |
+| | `linear`, 1/3 | 0.814 | 0.913 | 0.956 | 0.978 | 0.987 | 0.990 |
+| | `lk`, 1/3 | 0.859 | 0.954 | 0.980 | 0.990 | 0.994 | 0.996 |
+
+FSS at 30 dBZ
+
+| month | method, `alpha` | 1 km | 5 km | 11 km | 21 km | 41 km | 81 km |
+|---|---|---:|---:|---:|---:|---:|---:|
+| January 2025 | all, 0 | 0.914 | 0.990 | 0.996 | 0.998 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.735 | 0.872 | 0.934 | 0.969 | 0.987 | 0.994 |
+| | `linear`, 1/3 | 0.750 | 0.882 | 0.941 | 0.974 | 0.988 | 0.993 |
+| | `lk`, 1/3 | 0.793 | 0.931 | 0.971 | 0.986 | 0.992 | 0.995 |
+| June 2025 | all, 0 | 0.928 | 0.992 | 0.997 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.744 | 0.878 | 0.940 | 0.972 | 0.988 | 0.995 |
+| | `linear`, 1/3 | 0.758 | 0.887 | 0.947 | 0.976 | 0.987 | 0.992 |
+| | `lk`, 1/3 | 0.821 | 0.945 | 0.978 | 0.990 | 0.995 | 0.997 |
+| July 2025 | all, 0 | 0.926 | 0.993 | 0.997 | 0.999 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.771 | 0.910 | 0.959 | 0.981 | 0.992 | 0.996 |
+| | `linear`, 1/3 | 0.783 | 0.915 | 0.961 | 0.979 | 0.986 | 0.989 |
+| | `lk`, 1/3 | 0.838 | 0.955 | 0.981 | 0.989 | 0.994 | 0.995 |
+| September 2025 | all, 0 | 0.924 | 0.992 | 0.997 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.753 | 0.887 | 0.945 | 0.974 | 0.989 | 0.995 |
+| | `linear`, 1/3 | 0.766 | 0.895 | 0.950 | 0.977 | 0.987 | 0.991 |
+| | `lk`, 1/3 | 0.822 | 0.947 | 0.979 | 0.990 | 0.995 | 0.997 |
+| October 2025 | all, 0 | 0.906 | 0.990 | 0.996 | 0.998 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.686 | 0.841 | 0.919 | 0.962 | 0.983 | 0.992 |
+| | `linear`, 1/3 | 0.699 | 0.851 | 0.926 | 0.966 | 0.982 | 0.988 |
+| | `lk`, 1/3 | 0.769 | 0.920 | 0.966 | 0.983 | 0.990 | 0.993 |
+
+RMSE of R (mm/h) on blocks of the given size:
+
+| month | method, `alpha` | 1 km | 2 km | 5 km | 10 km | 25 km |
+|---|---|---:|---:|---:|---:|---:|
+| January 2025 | all, 0 | 1.65 | 0.76 | 0.48 | 0.32 | 0.22 |
+| | `nearest`, 1/3 | 2.67 | 2.14 | 1.46 | 0.99 | 0.53 |
+| | `linear`, 1/3 | 2.47 | 1.91 | 1.30 | 0.87 | 0.43 |
+| | `lk`, 1/3 | 3.19 | 2.57 | 1.65 | 0.93 | 0.45 |
+| June 2025 | all, 0 | 0.99 | 0.44 | 0.30 | 0.19 | 0.13 |
+| | `nearest`, 1/3 | 2.36 | 2.10 | 1.60 | 1.09 | 0.56 |
+| | `linear`, 1/3 | 2.19 | 1.91 | 1.43 | 0.92 | 0.42 |
+| | `lk`, 1/3 | 2.03 | 1.66 | 1.15 | 0.67 | 0.35 |
+| July 2025 | all, 0 | 1.20 | 0.51 | 0.33 | 0.22 | 0.15 |
+| | `nearest`, 1/3 | 2.92 | 2.59 | 1.90 | 1.24 | 0.60 |
+| | `linear`, 1/3 | 2.68 | 2.33 | 1.66 | 1.02 | 0.46 |
+| | `lk`, 1/3 | 2.46 | 1.99 | 1.33 | 0.82 | 0.41 |
+| September 2025 | all, 0 | 1.18 | 0.53 | 0.34 | 0.22 | 0.14 |
+| | `nearest`, 1/3 | 2.65 | 2.34 | 1.76 | 1.20 | 0.58 |
+| | `linear`, 1/3 | 2.44 | 2.11 | 1.57 | 1.02 | 0.43 |
+| | `lk`, 1/3 | 2.30 | 1.84 | 1.22 | 0.72 | 0.36 |
+| October 2025 | all, 0 | 1.17 | 0.52 | 0.33 | 0.21 | 0.14 |
+| | `nearest`, 1/3 | 2.21 | 1.86 | 1.34 | 0.92 | 0.47 |
+| | `linear`, 1/3 | 2.02 | 1.66 | 1.18 | 0.79 | 0.36 |
+| | `lk`, 1/3 | 2.35 | 1.90 | 1.26 | 0.72 | 0.34 |
+
+- FSS: `lk` has the highest FSS at every window up to 41 km, at both
+  thresholds and in all five months. At 81 km the three methods differ by at
+  most 0.007 and `nearest` equals `lk` or exceeds it by 0.001 in some months.
+- R errors: `lk` has the lowest RMSE at every block size in June, July and
+  September. In January it is higher than `linear` at every block size; in
+  October it is higher at 1, 2 and 5 km and lower at 10 and 25 km.
+
+**Conclusion.** Over the five months, `lk` has the lowest extra error in dBZ
+over all pixels and on stratiform pixels in every month, and on convective
+pixels in June, July and September. On convective pixels in January and
+October `linear` is lower; in both months the deficit is concentrated on a few
+days. In January the maps of those days show stationary features centred on
+or near radars, consistent with `lk` moving stationary features that `linear`
+leaves in place (not tested; what the features are is left to H2, #19); the
+October days were not mapped. The same two months are the ones where `lk`
+loses against `linear` in the R errors at small blocks.
+
 ### Synthetic test
 
 `tests/test_synthetic.py` builds a multiscale field with known motion
