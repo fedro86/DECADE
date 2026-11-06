@@ -242,7 +242,7 @@ single episode, not a conclusion.
 
 Where the January `lk` deficit on convective pixels comes from
 (`notebooks/03-mr-cirrus-analysis.ipynb`, section 4): `lk` is worse than
-`linear` on 23 of 28 days, but five days carry 70% of the monthly deficit (24,
+`linear` on 22 of 28 days, but five days carry 70% of the monthly deficit (24,
 5, 25, 22 and 30 January; the first three 51%). One time per day, the one where
 `lk` loses most against `linear`, was mapped for these five days. On all of
 them, patches (not rings) of Steiner convective pixels stay centred on or near
@@ -315,11 +315,47 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
 | | stratiform | `nearest` | 2.81 | 7.25 | 7.30 | 6.71 | 2.59 |
 | | | `linear` | 2.81 | 6.78 | 6.81 | 6.19 | 2.42 |
 | | | `lk` | 2.81 | 5.98 | 5.97 | 5.27 | 2.13 |
+| October 2025 | all | `nearest` | 3.55 | 8.78 | 8.86 | 8.08 | 2.49 |
+| | | `linear` | 3.55 | 8.58 | 8.66 | 7.86 | 2.43 |
+| | | `lk` | 3.55 | 7.45 | 7.40 | 6.52 | 2.09 |
+| | convective | `nearest` | 4.65 | 9.19 | 9.28 | 7.98 | 1.99 |
+| | | `linear` | 4.65 | 8.03 | 8.04 | 6.55 | 1.73 |
+| | | `lk` | 4.65 | 8.30 | 8.28 | 6.87 | 1.78 |
+| | stratiform | `nearest` | 2.61 | 7.57 | 7.65 | 7.15 | 2.91 |
+| | | `linear` | 2.61 | 7.08 | 7.11 | 6.59 | 2.71 |
+| | | `lk` | 2.61 | 5.98 | 5.93 | 5.35 | 2.28 |
 
-- January: `lk` has the lowest extra error over all pixels and on stratiform
-  pixels; on convective pixels its extra error is higher than `linear`'s.
+By season (seasons as in Imhoff et al. 2020; RMSEs pooled over the months of
+the season, weighted by the number of wet pixels; DJF is January alone):
+
+| season | pixels | `nearest` | `linear` | `lk` |
+|---|---|---:|---:|---:|
+| DJF (January) | all | 6.44 | 6.19 | 5.58 |
+| | convective | 6.65 | 5.53 | 7.07 |
+| | stratiform | 5.78 | 5.36 | 4.41 |
+| JJA (June, July) | all | 8.15 | 8.09 | 6.60 |
+| | convective | 8.08 | 6.95 | 6.16 |
+| | stratiform | 7.13 | 6.68 | 5.51 |
+| SON (September, October) | all | 7.93 | 7.74 | 6.46 |
+| | convective | 7.99 | 6.62 | 6.59 |
+| | stratiform | 6.94 | 6.40 | 5.31 |
+| all five months | all | 7.61 | 7.46 | 6.28 |
+| | convective | 7.72 | 6.50 | 6.56 |
+| | stratiform | 6.67 | 6.19 | 5.12 |
+
+(extra error in dBZ, as defined above.)
+
+- January and October: `lk` has the lowest extra error over all pixels and on
+  stratiform pixels; on convective pixels its extra error is higher than
+  `linear`'s.
 - June, July and September: `lk` has the lowest extra error over all pixels
   and in both classes.
+- October `lk` deficit on convective pixels, counted by day as for January:
+  `lk` is worse than `linear` on 22 of 30 days, and the deficit is
+  concentrated on a few days (28/10 alone carries 63% of the monthly deficit,
+  28/10 and 3/10 more than all of it, because `lk` is better on the other
+  days). The October days were not mapped, so nothing is said about the
+  features on them.
 - Against the 4 days of real ODYSSEY (1–5/7/2024, shift 0, *Results on
   1–5/7/2024*), compared with the same season, July 2025: the interpolated
   times there have RMSEs of 12.6–13.8 dBZ, against 7.7–9.1 dBZ for degraded
@@ -329,6 +365,103 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
   *Time windows for the label NT*), which belong to H6. The real ODYSSEY run
   has no `alpha` = 0, because CIRRUS is missing at the quarter hours on those
   days.
+
+Scores by scale (same runs; `alpha` = 0, the floor, is the same for all
+methods; `alpha` = 2/3 differs from 1/3 by at most 0.005 in FSS and 0.052 mm/h
+in the R errors, so only 1/3 is shown). FSS by window size, the window being
+the side of the square in km:
+
+FSS at 20 dBZ
+
+| month | method, `alpha` | 1 km | 5 km | 11 km | 21 km | 41 km | 81 km |
+|---|---|---:|---:|---:|---:|---:|---:|
+| January 2025 | all, 0 | 0.963 | 0.996 | 0.999 | 0.999 | 1.000 | 1.000 |
+| | `nearest`, 1/3 | 0.875 | 0.945 | 0.973 | 0.988 | 0.995 | 0.998 |
+| | `linear`, 1/3 | 0.882 | 0.947 | 0.973 | 0.987 | 0.993 | 0.995 |
+| | `lk`, 1/3 | 0.912 | 0.973 | 0.989 | 0.994 | 0.997 | 0.998 |
+| June 2025 | all, 0 | 0.943 | 0.994 | 0.998 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.807 | 0.913 | 0.958 | 0.980 | 0.992 | 0.996 |
+| | `linear`, 1/3 | 0.813 | 0.914 | 0.957 | 0.978 | 0.987 | 0.991 |
+| | `lk`, 1/3 | 0.861 | 0.957 | 0.982 | 0.991 | 0.995 | 0.997 |
+| July 2025 | all, 0 | 0.939 | 0.994 | 0.998 | 0.999 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.824 | 0.934 | 0.971 | 0.986 | 0.994 | 0.997 |
+| | `linear`, 1/3 | 0.829 | 0.933 | 0.968 | 0.982 | 0.987 | 0.990 |
+| | `lk`, 1/3 | 0.868 | 0.963 | 0.984 | 0.991 | 0.995 | 0.996 |
+| September 2025 | all, 0 | 0.930 | 0.992 | 0.997 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.797 | 0.914 | 0.958 | 0.980 | 0.991 | 0.996 |
+| | `linear`, 1/3 | 0.806 | 0.917 | 0.959 | 0.979 | 0.988 | 0.991 |
+| | `lk`, 1/3 | 0.842 | 0.953 | 0.980 | 0.990 | 0.995 | 0.996 |
+| October 2025 | all, 0 | 0.941 | 0.994 | 0.998 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.806 | 0.912 | 0.958 | 0.980 | 0.992 | 0.996 |
+| | `linear`, 1/3 | 0.814 | 0.913 | 0.956 | 0.978 | 0.987 | 0.990 |
+| | `lk`, 1/3 | 0.859 | 0.954 | 0.980 | 0.990 | 0.994 | 0.996 |
+
+FSS at 30 dBZ
+
+| month | method, `alpha` | 1 km | 5 km | 11 km | 21 km | 41 km | 81 km |
+|---|---|---:|---:|---:|---:|---:|---:|
+| January 2025 | all, 0 | 0.914 | 0.990 | 0.996 | 0.998 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.735 | 0.872 | 0.934 | 0.969 | 0.987 | 0.994 |
+| | `linear`, 1/3 | 0.750 | 0.882 | 0.941 | 0.974 | 0.988 | 0.993 |
+| | `lk`, 1/3 | 0.793 | 0.931 | 0.971 | 0.986 | 0.992 | 0.995 |
+| June 2025 | all, 0 | 0.928 | 0.992 | 0.997 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.744 | 0.878 | 0.940 | 0.972 | 0.988 | 0.995 |
+| | `linear`, 1/3 | 0.758 | 0.887 | 0.947 | 0.976 | 0.987 | 0.992 |
+| | `lk`, 1/3 | 0.821 | 0.945 | 0.978 | 0.990 | 0.995 | 0.997 |
+| July 2025 | all, 0 | 0.926 | 0.993 | 0.997 | 0.999 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.771 | 0.910 | 0.959 | 0.981 | 0.992 | 0.996 |
+| | `linear`, 1/3 | 0.783 | 0.915 | 0.961 | 0.979 | 0.986 | 0.989 |
+| | `lk`, 1/3 | 0.838 | 0.955 | 0.981 | 0.989 | 0.994 | 0.995 |
+| September 2025 | all, 0 | 0.924 | 0.992 | 0.997 | 0.999 | 0.999 | 1.000 |
+| | `nearest`, 1/3 | 0.753 | 0.887 | 0.945 | 0.974 | 0.989 | 0.995 |
+| | `linear`, 1/3 | 0.766 | 0.895 | 0.950 | 0.977 | 0.987 | 0.991 |
+| | `lk`, 1/3 | 0.822 | 0.947 | 0.979 | 0.990 | 0.995 | 0.997 |
+| October 2025 | all, 0 | 0.906 | 0.990 | 0.996 | 0.998 | 0.999 | 0.999 |
+| | `nearest`, 1/3 | 0.686 | 0.841 | 0.919 | 0.962 | 0.983 | 0.992 |
+| | `linear`, 1/3 | 0.699 | 0.851 | 0.926 | 0.966 | 0.982 | 0.988 |
+| | `lk`, 1/3 | 0.769 | 0.920 | 0.966 | 0.983 | 0.990 | 0.993 |
+
+RMSE of R (mm/h) on blocks of the given size:
+
+| month | method, `alpha` | 1 km | 2 km | 5 km | 10 km | 25 km |
+|---|---|---:|---:|---:|---:|---:|
+| January 2025 | all, 0 | 1.65 | 0.76 | 0.48 | 0.32 | 0.22 |
+| | `nearest`, 1/3 | 2.67 | 2.14 | 1.46 | 0.99 | 0.53 |
+| | `linear`, 1/3 | 2.47 | 1.91 | 1.30 | 0.87 | 0.43 |
+| | `lk`, 1/3 | 3.19 | 2.57 | 1.65 | 0.93 | 0.45 |
+| June 2025 | all, 0 | 0.99 | 0.44 | 0.30 | 0.19 | 0.13 |
+| | `nearest`, 1/3 | 2.36 | 2.10 | 1.60 | 1.09 | 0.56 |
+| | `linear`, 1/3 | 2.19 | 1.91 | 1.43 | 0.92 | 0.42 |
+| | `lk`, 1/3 | 2.03 | 1.66 | 1.15 | 0.67 | 0.35 |
+| July 2025 | all, 0 | 1.20 | 0.51 | 0.33 | 0.22 | 0.15 |
+| | `nearest`, 1/3 | 2.92 | 2.59 | 1.90 | 1.24 | 0.60 |
+| | `linear`, 1/3 | 2.68 | 2.33 | 1.66 | 1.02 | 0.46 |
+| | `lk`, 1/3 | 2.46 | 1.99 | 1.33 | 0.82 | 0.41 |
+| September 2025 | all, 0 | 1.18 | 0.53 | 0.34 | 0.22 | 0.14 |
+| | `nearest`, 1/3 | 2.65 | 2.34 | 1.76 | 1.20 | 0.58 |
+| | `linear`, 1/3 | 2.44 | 2.11 | 1.57 | 1.02 | 0.43 |
+| | `lk`, 1/3 | 2.30 | 1.84 | 1.22 | 0.72 | 0.36 |
+| October 2025 | all, 0 | 1.17 | 0.52 | 0.33 | 0.21 | 0.14 |
+| | `nearest`, 1/3 | 2.21 | 1.86 | 1.34 | 0.92 | 0.47 |
+| | `linear`, 1/3 | 2.02 | 1.66 | 1.18 | 0.79 | 0.36 |
+| | `lk`, 1/3 | 2.35 | 1.90 | 1.26 | 0.72 | 0.34 |
+
+- FSS: `lk` has the highest FSS at every window up to 41 km, at both
+  thresholds and in all five months. At 81 km the three methods differ by at
+  most 0.007 and `nearest` equals `lk` or exceeds it by 0.001 in some months.
+- R errors: `lk` has the lowest RMSE at every block size in June, July and
+  September. In January it is higher than `linear` at every block size; in
+  October it is higher at 1, 2 and 5 km and lower at 10 and 25 km.
+
+**Conclusion.** Over the five months, `lk` has the lowest extra error in dBZ
+over all pixels and on stratiform pixels in every month, and on convective
+pixels in June, July and September. On convective pixels in January and
+October `linear` is lower; in both months the deficit is concentrated on a few
+days. In January the maps of those days show stationary features centred on
+or near radars, consistent with `lk` moving stationary features that `linear`
+leaves in place (not tested; what the features are is left to H2, #19); the
+October days were not mapped. The same two months are the ones where `lk`
+loses against `linear` in the R errors at small blocks.
 
 ### Synthetic test
 

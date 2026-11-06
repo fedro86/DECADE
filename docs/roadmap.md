@@ -111,7 +111,7 @@ left allows it.
 - [x] Synthetic end-to-end test, run by CI.
 - [x] Crops of Belgium + 350 km: ODYSSEY 2012–2024 and CIRRUS 2024–2026
   ([data.md](data.md), *Derived datasets*).
-- [ ] [**H1**](https://github.com/fedro86/DECADE/issues/18) Measure
+- [x] [**H1**](https://github.com/fedro86/DECADE/issues/18) Measure
   interpolation error on degraded CIRRUS (M, 16–29/11).
 - [ ] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
   radar artefacts from ODYSSEY (M→F, 16–29/11).
