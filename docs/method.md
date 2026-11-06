@@ -240,6 +240,20 @@ single episode, not a conclusion.
 
 ![Steiner and ECCO on 22/1/2025 at 21:55, 22:10 and 22:25](figures/cirrus-qc/steiner-ecco-20250122T2210.png)
 
+Where the January `lk` deficit on convective pixels comes from
+(`notebooks/03-mr-cirrus-analysis.ipynb`, section 4): `lk` is worse than
+`linear` on 23 of 28 days, but five days carry 70% of the monthly deficit (24,
+5, 25, 22 and 30 January; the first three 51%). One time per day, the one where
+`lk` loses most against `linear`, was mapped for these five days. On all of
+them, patches of Steiner convective pixels stay centred on radars (behel,
+bewid, bejab, nldhl, nlhrw) through the three frames while the surrounding rain
+moves; around nldhl ECCO also draws a convective ring. The `lk` deficit is
+concentrated on days with stationary, radar-centred features, which `lk`
+advects and `linear` leaves in place. Described without a threshold; these
+maps show where the deficit comes from, not how the features are produced.
+
+![Steiner and ECCO on 24/1/2025 at 19:25, 19:40 and 19:55](figures/cirrus-qc/steiner-ecco-20250124T1940.png)
+
 Season (December–February against June–August) is kept as a
 second, coarse split, as in Imhoff et al. (2020)
 ([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
