@@ -253,6 +253,7 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
 
 - January: `lk` has the lowest extra error over all pixels and on stratiform
   pixels; on convective pixels its extra error is higher than `linear`'s.
+- June: `lk` has the lowest extra error over all pixels and in both classes.
 - Against the 4 days of real ODYSSEY (shift 0, *Results on 1–5/7/2024*), the
   interpolated times there have RMSEs of 12.6–13.8 dBZ, against 6.3–7.2 dBZ for
   degraded CIRRUS in January; the real ODYSSEY run has no `alpha` = 0, because
