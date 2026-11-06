@@ -212,6 +212,39 @@ second, coarse split, as in Imhoff et al. (2020)
 ([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
 where summer nowcast errors are about three times the winter ones.
 
+### Interpolation error on degraded CIRRUS (H1)
+
+Set-up (`notebooks/02-mr-degraded-cirrus.ipynb`): CIRRUS degraded by `zmean`
+at :00, :15, :30, :45, interpolated back to 5 min by `nearest`, `linear` and
+`lk`, and scored against the real CIRRUS over Belgium, with the scores of
+`run_validation` and the Steiner classes at 2 km. No time shift: input and
+truth come from the same product, so there is no offset to imitate (the
+ODYSSEY–CIRRUS offset belongs to H6). Months: January, June, July, September
+and October 2025.
+
+RMSEs are on wet pixels, in dBZ. The interpolation error is the extra error over
+the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean of
+α = 1/3 and 2/3, with the ratio RMSE_α / RMSE_0.
+
+| month | pixels | method | α = 0 | α = 1/3 | α = 2/3 | extra | ratio |
+|---|---|---|---:|---:|---:|---:|---:|
+| January 2025 | all | `nearest` | 2.93 | 6.96 | 7.18 | 6.44 | 2.42 |
+| | | `linear` | 2.93 | 6.79 | 6.90 | 6.19 | 2.34 |
+| | | `lk` | 2.93 | 6.28 | 6.33 | 5.58 | 2.15 |
+| | convective | `nearest` | 4.57 | 7.94 | 8.19 | 6.65 | 1.76 |
+| | | `linear` | 4.57 | 7.15 | 7.20 | 5.53 | 1.57 |
+| | | `lk` | 4.57 | 8.36 | 8.48 | 7.07 | 1.84 |
+| | stratiform | `nearest` | 1.93 | 6.03 | 6.16 | 5.78 | 3.16 |
+| | | `linear` | 1.93 | 5.66 | 5.73 | 5.36 | 2.95 |
+| | | `lk` | 1.93 | 4.81 | 4.82 | 4.41 | 2.50 |
+
+- January: `lk` has the lowest extra error over all pixels and on stratiform
+  pixels; on convective pixels its extra error is higher than `linear`'s.
+- Against the 4 days of real ODYSSEY (shift 0, *Results on 1–5/7/2024*), the
+  interpolated times there have RMSEs of 12.6–13.8 dBZ, against 6.3–7.2 dBZ for
+  degraded CIRRUS in January; the real ODYSSEY run has no `alpha` = 0, because
+  CIRRUS is missing at the quarter hours on those days.
+
 ### Synthetic test
 
 `tests/test_synthetic.py` builds a multiscale field with known motion
