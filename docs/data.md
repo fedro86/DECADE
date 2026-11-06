@@ -110,6 +110,15 @@ resolution of ODYSSEY: each 2 km pixel covers 2 × 2 pixels at 1 km.
 For the same label, ODYSSEY reflectivity therefore "sees" about 2.5 min later
 than CIRRUS.
 
+The reflectivity windows are the ones each file declares in
+`dataset1/what` (`startdate`, `starttime`, `enddate`, `endtime`), checked on
+8,415 ODYSSEY files (one in 50 of the Belgian crops, 2012–2024, and all of
+1–5/7/2024) and 5,758 CIRRUS files (one in 50 of the Belgian crops, 7/2024–
+1/2026, and all of 1–5/7/2024), with no exception. CIRRUS starts at
+NT−9:59. They agree with the text of the OPERA note on CIRRUS and ODYSSEY
+([summary](sources/2024%20-%20Radojevic%20-%20Maximum%20Reflectivity%20Composite%20Configuration%20of%20CIRRUS%20relative%20to%20ODYSSEY.md));
+its Table 3 gives "NT−9 to NT+9" for ODYSSEY, which the files do not show.
+
 ### Quality fields
 
 - ODYSSEY `DBZH_QIND` has `QIND` in `dataset2`: 0–1 in steps of 0.1, `nodata`

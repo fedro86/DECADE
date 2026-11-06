@@ -47,9 +47,9 @@ CIRRUS, which came later.
 ## Relevance to DECADE
 
 - **H6 (time alignment of ODYSSEY and CIRRUS):** it confirms the maximum over
-  the vertical column, but it does not settle the time window. That remains as
-  in the 2024 OPERA comparison of CIRRUS and ODYSSEY, whose text
-  ([NT−10, NT+5]) and Table 3 (NT−9 to NT+9) disagree.
+  the vertical column, but it does not give the time window. The window is in
+  [data.md](../data.md), *Time windows for the label NT*, from the files and
+  the 2024 OPERA note on CIRRUS and ODYSSEY.
 - **H1 (convective/stratiform classes):** without a vertical-profile correction,
   a bright band can reach the composite as high reflectivity. This supports
   checking whether the January Steiner intensity centres are bright band.

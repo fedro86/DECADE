@@ -62,6 +62,7 @@ and put them in this folder with the name of their summary.
 | 2019 - Saltikoff | OPERA composites: compositing rule, central quality control | [10.3390/atmos10060320](https://doi.org/10.3390/atmos10060320) | open, CC BY 4.0 (blocked for automatic download); summary from the full text |
 | 2020 - Imhoff | nowcasting verification in the Benelux | [10.1029/2019WR026723](https://doi.org/10.1029/2019WR026723) | to download (blocked for automatic download); summary from the abstract |
 | 2023 - Perschke | convective / stratiform classification | [10.5194/egusphere-2023-1907](https://doi.org/10.5194/egusphere-2023-1907) | open, CC BY 4.0; summary from the full text |
+| 2024 - Radojevic | OPERA CIRRUS and ODYSSEY: time windows, configuration | [OPERA note, ed. 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA5_Report_Cirrus-vs-Odyssey_Ed-2.0.pdf) | open; summary from the full text |
 
 When a PDF marked "to download" is added, rewrite its summary from the full
 text and update its row.
