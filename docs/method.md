@@ -231,9 +231,9 @@ ECCO calls stratiform; that they all fall on one evening is a consequence of
 this selection rule, not a finding, and one episode cannot tell how common it
 is), all on the evening of 22/1/2025 (21:35–22:45, frames
 15 min before and after, radar positions from the single-radar files of that
-day): over Belgium, around the radars behel and bewid, a wide area of Steiner
-convective pixels hardly moves between 21:20 and 23:00, while ECCO calls it
-stratiform; no ring centred on a radar is visible. Over France, elongated cells
+day): over Belgium, a wide patch of Steiner convective pixels centred near the
+radars behel and bewid hardly moves between 21:20 and 23:00, while ECCO calls
+it stratiform; it is a patch, not a ring around a radar. Over France, elongated cells
 move north-east from frame to frame and both methods call them convective. The
 stationary area looks like a bright band rather than convection; this is a
 single episode, not a conclusion.
@@ -245,12 +245,16 @@ Where the January `lk` deficit on convective pixels comes from
 `linear` on 23 of 28 days, but five days carry 70% of the monthly deficit (24,
 5, 25, 22 and 30 January; the first three 51%). One time per day, the one where
 `lk` loses most against `linear`, was mapped for these five days. On all of
-them, patches of Steiner convective pixels stay centred on radars (behel,
-bewid, bejab, nldhl, nlhrw) through the three frames while the surrounding rain
-moves; around nldhl ECCO also draws a convective ring. The `lk` deficit is
-concentrated on days with stationary, radar-centred features, which `lk`
-advects and `linear` leaves in place. Described without a threshold; these
-maps show where the deficit comes from, not how the features are produced.
+them, patches (not rings) of Steiner convective pixels stay centred on or near
+radars (behel, bewid, bejab, nldhl, nlhrw; not every radar on every day)
+through the three frames while the surrounding rain moves; around nldhl ECCO
+also draws a convective ring. The `lk` deficit is concentrated on days with
+stationary features centred on radars, consistent with `lk` moving stationary
+features that `linear` leaves in place; not tested. Described without a
+threshold; these maps show where the deficit comes from, not how the features
+are produced. On 24/1 the top panels also show a straight line east of nldhl,
+which looks like a radial spike from interference. What these features are is
+left to H2 (#19), which catalogues radar artefacts.
 
 ![Steiner and ECCO on 24/1/2025 at 19:25, 19:40 and 19:55](figures/cirrus-qc/steiner-ecco-20250124T1940.png)
 
