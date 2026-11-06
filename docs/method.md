@@ -302,11 +302,20 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
 | | stratiform | `nearest` | 2.98 | 7.62 | 7.71 | 7.06 | 2.57 |
 | | | `linear` | 2.98 | 7.26 | 7.32 | 6.65 | 2.45 |
 | | | `lk` | 2.98 | 6.22 | 6.19 | 5.45 | 2.08 |
+| September 2025 | all | `nearest` | 3.75 | 8.60 | 8.67 | 7.78 | 2.30 |
+| | | `linear` | 3.75 | 8.45 | 8.55 | 7.62 | 2.26 |
+| | | `lk` | 3.75 | 7.41 | 7.41 | 6.39 | 1.97 |
+| | convective | `nearest` | 4.55 | 9.10 | 9.31 | 8.01 | 2.03 |
+| | | `linear` | 4.55 | 8.08 | 8.09 | 6.69 | 1.78 |
+| | | `lk` | 4.55 | 7.77 | 7.77 | 6.31 | 1.71 |
+| | stratiform | `nearest` | 2.81 | 7.25 | 7.30 | 6.71 | 2.59 |
+| | | `linear` | 2.81 | 6.78 | 6.81 | 6.19 | 2.42 |
+| | | `lk` | 2.81 | 5.98 | 5.97 | 5.27 | 2.13 |
 
 - January: `lk` has the lowest extra error over all pixels and on stratiform
   pixels; on convective pixels its extra error is higher than `linear`'s.
-- June and July: `lk` has the lowest extra error over all pixels and in both
-  classes.
+- June, July and September: `lk` has the lowest extra error over all pixels
+  and in both classes.
 - Against the 4 days of real ODYSSEY (1–5/7/2024, shift 0, *Results on
   1–5/7/2024*), compared with the same season, July 2025: the interpolated
   times there have RMSEs of 12.6–13.8 dBZ, against 7.7–9.1 dBZ for degraded
