@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from opera_ds.classify import (CENTRES_ONLY, background_dbz, classes_on_coarse_grid, obs_classes,
+from opera_ds.classify import (CENTRES_ONLY, background_dbz, classes_on_coarse_grid, ecco_convectivity, obs_classes,
                                peakedness_threshold, steiner_centres, steiner_convective)
 
 
@@ -49,6 +49,21 @@ def test_centres_split_by_criterion():
     assert by_int.sum() == 1 and by_int[10, 10]
     assert by_peak.sum() == 1 and by_peak[30, 30]
     assert not (by_int & by_peak).any()
+
+
+def test_ecco_smooth_planar_and_textured():
+    valid = np.ones((30, 30), bool)
+    flat = np.full((30, 30), 35.0)
+    assert np.nanmax(ecco_convectivity(flat, valid, 2.0)) == pytest.approx(0.0, abs=1e-6)
+    y, x = np.mgrid[0:30, 0:30]
+    ramp = 20.0 + 0.5 * x + 0.3 * y            # a tilted plane: gradient removed by the fit
+    c = ecco_convectivity(ramp, valid, 2.0)
+    assert np.nanmax(c[6:24, 6:24]) < 1e-4
+    rough = np.where((x + y) % 2 == 0, 50.0, 10.0)
+    assert np.nanmin(ecco_convectivity(rough, valid, 2.0)[6:24, 6:24]) > 0.5
+    sparse = np.zeros((30, 30), bool)
+    sparse[15, 15] = True                       # isolated pixel: less than 25% valid
+    assert np.isnan(ecco_convectivity(flat, sparse, 2.0)).all()
 
 
 def test_no_echo_is_no_class():

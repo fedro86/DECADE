@@ -22,10 +22,12 @@ UAE, Australia and, in 2D, on the OPERA mosaic over Europe.
 
 ## Numbers we use
 
-- **Texture:** TDBZ = standard deviation of (reflectivity − linear fit + mean −
-  DBZbase)² over a circle; DBZbase = 0 dBZ for S-, C- and X-band radars
-  (section 3a, Eqs. 1–3). The gradient fit is done only if at least 0.67 of the
-  circle has valid reflectivity; a point is processed if at least 0.25 has.
+- **Texture:** TDBZ = √stdev(DBZ_adj²) over a circle (Eq. 4), with
+  DBZ_adj = reflectivity − linear plane fit + kernel mean − DBZbase (Eqs. 1–3),
+  negative DBZ_adj set to 0; DBZbase = 0 dBZ for S-, C- and X-band radars
+  (section 3a). The plane fit is done only if at least 0.67 of the circle has
+  valid (non-missing) reflectivity; a point is processed ("active") if it has
+  valid reflectivity and at least 0.25 of the circle has.
 - **Convectivity:** TDBZ ≤ 0 → 0, TDBZ ≥ 30 → 1, linear in between
   (section 3b, Fig. 3); TDBZ 15 corresponds to convectivity 0.5.
 - **Classes:** convectivity < 0.4 stratiform, 0.4–0.5 mixed, > 0.5 convective

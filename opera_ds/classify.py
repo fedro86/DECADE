@@ -20,6 +20,15 @@ MEDIUM_RADIUS = ((-np.inf, 1.0), (25.0, 2.0), (30.0, 3.0), (35.0, 4.0), (40.0, 5
 CENTRES_ONLY = ((-np.inf, 0.0),)
 
 
+# ECCO (Dixon and Romatschke 2022, docs/sources/2022 - Dixon - ...md), OPERA 2 km settings
+ECCO_TEXTURE_RADIUS_KM = 8.5   # section 5c (7 km on 1 km grids, section 3a)
+ECCO_DBZ_BASE = 0.0            # section 3a, S/C/X band
+ECCO_TDBZ_LOW, ECCO_TDBZ_HIGH = 0.0, 30.0   # section 3b, Fig. 3
+ECCO_MIN_VALID = 0.25          # active point, section 3a
+ECCO_MIN_FIT = 0.67            # plane fit, section 3a
+ECCO_STRATIFORM_BELOW = 0.4    # section 3c (mixed 0.4-0.5, convective above 0.5)
+
+
 def _disk(radius_px: float) -> np.ndarray:
     r = int(np.floor(radius_px))
     y, x = np.mgrid[-r:r + 1, -r:r + 1]
@@ -123,3 +132,55 @@ def obs_classes(obs: np.ndarray, floor: float = 0.0, factor: int = 2, pixel_km: 
     By default a 1 km field is classified on the 2 km grid (factor = 2)."""
     echo = np.isfinite(obs) & (obs > floor)
     return classes_on_coarse_grid(np.nan_to_num(obs, nan=floor), echo, pixel_km, factor, conv_radius)
+
+
+def ecco_convectivity(dbz: np.ndarray, valid: np.ndarray, pixel_km: float,
+                      texture_radius_km: float = ECCO_TEXTURE_RADIUS_KM,
+                      dbz_base: float = ECCO_DBZ_BASE,
+                      tdbz_low: float = ECCO_TDBZ_LOW, tdbz_high: float = ECCO_TDBZ_HIGH,
+                      min_valid: float = ECCO_MIN_VALID, min_fit: float = ECCO_MIN_FIT) -> np.ndarray:
+    """Convectivity (0 stratiform ... 1 convective) of a 2D reflectivity field after the
+    ECCO algorithm of Dixon and Romatschke (2022), sections 3a-b.
+
+    For each pixel with valid reflectivity, in a circle of `texture_radius_km`: the pixel
+    is active if at least `min_valid` of the circle is valid; if at least `min_fit` is
+    valid, a plane a*x + b*y + c is fitted to the valid values and removed, adding back
+    the kernel mean (Eqs. 1-2); DBZ_adj = DBZ_corr - dbz_base, negative values set to 0
+    (Eq. 3); texture TDBZ = sqrt(stdev(DBZ_adj**2)) (Eq. 4); convectivity maps TDBZ
+    linearly from `tdbz_low` (0) to `tdbz_high` (1) (Fig. 3).
+    dbz: field in dBZ; valid: bool, pixels with reflectivity (here: echo). Returns
+    convectivity, NaN where the pixel is not valid or not active."""
+    disk = _disk(texture_radius_km / pixel_km).astype(bool)
+    r = disk.shape[0] // 2
+    yy, xx = np.mgrid[-r:r + 1, -r:r + 1]
+    xs, ys = xx[disk].astype(np.float64), yy[disk].astype(np.float64)
+    zp = np.pad(np.where(valid, dbz, 0.0).astype(np.float64), r)
+    vp = np.pad(valid, r)
+    win_z = np.lib.stride_tricks.sliding_window_view(zp, disk.shape)[..., disk]
+    win_v = np.lib.stride_tricks.sliding_window_view(vp, disk.shape)[..., disk]
+    out = np.full(dbz.shape, np.nan)
+    frac = win_v.mean(axis=-1)
+    active = valid & (frac >= min_valid)
+    rows, cols = np.nonzero(active)
+    if rows.size == 0:
+        return out
+    Z = win_z[rows, cols]                    # (n, k)
+    V = win_v[rows, cols].astype(np.float64)
+    n_v = V.sum(axis=1)
+    mean = (Z * V).sum(axis=1) / n_v
+    corr = Z.copy()
+    fit = frac[rows, cols] >= min_fit
+    if fit.any():
+        w = V[fit]
+        ones = np.ones_like(xs)
+        A = np.stack([xs, ys, ones], axis=1)           # (k, 3)
+        AtA = np.einsum("nk,ki,kj->nij", w, A, A)
+        Atz = np.einsum("nk,ki,nk->ni", w, A, Z[fit])
+        coef = np.linalg.solve(AtA, Atz[..., None])[..., 0]   # (n, 3): a, b, c
+        plane = coef @ A.T                              # (n, k)
+        corr[fit] = Z[fit] - plane + mean[fit][:, None]
+    adj = np.maximum(corr - dbz_base, 0.0)
+    a2 = np.where(V > 0, adj * adj, np.nan)
+    tdbz = np.sqrt(np.nanstd(a2, axis=1))
+    out[rows, cols] = np.clip((tdbz - tdbz_low) / (tdbz_high - tdbz_low), 0.0, 1.0)
+    return out
