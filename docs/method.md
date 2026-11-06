@@ -186,14 +186,23 @@ February 1988, 2 km):
 
 - The 1 km grid gives a larger convective share than 2 km, as section 6d
   reports; this is the reason for the 2 km grid.
-- The radius more than doubles the convective area (9.0% to 21.3%), against
-  four times in the paper (3% to 12%). A Darwin month and a Belgian September
-  week are not directly comparable.
+- The radius takes the convective share from 9.0% to 21.3% (×2.4), while in
+  the paper it goes from 3% to 12% (×4). The excess over Steiner is in the
+  centres (×3), not in the radius. A Darwin month and a Belgian September week
+  are not directly comparable.
 
 Known limits: the method was tuned on a tropical radar at a fixed 3 km height.
 OPERA `DBZH` is a maximum-reflectivity composite, so a bright band above
-40 dBZ can be labelled convective, mostly in the cold season; this is checked
-on January in H1. Season (December–February against June–August) is kept as a
+40 dBZ can be labelled convective, mostly in the cold season. Check over
+Belgium, Steiner at 2 km, all CIRRUS frames of each period, convective centres
+counted on the 2 km grid (`steiner_centres`):
+
+| period | convective share of the echo area | centres by intensity (≥ 40 dBZ) | centres by peakedness only |
+|---|---:|---:|---:|
+| 8–14/9/2025 | 21.3% | 373,440 (79.5%) | 96,386 (20.5%) |
+| January 2025 | 14.5% | 621,204 (67.1%) | 305,013 (32.9%) |
+
+Season (December–February against June–August) is kept as a
 second, coarse split, as in Imhoff et al. (2020)
 ([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
 where summer nowcast errors are about three times the winter ones.

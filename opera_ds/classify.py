@@ -49,6 +49,23 @@ def background_dbz(dbz: np.ndarray, echo: np.ndarray, pixel_km: float,
     return out
 
 
+def steiner_centres(dbz: np.ndarray, echo: np.ndarray, pixel_km: float,
+                    intensity_dbz: float = INTENSITY_DBZ,
+                    radius_km: float = BACKGROUND_RADIUS_KM):
+    """Convective centres of Steiner et al. (1995), split by the criterion that makes them.
+
+    Returns (by_intensity, by_peakedness, background): bool masks of the centres that
+    are >= `intensity_dbz`, and of those below it that exceed the background by
+    `peakedness_threshold`; background in dBZ (`background_dbz`)."""
+    dbz = np.where(echo, dbz, -np.inf).astype(np.float64)
+    bg = background_dbz(np.where(echo, dbz, 0.0), echo, pixel_km, radius_km)
+    by_intensity = echo & (dbz >= intensity_dbz)
+    with np.errstate(invalid="ignore"):
+        peaked = dbz - bg > peakedness_threshold(np.nan_to_num(bg, nan=0.0))
+    by_peakedness = echo & ~by_intensity & peaked
+    return by_intensity, by_peakedness, bg
+
+
 def steiner_convective(dbz: np.ndarray, echo: np.ndarray, pixel_km: float,
                        intensity_dbz: float = INTENSITY_DBZ,
                        radius_km: float = BACKGROUND_RADIUS_KM,
@@ -57,14 +74,12 @@ def steiner_convective(dbz: np.ndarray, echo: np.ndarray, pixel_km: float,
 
     echo: bool, pixels with a detected echo (everything else is ignored).
     A pixel is a convective centre if it is >= `intensity_dbz`, or if it exceeds the
-    background (`background_dbz`) by `peakedness_threshold`; every echo pixel within
-    the convective radius of a centre (from the background at the centre) is convective.
-    Returns a bool array; stratiform = echo & ~convective."""
-    dbz = np.where(echo, dbz, -np.inf).astype(np.float64)
-    bg = background_dbz(np.where(echo, dbz, 0.0), echo, pixel_km, radius_km)
-    with np.errstate(invalid="ignore"):
-        centre = echo & ((dbz >= intensity_dbz) | (dbz - bg > peakedness_threshold(np.nan_to_num(bg, nan=0.0))))
-    conv = np.zeros(dbz.shape, bool)
+    background (`background_dbz`) by `peakedness_threshold` (`steiner_centres`); every
+    echo pixel within the convective radius of a centre (from the background at the
+    centre) is convective. Returns a bool array; stratiform = echo & ~convective."""
+    by_int, by_peak, bg = steiner_centres(dbz, echo, pixel_km, intensity_dbz, radius_km)
+    centre = by_int | by_peak
+    conv = np.zeros(centre.shape, bool)
     bgc = np.nan_to_num(bg, nan=-np.inf)
     bounds = [b for b, _ in conv_radius[1:]] + [np.inf]
     for (lo, r), hi in zip(conv_radius, bounds):
@@ -74,20 +89,28 @@ def steiner_convective(dbz: np.ndarray, echo: np.ndarray, pixel_km: float,
     return conv & echo
 
 
+def coarse_field(dbz_fine: np.ndarray, echo_fine: np.ndarray, factor: int):
+    """Field `factor` times coarser: mean in linear Z over factor x factor blocks (no echo
+    = Z 0); a coarse pixel has echo if any of its fine pixels has. Returns (dbz, echo)."""
+    ny, nx = dbz_fine.shape
+    if ny % factor or nx % factor:
+        raise ValueError(f"shape {dbz_fine.shape} is not a multiple of {factor}")
+    if factor == 1:
+        return np.where(echo_fine, dbz_fine, 0.0).astype(np.float64), echo_fine
+    shape = (ny // factor, factor, nx // factor, factor)
+    z = np.where(echo_fine, np.power(10.0, dbz_fine.astype(np.float64) / 10.0), 0.0)
+    zc = z.reshape(shape).mean(axis=(1, 3))
+    echo_c = echo_fine.reshape(shape).any(axis=(1, 3))
+    return np.where(echo_c, 10.0 * np.log10(np.maximum(zc, 1e-12)), 0.0), echo_c
+
+
 def classes_on_coarse_grid(dbz_fine: np.ndarray, echo_fine: np.ndarray, pixel_km: float = 1.0,
                            factor: int = 1, conv_radius=MEDIUM_RADIUS) -> dict[str, np.ndarray]:
     """Convective and stratiform masks of a field with pixels of `pixel_km`. With
     factor = 1 the field is classified as it is; with factor > 1 it is classified on the
     grid `factor` times coarser (mean in linear Z over factor x factor blocks) and each
     coarse class is copied to its block. Pixels without echo belong to no class."""
-    ny, nx = dbz_fine.shape
-    if ny % factor or nx % factor:
-        raise ValueError(f"shape {dbz_fine.shape} is not a multiple of {factor}")
-    shape = (ny // factor, factor, nx // factor, factor)
-    z = np.where(echo_fine, np.power(10.0, dbz_fine.astype(np.float64) / 10.0), 0.0)
-    zc = z.reshape(shape).mean(axis=(1, 3))
-    echo_c = echo_fine.reshape(shape).any(axis=(1, 3))
-    dbz_c = np.where(echo_c, 10.0 * np.log10(np.maximum(zc, 1e-12)), 0.0)
+    dbz_c, echo_c = coarse_field(dbz_fine, echo_fine, factor)
     conv_c = steiner_convective(dbz_c, echo_c, pixel_km * factor, conv_radius=conv_radius)
     conv = np.repeat(np.repeat(conv_c, factor, axis=0), factor, axis=1) & echo_fine
     return {"convective": conv, "stratiform": echo_fine & ~conv}

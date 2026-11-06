@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from opera_ds.classify import (CENTRES_ONLY, background_dbz, classes_on_coarse_grid, obs_classes,
-                               peakedness_threshold, steiner_convective)
+                               peakedness_threshold, steiner_centres, steiner_convective)
 
 
 def test_peakedness_curve():
@@ -38,6 +38,17 @@ def test_peakedness_centre():
     assert steiner_convective(dbz, echo, 1.0)[20, 20]
     dbz[20, 20] = 24.0                      # 4 dB above: below Delta Z(20 dBZ) = 7.8 dB
     assert not steiner_convective(dbz, echo, 1.0).any()
+
+
+def test_centres_split_by_criterion():
+    dbz = np.full((41, 41), 20.0)
+    dbz[10, 10] = 45.0                      # intensity centre
+    dbz[30, 30] = 35.0                      # peakedness-only centre
+    echo = np.ones_like(dbz, bool)
+    by_int, by_peak, _ = steiner_centres(dbz, echo, 1.0)
+    assert by_int.sum() == 1 and by_int[10, 10]
+    assert by_peak.sum() == 1 and by_peak[30, 30]
+    assert not (by_int & by_peak).any()
 
 
 def test_no_echo_is_no_class():
