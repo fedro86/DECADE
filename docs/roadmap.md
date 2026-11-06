@@ -85,7 +85,7 @@ left allows it.
   existing pipeline on Marìca's Windows machine (M, 3–15/11).
 - [ ] [**S6**](https://github.com/fedro86/DECADE/issues/10) Set up SSH access to
   the Windows workstation (F, 3–22/11).
-- [ ] [**S4**](https://github.com/fedro86/DECADE/issues/11) Ask VMM about
+- [x] [**S4**](https://github.com/fedro86/DECADE/issues/11) Ask VMM about
   licence, access token, gauge adjustment and start date (F, 3–15/11).
 - [ ] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
   the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
@@ -276,9 +276,6 @@ size.
 
 ## Open questions (external)
 
-- **Licence of the VMM radar rasters** (not stated by waterinfo.be), whether the
-  intensity product is gauge-adjusted, and since when the rasters exist (June
-  2021 or earlier). To ask hydrometrie@waterinfo.be, together with a token.
 - **Period of the RADCLIM copy available to the project:** about 2018–2024
   according to the team, 2017–2022 in the metadata record. To check.
 - **EURADCLIM after 2023:** is a version covering 2024–2025 available or
