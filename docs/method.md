@@ -207,6 +207,19 @@ counted on the 2 km grid (`steiner_centres`):
 | 8–14/9/2025 | 21.3% | 373,440 (79.5%) | 96,386 (20.5%) |
 | January 2025 | 14.5% | 621,204 (67.1%) | 305,013 (32.9%) |
 
+As a second opinion, the intensity centres were classified with ECCO
+(Dixon and Romatschke 2022,
+[summary](sources/2022%20-%20Dixon%20-%20Three-dimensional%20convective-stratiform%20echo-type%20classification%20and%20convectivity%20retrieval%20from%20radar%20reflectivity.md)),
+which separates echo types by horizontal texture, not intensity, with its OPERA
+2 km parameters (`ecco_convectivity`, `notebooks/03-mr-cirrus-analysis.ipynb`).
+ECCO has no winter validation and its authors report bright band classified as
+convective (section 6), so it is not a referee. Belgium, all CIRRUS frames:
+
+| month | Steiner intensity centres | ECCO stratiform (< 0.4) | ECCO mixed (0.4–0.5) |
+|---|---:|---:|---:|
+| January 2025 | 621,204 | 6.4% | 14.3% |
+| September 2025 | 756,918 | 13.9% | 22.6% |
+
 Season (December–February against June–August) is kept as a
 second, coarse split, as in Imhoff et al. (2020)
 ([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
