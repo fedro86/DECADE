@@ -39,6 +39,10 @@ changes to `pyproject.toml`.
   `pre-commit install`), so figures do not show on GitHub: save the ones worth
   sharing in `results/` and attach them to the pull request or issue. CI fails
   if a notebook with outputs is pushed.
+- A figure that a document cites goes in `docs/figures/<topic>/`, one subfolder
+  per topic (e.g. `cirrus-qc/`), not per ticket, so that it stays findable
+  after the ticket is closed. Keep it under 1 MB and link it from the section
+  that cites it.
 - Never commit data: `data/`, `results/`, `*.h5`, `*.npy`, `*.zarr` are ignored,
   and a hook blocks files over 1 MB.
 
@@ -140,6 +144,7 @@ paragraph, check that it is not already written somewhere else.
 | change how we work, or add a module | `CONTRIBUTING.md` |
 | add a notebook | `notebooks/README.md` |
 | read an article or report used for a choice | `docs/sources/<YEAR - AUTHOR - TITLE>.md` |
+| add a figure that a document cites | `docs/figures/<topic>/`, linked from the citing section |
 
 Status ("done", "to do") is written only in `docs/roadmap.md`.
 
