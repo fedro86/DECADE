@@ -59,6 +59,7 @@ and put them in this folder with the name of their summary.
 | 2013 - Goudenhoofdt | convective / stratiform classification | [10.1175/JAMC-D-12-079.1](https://doi.org/10.1175/JAMC-D-12-079.1) | to download (paywall); summary from the abstract |
 | 2016 - Foresti | nowcasting verification in the Benelux | [10.5194/hess-20-505-2016](https://doi.org/10.5194/hess-20-505-2016) | open ([PDF](https://hess.copernicus.org/articles/20/505/2016/hess-20-505-2016.pdf)); summary from the full text |
 | 2018 - Poelman | convective / stratiform classification | [EUMETNET report](https://www.eumetnet.eu/wp-content/uploads/2019/01/Daily_convective_precipitation_Maps_OPERA.pdf) | open; summary from the full text |
+| 2019 - Saltikoff | OPERA composites: compositing rule, central quality control | [10.3390/atmos10060320](https://doi.org/10.3390/atmos10060320) | open, CC BY 4.0 (blocked for automatic download); summary from the full text |
 | 2020 - Imhoff | nowcasting verification in the Benelux | [10.1029/2019WR026723](https://doi.org/10.1029/2019WR026723) | to download (blocked for automatic download); summary from the abstract |
 | 2023 - Perschke | convective / stratiform classification | [10.5194/egusphere-2023-1907](https://doi.org/10.5194/egusphere-2023-1907) | open, CC BY 4.0; summary from the full text |
 
