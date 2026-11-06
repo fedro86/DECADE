@@ -220,6 +220,18 @@ convective (section 6), so it is not a referee. Belgium, all CIRRUS frames:
 | January 2025 | 621,204 | 6.4% | 14.3% |
 | September 2025 | 756,918 | 13.9% | 22.6% |
 
+Maps of the 15 January times with most disagreements (intensity centres that
+ECCO calls stratiform), all on the evening of 22/1/2025 (21:35–22:45, frames
+15 min before and after, radar positions from the single-radar files of that
+day): over Belgium, around the radars behel and bewid, a wide area of Steiner
+convective pixels hardly moves between 21:20 and 23:00, while ECCO calls it
+stratiform; no ring centred on a radar is visible. Over France, elongated cells
+move north-east from frame to frame and both methods call them convective. The
+stationary area looks like a bright band rather than convection; this is a
+single episode, not a conclusion.
+
+![Steiner and ECCO on 22/1/2025 at 21:55, 22:10 and 22:25](figures/cirrus-qc/steiner-ecco-20250122T2210.png)
+
 Season (December–February against June–August) is kept as a
 second, coarse split, as in Imhoff et al. (2020)
 ([summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
