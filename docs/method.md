@@ -250,6 +250,15 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
 | | stratiform | `nearest` | 1.93 | 6.03 | 6.16 | 5.78 | 3.16 |
 | | | `linear` | 1.93 | 5.66 | 5.73 | 5.36 | 2.95 |
 | | | `lk` | 1.93 | 4.81 | 4.82 | 4.41 | 2.50 |
+| June 2025 | all | `nearest` | 3.69 | 8.94 | 9.02 | 8.19 | 2.44 |
+| | | `linear` | 3.69 | 8.77 | 8.95 | 8.06 | 2.40 |
+| | | `lk` | 3.69 | 7.65 | 7.61 | 6.68 | 2.07 |
+| | convective | `nearest` | 4.53 | 9.27 | 9.41 | 8.17 | 2.06 |
+| | | `linear` | 4.53 | 8.22 | 8.30 | 6.90 | 1.82 |
+| | | `lk` | 4.53 | 7.97 | 8.03 | 6.60 | 1.77 |
+| | stratiform | `nearest` | 2.73 | 7.66 | 7.76 | 7.21 | 2.83 |
+| | | `linear` | 2.73 | 7.20 | 7.28 | 6.70 | 2.65 |
+| | | `lk` | 2.73 | 6.22 | 6.20 | 5.58 | 2.28 |
 
 - January: `lk` has the lowest extra error over all pixels and on stratiform
   pixels; on convective pixels its extra error is higher than `linear`'s.
