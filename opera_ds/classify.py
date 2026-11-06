@@ -184,3 +184,33 @@ def ecco_convectivity(dbz: np.ndarray, valid: np.ndarray, pixel_km: float,
     tdbz = np.sqrt(np.nanstd(a2, axis=1))
     out[rows, cols] = np.clip((tdbz - tdbz_low) / (tdbz_high - tdbz_low), 0.0, 1.0)
     return out
+
+
+def steiner_ecco_fields(obs: np.ndarray, floor: float = 0.0, factor: int = 2,
+                        pixel_km: float = 1.0) -> dict[str, np.ndarray]:
+    """Both classifications of a truth field (`Frame.to_field`) on the grid `factor`
+    times coarser, for comparing them: 'dbz', 'echo', Steiner centres 'by_intensity' and
+    'by_peakedness', Steiner 'convective' (medium radius), and ECCO 'convectivity'."""
+    echo = np.isfinite(obs) & (obs > floor)
+    dbz_c, echo_c = coarse_field(np.nan_to_num(obs, nan=floor), echo, factor)
+    by_int, by_peak, _ = steiner_centres(dbz_c, echo_c, pixel_km * factor)
+    conv = steiner_convective(dbz_c, echo_c, pixel_km * factor)
+    return {"dbz": dbz_c, "echo": echo_c, "by_intensity": by_int, "by_peakedness": by_peak,
+            "convective": conv, "convectivity": ecco_convectivity(dbz_c, echo_c, pixel_km * factor)}
+
+
+def intensity_centres_vs_ecco(path: str, region_coarse_path: str, quantity: str = "DBZH") -> dict:
+    """Counts, inside a region on the coarse grid (.npy), of the Steiner intensity centres
+    of one composite and of those that ECCO calls stratiform (convectivity <
+    ECCO_STRATIFORM_BELOW), mixed, or not active. Module-level, so it can run in worker
+    processes."""
+    from .odim_io import read_odim_composite
+    region = np.load(region_coarse_path)
+    f = steiner_ecco_fields(read_odim_composite(path, quantity).to_field(0.0))
+    sel = f["by_intensity"] & region
+    c = f["convectivity"]
+    return {"intensity_centres": int(sel.sum()),
+            "ecco_stratiform": int((sel & (c < ECCO_STRATIFORM_BELOW)).sum()),
+            "ecco_mixed": int((sel & (c >= ECCO_STRATIFORM_BELOW) & (c <= 0.5)).sum()),
+            "ecco_inactive": int((sel & np.isnan(c)).sum()),
+            "echo_px": int((f["echo"] & region).sum())}

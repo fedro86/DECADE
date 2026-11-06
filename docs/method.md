@@ -153,6 +153,11 @@ ODYSSEY.
 - No degradation is smoother than ODYSSEY: real ODYSSEY has 1.4–2.1 times less
   small-scale energy than CIRRUS degraded by `zmean`. Degraded CIRRUS is
   therefore a rougher, not an easier, input than ODYSSEY.
+- The OPERA product sheet describes the composite value as the maximum of all
+  contributing single-scan pixels
+  ([summary](sources/2024%20-%20EUMETNET%20-%20OPERA%20CIRRUS%20maximum%20reflectivity%20composite%20user%20product%20sheet.md)),
+  which is closer to the `max` degradation; yet `zmean` matches real ODYSSEY
+  better. This is measured, not explained.
 
 ### Convective and stratiform pixels
 
