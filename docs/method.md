@@ -271,10 +271,20 @@ the floor at `alpha` = 0, in quadrature: √(RMSE_α² − RMSE_0²) at the mean
 | | stratiform | `nearest` | 2.73 | 7.66 | 7.76 | 7.21 | 2.83 |
 | | | `linear` | 2.73 | 7.20 | 7.28 | 6.70 | 2.65 |
 | | | `lk` | 2.73 | 6.22 | 6.20 | 5.58 | 2.28 |
+| July 2025 | all | `nearest` | 4.01 | 8.97 | 9.14 | 8.12 | 2.26 |
+| | | `linear` | 4.01 | 9.02 | 9.08 | 8.11 | 2.25 |
+| | | `lk` | 4.01 | 7.70 | 7.65 | 6.54 | 1.91 |
+| | convective | `nearest` | 4.27 | 9.09 | 9.09 | 8.02 | 2.13 |
+| | | `linear` | 4.27 | 8.15 | 8.22 | 6.98 | 1.92 |
+| | | `lk` | 4.27 | 7.28 | 7.27 | 5.89 | 1.70 |
+| | stratiform | `nearest` | 2.98 | 7.62 | 7.71 | 7.06 | 2.57 |
+| | | `linear` | 2.98 | 7.26 | 7.32 | 6.65 | 2.45 |
+| | | `lk` | 2.98 | 6.22 | 6.19 | 5.45 | 2.08 |
 
 - January: `lk` has the lowest extra error over all pixels and on stratiform
   pixels; on convective pixels its extra error is higher than `linear`'s.
-- June: `lk` has the lowest extra error over all pixels and in both classes.
+- June and July: `lk` has the lowest extra error over all pixels and in both
+  classes.
 - Against the 4 days of real ODYSSEY (shift 0, *Results on 1–5/7/2024*), the
   interpolated times there have RMSEs of 12.6–13.8 dBZ, against 6.3–7.2 dBZ for
   degraded CIRRUS in January; the real ODYSSEY run has no `alpha` = 0, because
