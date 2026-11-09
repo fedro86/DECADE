@@ -87,7 +87,7 @@ left allows it.
   the Windows workstation (F, 3–22/11).
 - [x] [**S4**](https://github.com/fedro86/DECADE/issues/11) Ask VMM about
   licence, access token, gauge adjustment and start date (F, 3–15/11).
-- [ ] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
+- [x] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
   the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
 - [ ] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get EURADCLIM and
   ERA5-Land over the Belgian domain (F, 3–22/11).
