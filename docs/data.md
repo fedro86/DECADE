@@ -189,8 +189,12 @@ OPERA.
   as clutter, and rain is rightly kept.
   - In the dry hour almost every strong echo is clutter, and the Belgian and
     French radars remove 94–100% of it over land and over the sea near them.
-    The lower Dutch shares (58–77%) may be rain over the Netherlands in that
-    hour; this is not checked.
+    The lower Dutch shares (58–77%) were checked over the 12 volumes of the
+    hour. About a third of what `DBZH` keeps stays in place in all 12 volumes,
+    mostly near the radar (median range 18 km at Den Helder, 3 km at
+    Herwijnen); the rest moves. None of the fixed bins reaches the CIRRUS
+    composite at 10 dBZ or more at more than 5 of the 12 times of the hour,
+    so OPERA removes them before compositing.
   - On the rainy day the shares are low because most echoes are rain.
 - **Only from 2024.** Single-radar files are not in the bucket before 2024, so
   the processing of 2012–2023 cannot be checked this way.
