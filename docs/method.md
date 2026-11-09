@@ -586,6 +586,26 @@ that cover Belgium, and a conditional one at 75 dBZ. Both lie well above the
 55 dBZ cap and well below the values seen in ODYSSEY (100 dBZ and more,
 128 dBZ). Any choice is a cited convention, not an established limit (#19).
 
+### Impossible values: counts on ODYSSEY and CIRRUS
+
+Asked in the review of #74 before fixing 70 dBZ. Echo pixels (covered, not
+`undetect`) of the Belgian crops on the project PC: ODYSSEY 2023 (2 km,
+15 min, 34,408 files) and CIRRUS 2025 (1 km, 5 min, 103,791 files).
+
+| product | echo pixels | 55–70 dBZ | above 70 dBZ | of which ≥ 100 dBZ | files with any pixel above 70 |
+|---|---:|---:|---:|---:|---:|
+| ODYSSEY 2023 | 1.87 × 10⁹ | 1,415,933 (7.6 × 10⁻⁴) | 47,310 (2.5 × 10⁻⁵) | 28,876 | 10,112 (29.4%) |
+| CIRRUS 2025 | 1.98 × 10¹⁰ | 17,806,147 (9.0 × 10⁻⁴) | 488,997 (2.5 × 10⁻⁵) | 27 | 24,287 (23.4%) |
+
+- **Same share above 70 dBZ.** The share above 70 dBZ is the same in both
+  products, 2.5 × 10⁻⁵.
+- **ODYSSEY's extremes are impossible values; CIRRUS's are not.** In ODYSSEY,
+  61% of the pixels above 70 dBZ are at 100 dBZ or more. In CIRRUS almost none
+  are (27 pixels).
+- **Above 70 dBZ is frequent.** About a quarter of the files of both products
+  have at least one pixel above 70 dBZ. Where these pixels lie (hail cores or
+  fixed points) is not checked; a frequency map would show it.
+
 ### Sea clutter and anomalous propagation: literature
 
 Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.
