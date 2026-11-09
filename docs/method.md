@@ -693,6 +693,10 @@ checked on rain, and on the January features it should remove (review of #74).
   area/perimeter test removes). So the filter acts mostly through its gradient
   test, on pixels much stronger than their neighbours, not by removing small
   cells.
+- **For the first version** (review of #74): the filter mostly trims the
+  peaks of real cells, which is the rain that matters for intense-rain
+  thresholds (research question 3). This is reported next to the
+  before/after numbers.
 
 ## Training windows
 
