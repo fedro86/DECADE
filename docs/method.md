@@ -549,12 +549,16 @@ What the collection shows:
   sums; Wagner-style frequency maps for the catalogue. `histo_cut` and the
   frequency maps fit the rule when the mask is computed on past composites and
   applied to new ones.
-- **Satellite mask:** not in the operational chain. CIRRUS already has the
-  OPERA satellite filter (2023 version; Radojevic 2024, Table 3), and ODYSSEY
-  has had one since late 2015 (Saltikoff et al. 2019). A mask would serve only
-  to bring ODYSSEY 2012–2015 closer to CIRRUS, with the CLAAS-2.1 cloud type,
-  which covers those years. First a test order of one day to measure the size,
-  then a comparison of ODYSSEY before and after late 2015.
+- **Satellite mask:** not in the operational chain, and left out of the
+  first version (review of #74: first a result on the composite alone, then
+  improvements). A possible later improvement for ODYSSEY 2012–2015 only, to
+  judge once the first version shows whether there is a gap before and after
+  late 2015 (when the OPERA satellite filter started; Saltikoff et al. 2019).
+  It would need the CLAAS-2.1 cloud type, which is available only through
+  the CM SAF help desk (`data.md`, CLAAS-3 row).
+- **Priority:** first a working cleaning on the composite alone (impossible
+  values, Gabella, `histo_cut`, frequency maps for the catalogue) on ODYSSEY
+  and CIRRUS, with numbers before and after; improvements come after.
 - **Interference spikes:** only reduced, but the residual after cleaning is to
   be measured.
 - **Gabella:** fits the rule. Its loss of convective rain is to be weighed
@@ -623,31 +627,41 @@ chosen) and a speckle filter. The polarimetric filters stay upstream, and
 the comparison of `TH` with `DBZH` in the single-radar files asked in #74
 measures what they leave.
 
-### Gabella filter at 2 km
+### Gabella filter at 2 km and 1 km
 
-`notebooks/05-mr-artefacts.ipynb`, section 1. The filter was set on
+`notebooks/05-mr-artefacts.ipynb`, sections 1–2. The filter was set on
 single-radar 1 km maps (Gabella and Notarpietro 2002). On the 2 km grid its
 5 × 5 window covers 10 km and the smallest kept echo is about 44 km², so it was
-checked on real rain before use.
+checked on rain, and on the January features it should remove (review of #74).
 
-- **Data:** CIRRUS degraded to 2 km by `zmean` (the H1 stand-in for ODYSSEY) at
-  the quarter hours.
-- **Days:** the 5 days of June–July 2025 with most Steiner convective pixels in
-  the H1 run: 7/6, 26/6, 6/7, 7/7 and 31/7.
+- **Data:** CIRRUS over the Belgian crop at the quarter hours: degraded to 2 km
+  by `zmean` (the H1 stand-in for ODYSSEY), and at 1 km.
 - **Filter:** wradlib defaults (5 × 5, 6 dB, `n_p` = 6, 1.3), `cartesian=True`,
   on dBZ with no echo at 0 dBZ.
+- **Classes:** Steiner on the 2 km grid, as in H1.
 - **Rain:** Marshall–Palmer capped at 55 dBZ, on echoes of at least 10 dBZ.
+- **Summer days:** the 5 days of June–July 2025 with most Steiner convective
+  pixels in H1: 7/6, 26/6, 6/7, 7/7 and 31/7.
+- **January days:** the 5 days that carry 70% of the January `lk` deficit, with
+  stationary features centred on radars: 5/1, 22/1, 24/1, 25/1 and 30/1.
 
-| pixels | rain removed | pixels removed |
-|---|---:|---:|
-| all | 3.8% | 1.8% |
-| convective | 4.9% | 2.5% |
-| stratiform | 0.9% | 1.6% |
+| days | grid | convective rain removed (range per day) | stratiform rain removed |
+|---|---|---:|---:|
+| summer | 2 km | 4.9% (4.0–6.3%) | 0.9% |
+| summer | 1 km | 2.3% (1.3–3.0%) | 0.6% |
+| January, stationary features | 2 km | 11.2% (9.2–16.4%) | 0.4% |
+| January, stationary features | 1 km | 7.1% (6.1–10.3%) | 0.4% |
 
-These echoes are rain, so what the filter removes here is real rain lost. Per
-day, it removes 4.0–6.3% of the convective rain. Whether this loss is
-acceptable is a choice for #19. Where the removed pixels lie (cell edges or
-small cells) is not checked yet.
+- **Summer:** the echoes are rain, so what is removed is real rain lost.
+- **January:** the filter removes more than twice the summer share at 2 km
+  and three times at 1 km. The convective pixels of those days are mostly the
+  stationary features, but not only them, so 11.2% is an upper bound of the
+  gain on the features, not a measure of it.
+- **Where the removed convective rain lies:** 92–93% inside echo regions,
+  5–7% on edges and 1–3% in small echoes (at most 11 pixels, the size the
+  area/perimeter test removes). So the filter acts mostly through its gradient
+  test, on pixels much stronger than their neighbours, not by removing small
+  cells.
 
 ## Training windows
 
