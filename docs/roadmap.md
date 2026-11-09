@@ -276,8 +276,6 @@ size.
 
 ## Open questions (external)
 
-- **Period of the RADCLIM copy available to the project:** about 2018–2024
-  according to the team, 2017–2022 in the metadata record. To check.
 - **EURADCLIM after 2023:** is a version covering 2024–2025 available or
   planned? To ask KNMI.
 

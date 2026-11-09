@@ -63,6 +63,7 @@ and put them in this folder with the name of their summary.
 | 2020 - Imhoff | nowcasting verification in the Benelux | [10.1029/2019WR026723](https://doi.org/10.1029/2019WR026723) | to download (blocked for automatic download; open access, CC BY); summary from the full text (sections 1, 2.2, 3.2) |
 | 2022 - Dixon | convective / stratiform classification; bright band; test on the 2D OPERA mosaic | [10.1175/JTECH-D-22-0018.1](https://doi.org/10.1175/JTECH-D-22-0018.1) | open copy on [OSTI](https://www.osti.gov/pages/servlets/purl/1897074); summary from the full text (sections 1–3c, 3f, 4a, 5c, 6) |
 | 2023 - Perschke | convective / stratiform classification | [10.5194/egusphere-2023-1907](https://doi.org/10.5194/egusphere-2023-1907) | open, CC BY 4.0; summary from the full text |
+| 2023 - RMI | RADCLIM product: radars, gauges, compositing, time convention, grid | [user guide, version 2](https://opendata.meteo.be/cases/202107/radclim_userguide.pdf) | open; summary from the full text |
 | 2024 - EUMETNET | OPERA CIRRUS product: compositing rule, time window | [product sheet 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA_Max-Reflectivity_Product-Sheet_Ed-2.0.pdf) | open; summary from the full text |
 | 2024 - Radojevic | OPERA CIRRUS and ODYSSEY: time windows, configuration | [OPERA note, ed. 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA5_Report_Cirrus-vs-Odyssey_Ed-2.0.pdf) | open; summary from the full text |
 
