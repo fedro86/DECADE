@@ -56,6 +56,8 @@ and put them in this folder with the name of their summary.
 | summary | topic | DOI or link | PDF |
 |---|---|---|---|
 | 1995 - Steiner | convective / stratiform classification | [10.1175/1520-0450(1995)034<1978:CCOTDS>2.0.CO;2](https://doi.org/10.1175/1520-0450(1995)034%3C1978:CCOTDS%3E2.0.CO;2) | to download (paywall); summary from the full text (sections 1, 4–6) |
+| 2002 - Gabella | cleaning: original of the Gabella texture filter | [ERAD 2002, 305–311](https://web.archive.org/web/20170809110607/https://www.copernicus.org/erad/online/erad-305.pdf) | free copy via the Internet Archive (the ERAD address is dead); summary from the full text |
+| 2002 - Peura | cleaning: image-processing detectors (speckle, emitters, sun, ships, birds) | [ERAD 2002, 312–317](https://web.archive.org/web/2023/https://www.copernicus.org/erad/online/erad-312.pdf) | free copy via the Internet Archive (the ERAD address is dead); summary from the full text |
 | 2012 - Wagner | cleaning: fixed clutter and spokes from long-term frequency maps | [10.5194/hess-16-4101-2012](https://doi.org/10.5194/hess-16-4101-2012) | open, CC BY 3.0; summary from the full text |
 | 2013 - Goudenhoofdt | convective / stratiform classification | [10.1175/JAMC-D-12-079.1](https://doi.org/10.1175/JAMC-D-12-079.1) | to download (paywall); summary from the full text (sections 1–3, 4c) |
 | 2013 - Heistermann | cleaning: wradlib, software of the Gabella and `histo_cut` filters | [10.5194/hess-17-863-2013](https://doi.org/10.5194/hess-17-863-2013) | open, CC BY 3.0; summary from the full text and the wradlib documentation (9/11/2026) |

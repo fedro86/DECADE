@@ -493,7 +493,7 @@ can run on our data, the 2 km / 15 min ODYSSEY `DBZH` composite with `QIND`
 | method | source | artefact | input | on the ODYSSEY composite |
 |---|---|---|---|---|
 | cap or discard values above a threshold; or flag whole composites with extreme radar–gauge ratios | Overeem et al. 2023, section 4.3 | impossible values | one composite; gauges for the second option | yes; the authors call the threshold "a bit arbitrary" |
-| Gabella filter: in a 5 × 5 window, fewer than 6 neighbours less than 6 dB below the centre; or echo area / perimeter below 1.3 | Overeem et al. 2023, section 3.1; wradlib `classify.filter_gabella` (Heistermann et al. 2013) | isolated echoes, sea clutter, thin spokes and rings | one composite | yes (EURADCLIM ran it on the ODYSSEY rain-rate composite) |
+| Gabella filter: in a 5 × 5 window, fewer than 6 neighbours less than 6 dB below the centre; or echo area / perimeter below 1.3 | Gabella and Notarpietro 2002, section 2; Overeem et al. 2023, section 3.1; wradlib `classify.filter_gabella` (Heistermann et al. 2013) | residual clutter, anaprop, isolated echoes, sea clutter, thin spokes and rings | one composite | yes (EURADCLIM ran it on the ODYSSEY rain-rate composite); developed on single-radar 1 km maps, so at 2 km the window is 10 km and the smallest kept echo about 44 km² |
 | satellite cloud-type mask: zero where the whole 7 × 7 window is cloud-free or thin high cloud | Overeem et al. 2023, sections 2.3, 3.2 | echoes without rain; also lowers interference | composite + MSG cloud type (CLAAS-2) | yes, with satellite data |
 | satellite filter of the OPERA data centre (NWC SAF precipitating clouds) | Saltikoff et al. 2019, section 2.2 | echoes without rain | — | already in ODYSSEY since late 2015 |
 | `histo_cut` on the annual sum: tails of the histogram below 5% of the most frequent class; hourly values interpolated where lower | Overeem et al. 2023, section 3.3; wradlib `classify.histo_cut` | fixed clutter (high tail), shading or blockage (low tail) | one year of composites | yes |
@@ -504,12 +504,14 @@ can run on our data, the 2 km / 15 min ODYSSEY `DBZH` composite with `QIND`
 | TURBINE: static mask from accumulations of dry time steps, checked by hand | Ośródka and Szturc 2022, section 3.4 | fixed clutter (wind farms, buildings) | long series | the idea yes; no threshold given |
 | SPIKE (five tests along and across rays) | Ośródka and Szturc 2022, section 3.5 | interference spikes; its "inverse" test, blocked sectors | single-radar polar volume | no |
 | DP.TURBINE, DP.NMET (fuzzy logic and decision tree on ρHV, ZDR, ΦDP) | Ośródka and Szturc 2022, sections 3.2–3.3 | fixed clutter, echoes without rain | polarimetric single-radar volume | no |
+| SPECK: segment size by flood fill, 50% anomaly probability at 12 pixels | Peura 2002, section 3.2 | isolated echoes | one image | yes as an operation; the 12 pixels are polar bins, not 2 km cells |
+| EMITTER, SUN, SHIP, BIOMET (line segments along the beam, sidelobes, beam height) | Peura 2002, sections 3.1–3.4 | interference spikes, sun, ships, birds and insects | single-radar polar scan | no; EMITTER thresholds not given |
 | radial image processing with interpolation from neighbouring radials; dual-polarisation identification; receiver filters | Saltikoff et al. 2016 (citing Peura 2002 and others) | interference spikes | single-radar polar data or raw signal | no |
 
 What the collection shows:
 
 - **Five of the six artefact types have a method that runs on a composite:**
-  isolated echoes (Gabella), fixed clutter and blocked sectors (long-series
+  isolated echoes (Gabella, SPECK), fixed clutter and blocked sectors (long-series
   statistics: `histo_cut`, Wagner et al.), echoes without rain (satellite
   mask), and impossible values, but for these only a threshold whose value the
   literature leaves open.
@@ -524,10 +526,13 @@ What the collection shows:
   differently. `QIND` is the minimum of the three quality indices of these
   steps, weighted by distance and beam height; this bears on whether `QIND` is
   needed (#19).
-- **Not read:** Gabella and Notarpietro (2002), the original of the Gabella
-  filter, and Ośródka et al. (2014), the older RADVOL-QC algorithms for
-  speckle, blockage and non-meteorological echoes (both cited above but not
-  downloaded); Peura (2002), ERAD proceedings, not found online.
+- **The Gabella defaults** of wradlib (5 × 5 window, 6 dB, 1.3) are those of
+  the original paper, except `n_p` = 6, which the paper leaves within 6–10.
+- **Not read:** Ośródka et al. (2014), *Meteorological Applications*
+  21, 256–270, the older RADVOL-QC algorithms for speckle, blockage and
+  non-meteorological echoes (paywalled). Gabella and Notarpietro (2002) and
+  Peura (2002) are no longer online at the ERAD address; the copies read are
+  Internet Archive snapshots.
 
 ## Training windows
 
