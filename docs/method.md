@@ -538,6 +538,47 @@ What the collection shows:
 - Gabella and Notarpietro (2002) and Peura (2002) are no longer online at the
   ERAD address; the copies read are Internet Archive snapshots.
 
+### Choice (review of #74)
+
+- **Methods:** EURADCLIM: Gabella on each composite, satellite mask, `histo_cut`
+  on annual sums; Wagner-style frequency maps for the catalogue.
+- **Interference spikes:** only reduced, but the residual after cleaning is to
+  be measured.
+- **Satellite mask:** decided after the size and download time of CLAAS-3
+  over the Belgian domain for 2012–2024; it matters mostly for 2012–2015,
+  before the OPERA satellite filter.
+- **Impossible values:** a discard threshold from the literature, separate
+  from the 55 dBZ cap (*Conventions*).
+- **`QIND`:** not now; decided after the catalogue.
+- **Sea clutter and anomalous propagation:** a seventh type, only for what the
+  single-radar processing upstream leaves.
+
+### Gabella filter at 2 km
+
+`notebooks/05-mr-artefacts.ipynb`, section 1. The filter was set on
+single-radar 1 km maps (Gabella and Notarpietro 2002). On the 2 km grid its
+5 × 5 window covers 10 km and the smallest kept echo is about 44 km², so it was
+checked on real rain before use.
+
+- **Data:** CIRRUS degraded to 2 km by `zmean` (the H1 stand-in for ODYSSEY) at
+  the quarter hours.
+- **Days:** the 5 days of June–July 2025 with most Steiner convective pixels in
+  the H1 run: 7/6, 26/6, 6/7, 7/7 and 31/7.
+- **Filter:** wradlib defaults (5 × 5, 6 dB, `n_p` = 6, 1.3), `cartesian=True`,
+  on dBZ with no echo at 0 dBZ.
+- **Rain:** Marshall–Palmer capped at 55 dBZ, on echoes of at least 10 dBZ.
+
+| pixels | rain removed | pixels removed |
+|---|---:|---:|
+| all | 3.8% | 1.8% |
+| convective | 4.9% | 2.5% |
+| stratiform | 0.9% | 1.6% |
+
+These echoes are rain, so what the filter removes here is real rain lost. Per
+day, it removes 4.0–6.3% of the convective rain. Whether this loss is
+acceptable is a choice for #19. Where the removed pixels lie (cell edges or
+small cells) is not checked yet.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
