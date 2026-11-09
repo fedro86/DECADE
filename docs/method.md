@@ -641,6 +641,36 @@ above (exploration script; the arrays are in `results/h2_artefacts/`).
   at the east edge of CIRRUS: these look like interference spikes, not
   checked.
 
+### Catalogue: first run on ODYSSEY 2023 and CIRRUS 2025
+
+`notebooks/05-mr-artefacts.ipynb`, section 4, run on the years on the PC
+before the 2012–2024 crops. One pass per product and year gives, per pixel:
+- the frequency of the reflectivity classes of Wagner et al. (2012, Table 1):
+  7–19, 19–28, 28–37, 37–46, 46–55 and ≥ 55 dBZ;
+- the annual sum of the Marshall–Palmer rate capped at 55 dBZ;
+- the times above 70 dBZ.
+
+`histo_cut` runs on the annual sum with the 5% tails of EURADCLIM.
+
+![Catalogue, ODYSSEY 2023 and CIRRUS 2025](figures/h2-artefacts/catalogue-odyssey2023-cirrus2025.png)
+
+| product | files | annual sum, median (max) | `histo_cut` static clutter | shading |
+|---|---:|---:|---:|---:|
+| ODYSSEY 2023 | 34,408 | 2,831 mm (231,460 mm) | 8,148 px (3.4%) | 0 |
+| CIRRUS 2025 | 103,791 | 2,204 mm (243,028 mm) | 31,851 px (3.3%) | 0 |
+
+- **The annual sums are an index, not rain.** A column-maximum reflectivity
+  converted with Marshall–Palmer gives sums far above the rain that falls in
+  the region. They serve only as the statistic for `histo_cut`.
+- **What `histo_cut` flags.** With 5% tails it flags mostly discs centred on
+  the brightest spots of the annual sum, plus the patches on and off the Dutch
+  coast. The discs may be the effect of distance from the radar on a maximum
+  composite rather than clutter; this is not checked. So the 5% of EURADCLIM,
+  set on a rain-rate composite, may be too wide for a maximum-reflectivity
+  composite. This is a point for the first version.
+- **What the frequency of ≥ 55 dBZ shows:** the lines over the North Sea in
+  both products, and radial lines in the south-east of ODYSSEY.
+
 ### Sea clutter and anomalous propagation: literature
 
 Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.
