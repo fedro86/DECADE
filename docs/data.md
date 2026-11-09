@@ -152,6 +152,49 @@ slow in parallel with `urllib` (1.2 files/s); downloading whole files runs at
 Some radar volumes are extrapolated with LK by Météo-France (pysteps). The
 files do not say which radars.
 
+### Single-radar files of the coastal radars
+
+The bucket also holds the single-radar files that the countries send to OPERA
+(`YYYY/MM/DD/<country>/<node>/PVOL|SCAN/…`), from 2024 and not every day.
+Next to the filtered `DBZH` they carry the unfiltered `TH`. Asked in the review
+of #74 (H2, #19), to see how much sea and land clutter is removed before
+OPERA.
+
+**What was compared:**
+- **Files:** downloaded into `data/opera_single/` (exploration code, not in the repository yet).
+  - Belgium: the PVOL of the task starting at 0.3°, with `DBZH` and `TH` in
+    separate files.
+  - Netherlands: PVOL with `DBZH`, `TH` and `VRADH` in one file.
+  - France: the SCAN at 0.4°, with the three quantities in one file.
+- **Measure:** at the lowest elevation, the bins with `TH` ≥ 10 dBZ, and the
+  share of them that `DBZH` removes (undetect, nodata or below 10 dBZ). Sea and
+  land are told apart by the Natural Earth countries, with ranges flat in an
+  azimuthal equidistant projection.
+- **Cases:** a dry hour, 20/6/2025 06:00–06:55, and a rainy day, 5/1/2025, the
+  day with most wet pixels in the H1 months. No day of anomalous propagation
+  has been found yet.
+
+| radar | processing declared in `how` (lowest elevation) | dry hour: sea bins, removed | dry hour: land bins, removed | rainy day: sea, removed | rainy day: land, removed |
+|---|---|---:|---:|---:|---:|
+| bejab (Jabbeke) | Rainbow 5.59, `Dclutter` DFT, FFT, Speckle; `SQI` 0.3, `CSR` 30, `LOG` 2; `BBC` and `VPRCorr` False | 54,973, 93.7% | 185,588, 97.4% | 8.2 M, 4.0% | 17.4 M, 10.8% |
+| behel (Helchteren) | Rainbow 5.59, `Dclutter` DFT, FFT, Spatial, Speckle; `SQI` 0.3, `CSR` 30, `LOG` 2 | 324, 86.1% | 620,953, 97.2% | 2.8 M, 3.3% | 53.6 M, 7.0% |
+| bewid (Wideumont) | Rainbow 5.59, `Dclutter` DFT, FFT, Speckle; `SQI` 0.3, `CSR` 30, `LOG` 2 | 21, 61.9% | 235,824, 98.8% | 0.06 M, 11.3% | 43.7 M, 5.8% |
+| nldhl (Den Helder) | `SQI` 0.3, `CSR` 30, `LOG` 0.5; no clutter filter named | 84,648, 58.3% | 153,814, 60.8% | 14.0 M, 11.2% | 13.4 M, 15.1% |
+| nlhrw (Herwijnen) | `SQI` 0.3, `CSR` 30, `LOG` 0.5; no clutter filter named | 2,248, 77.4% | 202,829, 70.8% | 5.8 M, 11.5% | 27.4 M, 11.3% |
+| frabb (Abbeville) | SERVAL; no processing declared | 6,958, 94.3% | 109,930, 97.5% | 2.5 M, 1.8% | 8.3 M, 25.9% |
+| frave (Avesnois) | SERVAL; no processing declared | 66, 97.0% | 94,986, 99.9% | 0.9 M, 1.3% | 12.4 M, 14.0% |
+
+**How to read it:**
+- **The removed share mixes two things.** `TH` ≥ 10 dBZ includes rain as well
+  as clutter, and rain is rightly kept.
+  - In the dry hour almost every strong echo is clutter, and the Belgian and
+    French radars remove 94–100% of it over land and over the sea near them.
+    The lower Dutch shares (58–77%) may be rain over the Netherlands in that
+    hour; this is not checked.
+  - On the rainy day the shares are low because most echoes are rain.
+- **Only from 2024.** Single-radar files are not in the bucket before 2024, so
+  the processing of 2012–2023 cannot be checked this way.
+
 ## Known problems
 
 - **Outliers in ODYSSEY.** For example on 3/7/2024 12:00 a group of 4 pixels
