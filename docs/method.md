@@ -553,6 +553,23 @@ What the collection shows:
 - **Sea clutter and anomalous propagation:** a seventh type, only for what the
   single-radar processing upstream leaves.
 
+### Impossible values: discard threshold in the literature
+
+Asked in the review of #74: an upper limit to discard reflectivity, separate
+from the 55 dBZ cap.
+
+| threshold | source | product | condition |
+|---|---|---|---|
+| above 70 dBZ set to missing | Fluck et al. 2021, section 3.1 | Météo-France and DWD 2D composites, 1 km / 5 min, 2005–2014 (the French mosaic covers much of Belgium) | none; with a neighbour-difference test, a single-scan spike test and a lightning filter; the value is not justified |
+| at least 75 dBZ set to missing | Charba and Liang 2005, sections 3–4 | US 2 km national mosaic of maxima | only without lightning; 75 dBZ is the top category of that product |
+| median storm maximum 69 dBZ; 26 of 568 storms reached 75 dBZ | Blair et al. 2011 | WSR-88D (S band), giant-hail storms | physical extreme, not a QC rule |
+| only lower thresholds | Scovell et al. 2013; OPERA product sheet 2024 | ODYSSEY quality control | none of the OPERA documents gives an upper valid limit |
+
+There is no standard: one unconditional precedent at 70 dBZ, on composites
+that cover Belgium, and a conditional one at 75 dBZ. Both lie well above the
+55 dBZ cap and well below the values seen in ODYSSEY (100 dBZ and more,
+128 dBZ). Any choice is a cited convention, not an established limit (#19).
+
 ### Gabella filter at 2 km
 
 `notebooks/05-mr-artefacts.ipynb`, section 1. The filter was set on
