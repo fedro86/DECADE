@@ -556,6 +556,11 @@ What the collection shows:
   late 2015 (when the OPERA satellite filter started; Saltikoff et al. 2019).
   It would need the CLAAS-2.1 cloud type, which is available only through
   the CM SAF help desk (`data.md`, CLAAS-3 row).
+- **Wind turbines** (possible improvement after the first version): if fixed
+  points above 70 dBZ remain, turbine positions could check them or give a
+  static mask, which the real-time rule allows. Open pan-European sources:
+  OpenStreetMap (`generator:source=wind`, ODbL) and the EMODnet offshore wind
+  farms; construction dates would be needed for 2012–2024.
 - **Priority:** first a working cleaning on the composite alone (impossible
   values, Gabella, `histo_cut`, frequency maps for the catalogue) on ODYSSEY
   and CIRRUS, with numbers before and after; improvements come after.
