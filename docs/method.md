@@ -502,7 +502,8 @@ can run on our data, the 2 km / 15 min ODYSSEY `DBZH` composite with `QIND`
 | beam-blockage correction (blockage above 70% set to nodata) and monthly hit-accumulation clutter filter of the OPERA data centre | Saltikoff et al. 2019, section 2.2 | blocked sectors, fixed clutter | — | already in ODYSSEY (blockage since late 2015) |
 | monthly count of exceedances of 1 mm in 10 min per pixel; more than 200 a month marks permanent clutter | Ośródka and Szturc 2022, section 5 | fixed clutter (diagnostic) | long series | yes, as a diagnostic; the rate threshold is for 10 min data |
 | TURBINE: static mask from accumulations of dry time steps, checked by hand | Ośródka and Szturc 2022, section 3.4 | fixed clutter (wind farms, buildings) | long series | the idea yes; no threshold given |
-| SPIKE (five tests along and across rays) | Ośródka and Szturc 2022, section 3.5 | interference spikes; its "inverse" test, blocked sectors | single-radar polar volume | no |
+| SPECK: a pixel with fewer than 3 echo pixels in its 3 × 3 window is removed, an empty pixel with fewer than 3 empty ones is filled; run twice | Ośródka et al. 2014, section 2.4.2 | isolated echoes (and isolated holes) | one image | yes as an operation; set on 1° × 1 km polar gates, not 2 km cells |
+| SPIKE ("wide": variance across ±3° above 1000 and along ±15 km below 5 on more than 45% of a ray; "narrow": up to 7° wide, neighbours 10 dB lower on more than 25% of a ray; three more tests added in 2022) | Ośródka et al. 2014, section 2.4.1; Ośródka and Szturc 2022, section 3.5 | interference spikes; the "inverse" test, blocked sectors | single-radar polar volume | no |
 | DP.TURBINE, DP.NMET (fuzzy logic and decision tree on ρHV, ZDR, ΦDP) | Ośródka and Szturc 2022, sections 3.2–3.3 | fixed clutter, echoes without rain | polarimetric single-radar volume | no |
 | SPECK: segment size by flood fill, 50% anomaly probability at 12 pixels | Peura 2002, section 3.2 | isolated echoes | one image | yes as an operation; the 12 pixels are polar bins, not 2 km cells |
 | EMITTER, SUN, SHIP, BIOMET (line segments along the beam, sidelobes, beam height) | Peura 2002, sections 3.1–3.4 | interference spikes, sun, ships, birds and insects | single-radar polar scan | no; EMITTER thresholds not given |
@@ -528,11 +529,11 @@ What the collection shows:
   needed (#19).
 - **The Gabella defaults** of wradlib (5 × 5 window, 6 dB, 1.3) are those of
   the original paper, except `n_p` = 6, which the paper leaves within 6–10.
-- **Not read:** Ośródka et al. (2014), *Meteorological Applications*
-  21, 256–270, the older RADVOL-QC algorithms for speckle, blockage and
-  non-meteorological echoes (paywalled). Gabella and Notarpietro (2002) and
-  Peura (2002) are no longer online at the ERAD address; the copies read are
-  Internet Archive snapshots.
+- **No method in these sources removes echoes without rain on a composite
+  without satellite data**; RADVOL-QC lists them but treats them only with
+  polarimetric variables (2022).
+- Gabella and Notarpietro (2002) and Peura (2002) are no longer online at the
+  ERAD address; the copies read are Internet Archive snapshots.
 
 ## Training windows
 
