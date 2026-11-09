@@ -610,6 +610,32 @@ Asked in the review of #74 before fixing 70 dBZ. Echo pixels (covered, not
   have at least one pixel above 70 dBZ. Where these pixels lie (hail cores or
   fixed points) is not checked; a frequency map would show it.
 
+### Where the values above 70 dBZ lie
+
+Per-pixel count of the times above 70 dBZ over the same files as the counts
+above (exploration script; the arrays are in `results/h2_artefacts/`).
+
+| product | crop pixels ever above 70 dBZ | pixels above 70 dBZ at least 100 times | their share of all the counts |
+|---|---:|---:|---:|
+| ODYSSEY 2023 (2 km) | 4,465 of 238,522 | 15 (4 of them at least 1,000 times) | 64% |
+| CIRRUS 2025 (1 km) | 54,794 of 954,088 | 899 (25 of them at least 1,000 times) | 58% |
+
+![Times above 70 dBZ per pixel, ODYSSEY 2023 and CIRRUS 2025](figures/h2-artefacts/count-gt70-odyssey2023-cirrus2025.png)
+
+- **Fixed points.** In both products most values above 70 dBZ come from a few
+  fixed points, which the persistent-point mask of H2 (`histo_cut`) should
+  catch. In CIRRUS the darkest points are on and off the Dutch coast. What
+  they are is not checked.
+- **Lines over the North Sea**, from the Thames estuary and the Channel
+  towards the Netherlands, in both products and stronger in CIRRUS. Their
+  shape fits shipping lanes, which the RMI poster shows as lines in the
+  Jabbeke accumulations (Delobbe and Goudenhoofdt 2014). This is sea clutter
+  that reaches the composite, so it belongs to H2. It is an interpretation of
+  the map, not checked against ship tracks.
+- **Radial lines** in the south-east corner of ODYSSEY, and a radial pattern
+  at the east edge of CIRRUS: these look like interference spikes, not
+  checked.
+
 ### Sea clutter and anomalous propagation: literature
 
 Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.
