@@ -540,18 +540,34 @@ What the collection shows:
 
 ### Choice (review of #74)
 
-- **Methods:** EURADCLIM: Gabella on each composite, satellite mask, `histo_cut`
-  on annual sums; Wagner-style frequency maps for the catalogue.
+- **Rule for all of H2** ([roadmap.md](roadmap.md), *Constraints*): every step
+  that CIRRUS goes through uses only real-time data, that is the composite and
+  masks or statistics computed beforehand from past composites. Satellite
+  data, gauges and national products only validate, or make ODYSSEY look like
+  CIRRUS. The aim is to match CIRRUS, not to be cleaner than it.
+- **Methods:** EURADCLIM: Gabella on each composite, `histo_cut` on annual
+  sums; Wagner-style frequency maps for the catalogue. `histo_cut` and the
+  frequency maps fit the rule when the mask is computed on past composites and
+  applied to new ones.
+- **Satellite mask:** not in the operational chain. CIRRUS already has the
+  OPERA satellite filter (2023 version; Radojevic 2024, Table 3), and ODYSSEY
+  has had one since late 2015 (Saltikoff et al. 2019). A mask would serve only
+  to bring ODYSSEY 2012–2015 closer to CIRRUS, with the CLAAS-2.1 cloud type,
+  which covers those years. First a test order of one day to measure the size,
+  then a comparison of ODYSSEY before and after late 2015.
 - **Interference spikes:** only reduced, but the residual after cleaning is to
   be measured.
-- **Satellite mask:** decided after the size and download time of CLAAS-3
-  over the Belgian domain for 2012–2024; it matters mostly for 2012–2015,
-  before the OPERA satellite filter.
-- **Impossible values:** a discard threshold from the literature, separate
-  from the 55 dBZ cap (*Conventions*).
+- **Gabella:** fits the rule. Its loss of convective rain is to be weighed
+  against what it removes of the stationary features of January 2025, with
+  the position of the removed pixels, at 2 km and at 1 km on CIRRUS.
+- **Impossible values:** a threshold fits the rule; 70 dBZ as a cited
+  convention (Fluck et al. 2021), separate from the 55 dBZ cap (*Conventions*),
+  after counting the pixels between 55 and 70 dBZ and above 70 on ODYSSEY and
+  CIRRUS.
 - **`QIND`:** not now; decided after the catalogue.
 - **Sea clutter and anomalous propagation:** a seventh type, only for what the
-  single-radar processing upstream leaves.
+  single-radar processing upstream leaves; the speckle filter on the
+  composite, the satellite mask only for ODYSSEY before late 2015.
 
 ### Impossible values: discard threshold in the literature
 

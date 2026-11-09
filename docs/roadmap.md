@@ -33,6 +33,13 @@ motivation is in the [README](../README.md).
 - **Only pan-European sources in the method** (OPERA, EURADCLIM, ERA5-Land), so
   that it scales to the whole OPERA domain. National products only as validation,
   unless the level correction decides otherwise (*Open decisions*, bridge).
+- **Only real-time inputs in the operational chain** (decided 9/11/2026, review
+  of #74). The pipeline is fed by real-time CIRRUS, so every step that CIRRUS
+  goes through uses only data available in real time: the composite itself,
+  and masks or statistics computed beforehand from past composites. Satellite
+  products, gauges and national products serve only to validate, or to make
+  ODYSSEY look like CIRRUS. Cleaning ODYSSEY aims to match CIRRUS, not to be
+  cleaner than it.
 - **Belgium is the pilot.** The harmonised archive is produced and released for
   Belgium + 350 km; the European extension comes later and needs pan-European
   references. Validation references: VMM and RADCLIM ([data.md](data.md),
