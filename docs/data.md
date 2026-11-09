@@ -159,7 +159,9 @@ files do not say which radars.
   Belgian working crop; the same point is **128 dBZ** in `DBZH_QIND`. Over the
   whole domain there are often from 4 to more than 100 pixels ≥ 100 dBZ. They
   need a threshold plus a mask of persistent points. Every conversion to R must
-  be capped (55 dBZ is used), otherwise these pixels dominate the volumes.
+  be capped (55 dBZ, as in Imhoff et al. 2020, section 2.2.1), otherwise these
+  pixels dominate the volumes. The cap limits the rain rate; removing values
+  such as 128 dBZ is a separate threshold (H2, #19).
 - **ODYSSEY has about half the rain volume of CIRRUS** over Belgium on
   1–5/7/2024: a gap of 3.5–5 dB at all quantiles, POD at 10 dBZ about 0.69. It
   is a difference between products, present even without interpolation.

@@ -9,8 +9,11 @@ built yet is in [roadmap.md](roadmap.md).
 
 - Reflectivity in dBZ, rain rate R in mm/h.
 - Z–R: Marshall-Palmer, Z = 200 R^1.6, the same as NIMBUS and IRENE.
-- Every conversion to R caps dBZ at 55, because of the outliers in ODYSSEY
-  (see [data.md](data.md), *Known problems*).
+- Every conversion to R caps dBZ at 55 (about 100 mm/h), as in Imhoff et al.
+  (2020, section 2.2.1; [summary](sources/2020%20-%20Imhoff%20-%20Spatial%20and%20temporal%20evaluation%20of%20radar%20rainfall%20nowcasting%20techniques%20on%201,533%20events.md)),
+  because of the outliers in ODYSSEY (see [data.md](data.md), *Known problems*).
+  The cap limits the rain rate; it does not say which values are artefacts
+  (H2, #19).
 
 ## Temporal super-resolution of ODYSSEY (2 km / 15 min → 1 km / 5 min)
 
