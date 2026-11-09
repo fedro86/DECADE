@@ -570,6 +570,23 @@ that cover Belgium, and a conditional one at 75 dBZ. Both lie well above the
 55 dBZ cap and well below the values seen in ODYSSEY (100 dBZ and more,
 128 dBZ). Any choice is a cited convention, not an established limit (#19).
 
+### Sea clutter and anomalous propagation: literature
+
+Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.
+(2006); the link given with it (erad-312) is Peura (2002), already read.
+
+| source | what it says | input |
+|---|---|---|
+| Delobbe and Goudenhoofdt 2014 (RMI poster) | raw Jabbeke reflectivity is strongly contaminated over the North Sea; offshore wind farms (one about 40 km offshore) and ship traffic give clutter even without anaprop; by 2014 a polarimetric fuzzy-logic filter (Selex Rainbow 5) was used operationally; its start date is not given (radar installed in 2012) | polarimetric single-radar data |
+| Leijnse et al. 2016 (KNMI TR-355) | the older statistical filter removed only about 40% of sea clutter and the Doppler filter fails over waves; a speckle filter gave a large gain with little loss of rain; the satellite cloud mask was used to verify the filters | single-radar data; cloud mask for verification |
+| Bøvith et al. 2006 (DMI, ERAD) | a classifier on a 1 km radar composite plus the NWC SAF precipitating-clouds product: 0.00% error in clear-sky anaprop sea clutter, 8.01% with rain nearby | composite + satellite product |
+| wradlib notebook, `classify.filter_cloudtype` | a ready rule that flags echoes under cloud-free or non-precipitating cloud types | composite or polar + satellite cloud type |
+
+On the composite, the literature points to the satellite mask (already
+chosen) and a speckle filter. The polarimetric filters stay upstream, and
+the comparison of `TH` with `DBZH` in the single-radar files asked in #74
+measures what they leave.
+
 ### Gabella filter at 2 km
 
 `notebooks/05-mr-artefacts.ipynb`, section 1. The filter was set on
