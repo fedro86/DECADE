@@ -33,6 +33,13 @@ motivation is in the [README](../README.md).
 - **Only pan-European sources in the method** (OPERA, EURADCLIM, ERA5-Land), so
   that it scales to the whole OPERA domain. National products only as validation,
   unless the level correction decides otherwise (*Open decisions*, bridge).
+- **Only real-time inputs in the operational chain** (decided 9/11/2026, review
+  of #74). The pipeline is fed by real-time CIRRUS, so every step that CIRRUS
+  goes through uses only data available in real time: the composite itself,
+  and masks or statistics computed beforehand from past composites. Satellite
+  products, gauges and national products serve only to validate, or to make
+  ODYSSEY look like CIRRUS. Cleaning ODYSSEY aims to match CIRRUS, not to be
+  cleaner than it.
 - **Belgium is the pilot.** The harmonised archive is produced and released for
   Belgium + 350 km; the European extension comes later and needs pan-European
   references. Validation references: VMM and RADCLIM ([data.md](data.md),
@@ -113,7 +120,7 @@ left allows it.
   ([data.md](data.md), *Derived datasets*).
 - [x] [**H1**](https://github.com/fedro86/DECADE/issues/18) Measure
   interpolation error on degraded CIRRUS (M, 16–29/11).
-- [ ] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
+- [x] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
   radar artefacts from ODYSSEY (M→F, 16–29/11).
 - [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Correct the ODYSSEY
   → CIRRUS level difference through a bridge dataset (M→F, 16/11–6/12).
@@ -253,6 +260,22 @@ size.
   only the training windows; Europe follows when the method is fast enough (H7)
   and pan-European references exist (decided 3/11/2026).
 - **Zarr for every input and output** (decided 3/11/2026).
+- **ODYSSEY is cleaned per period** (review of #74, 10/11/2026). Two changes of
+  OPERA's processing split the archive: December 2015 and August 2018
+  ([method.md](method.md), *Radars over time*). Masks and catalogues are
+  computed per period, and each static-mask pixel follows its radar in
+  `how/nodes`.
+- **Static mask of the first version** (review of #74, 10/11/2026): ≥ 55 dBZ in
+  at least 1% of the valid times, or > 70 dBZ in at least 0.1%. The thresholds
+  are set on our data. Masked pixels are filled as in EURADCLIM. `histo_cut` on
+  annual sums is ruled out. For CIRRUS the mask comes from past CIRRUS
+  composites ([method.md](method.md), *Choice*).
+- **Gabella stays in the first version** (review of #74, 10/11/2026), but every
+  before/after is reported with and without it. The final choice is made
+  against a reference (RADCLIM or VMM, H5).
+- **No quality fields (`QIND`) in the cleaning** (review of #74, 10/11/2026):
+  CIRRUS has no equivalent, so a `QIND` mask could not run in the
+  operational chain. The crops stay without quality bands.
 
 ## Open decisions
 
@@ -267,8 +290,6 @@ size.
   repeated three times; the choice changes what B vs C measures.
 - **Time shift in production (H6):** with shift 0 the labels keep the offset
   between the products' time windows ([data.md](data.md), *Time windows*).
-- **Quality fields (H2):** redo the Belgian crops with quality bands, at the
-  same network cost?
 - **Basins and thresholds (V5).**
 - **Rain archive at 2 km / 15 min** (ODYSSEY `RATE`/`ACRR` plus NIMBUS, outlier
   cleaning, homogenisation of the two periods anchored to ECA&D gauges). Planned

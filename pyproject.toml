@@ -17,6 +17,7 @@ dependencies = [
     "pyshp",
     "zarr>=3",
     "rasterio",
+    "wradlib>=2.9.6",
 ]
 
 [project.optional-dependencies]

@@ -53,6 +53,9 @@ CIRRUS, which came later.
 - **H1 (convective/stratiform classes):** without a vertical-profile correction,
   a bright band can reach the composite as high reflectivity. This supports
   checking whether the January Steiner intensity centres are bright band.
+- **H2 (cleaning of ODYSSEY):** the central quality control above is already
+  in the composites, so H2 starts from data partly cleaned, and cleaned
+  differently before and after late 2015. It also says what `QIND` combines.
 - **Archive homogeneity:** processing changed in December 2015 and from March
   2017, so the archive is not homogeneous in time (the authors warn about
   climate studies).
