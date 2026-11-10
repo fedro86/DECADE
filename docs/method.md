@@ -480,6 +480,144 @@ loses against `linear` in the R errors: in January at every block size up to
 2 × 2 block error at `alpha = 0` is below 1%, and that the sampler and the
 window store behave as specified below.
 
+## Test events (D3)
+
+D3 (#27) chooses the recent Belgian convective events for the final
+verification, before any training. This section collects the material for
+that choice: the literature on criteria, the events in public reports, and
+a ranking of days on CIRRUS. **No event is chosen yet**: the criteria are to
+be agreed with Vito (review of #27).
+
+### Criteria in the literature
+
+| criterion | options | source |
+|---|---|---|
+| intensity | 20 / 31 / > 50 mm in 1 h (RMI warning yellow / orange / red; also 6 h and 24 h amounts) | RMI, *Uitleg bij de waarschuwingen* |
+| intensity | 25 mm in 1 h (DWD warning level 3), up to 90 mm in 72 h for 11 durations | Lengfeld et al. 2021 (CatRaRE) |
+| intensity | 40 dBZ as the convective threshold | Goudenhoofdt and Delobbe 2013; Poelman 2018 |
+| intensity | classes at 5 and 10 mm/h; at 10 and 30 mm/h | Ravuri et al. 2021; Franch et al. 2020 |
+| extent | contiguous object of at least 9 km² (up to 3 h) | Lengfeld et al. 2021 |
+| extent | cell below 100 km², system above | Goudenhoofdt and Delobbe 2013 |
+| extent | "very local" below a quarter of a province, "local" a quarter to a half, "widespread" half or more | RMI warnings |
+| duration | 1, 6 and 24 h | RMI warnings; Lengfeld et al. 2021; Imhoff et al. 2020 |
+| separation | at least 4 h between two events at the same place | Lengfeld et al. 2021 |
+| separation | 1 h peaks less than 12 h apart are one event | Goudenhoofdt et al. 2017 |
+| impacts | days on an official list of extreme events | Franch et al. 2020 |
+| procedure | events only from the held-out period, chosen before training | Ravuri et al. 2021; Ayzel et al. 2020 |
+| procedure | cover a range of intensity, extent and duration; report each event's duration, extent and share above 1 mm/h | Ayzel et al. 2019, 2020 |
+
+IRENE (Camilletti et al. 2026) has no event-based test set: it uses the last
+5% of a time-ordered, rain-weighted sample. Its authors list verification on
+intense-rain thresholds and on accumulations as open work, which is what D3
+and V5 add.
+
+### Reported events, July 2024 – November 2026
+
+These events were compiled on 10/11/2026 from public sources. They were not
+checked against gauges, and the amounts from private stations are
+indicative.
+- **Sources:** RMI news and monthly climate reports, Flemish and Walloon
+  disaster recognitions, Walloon crisis-cell press releases, Belgian media,
+  and Belgorage.
+- **Class:** C convective, C/F front with embedded convection, NC frontal.
+- **Evidence:**
+  - A: official (RMI, disaster recognition, crisis cell);
+  - B: mainstream media;
+  - C: Belgorage, often private stations.
+- **Radar rank:** the best rank of the event's days among the 848 days of
+  CIRRUS (next subsection).
+
+| # | dates | area | class | evidence | radar rank | source |
+|---:|---|---|---|---|---:|---|
+| 1 | 9 Jul 2024 | Band Hainaut → Brussels → Antwerp | C | A | 4 | [link](https://www.meteo.be/nl/info/nieuwsoverzicht/de-onweders-van-09-juli-2024) |
+| 2 | 12 Jul 2024 | Ukkel/Brussels | C? (unverified) | A (rain only) | 54 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2024/juli) |
+| 3 | 31 Jul – 1 Aug 2024 | W Hainaut, Brussels, Flemish Brabant, Limburg, Antwerp prov. | C | A | 1 | [link](https://www.meteo.be/nl/info/nieuwsoverzicht/een-paar-cijfers-over-de-onweders-van-31-juli-op-01-augustus-2024) |
+| 4 | 2 Aug 2024 | Entre-Sambre-et-Meuse, Hainaut, W Flanders, Deinze, Waterloo, Corenne | C | A (recognition) / C | 13 | [link](https://belgorage.be/breves-et-articles/inondations/bases-de-donnees-breves-et-articles-2024-08-02-orages/) |
+| 5 | 13–14 Aug 2024 | E Liège prov., Luxembourg prov., Antwerp, Brussels | C | B / A (rain) | 12 | [link](https://www.vrt.be/vrtnws/nl/2024/08/14/onweer-regen-kmi-code-geel/) |
+| 6 | 20 Aug 2024 | Hainaut, Nivelles | C | C | 76 | [link](https://belgorage.be/breves-et-articles/inondations/bases-de-donnees-breves-et-articles-2024-08-20-orages/) |
+| 7 | 2 Sep 2024 | Liège prov.: Trois-Ponts, Stoumont, Waremme, Geer, Braives, Faimes, … | C | A / C | 25 | [link](https://belgorage.be/breves-et-articles/inondations/bases-de-donnees-breves-et-articles-2024-09-02-orages/) |
+| 8 | 5–6 Sep 2024 | Luxembourg N, Liège W, Landen, Tienen, Keerbergen, Putte, Beerzel | C | A / C | 6 | [link](https://belgorage.be/breves-et-articles/inondations/bases-de-donnees-breves-et-articles-2024-09-06-orages/) |
+| 9 | 25–26 Sep 2024 | Lacuisine rain on 25/09 | C (tornado); rain unclear | A | 26 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2024/september) |
+| 10 | 9–10 Oct 2024 | Semois/Viroin/Haute Meuse | NC | A | — (no CIRRUS) | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2024/oktober) |
+| 11 | 8–9 Jan 2025 | Whole of Wallonia, Ardennes | NC | A | 131 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/CP%20CELEX%20Pluies%2020250109%20-%2017.00.pdf) |
+| 12 | 24–26 Jan 2025 | Hainaut, Walloon Brabant, W Namur | NC | A | 100 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20250124%20-%20CP%20CELEX%2017h.pdf) |
+| 13 | 31 May 2025 | Kempen: Mol, Hechtel-Eksel | C (hail; rain modest) | A | 44 | [link](https://www.vlaanderen.be/vlaamse-regering/beslissingen-van-de-vlaamse-regering/hagelbuien-van-31-mei-2025-erkend-als-ramp) |
+| 14 | 7 Jun 2025 | Ormeignies – Ath | C (wind) | A | 49 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2025/juni) |
+| 15 | 13–15 Jun 2025 | W Hainaut, W/E Flanders, Liège, S Luxembourg | C | C / B | 29 | [link](https://belgorage.be/breves-et-articles/rafales-convectives/bases-de-donnees-breves-et-articles-2025-06-15-orages/) |
+| 16 | 25–26 Jun 2025 | Menen, Mouscron, W/E Flanders, Antwerp | C | A (rain) / C | 23 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2025/juni) |
+| 17 | 2 Jul 2025 | Namur, Mettet, Huy, S Liège | C | B / C | 8 | [link](https://www.lalibre.be/belgique/societe/2025/07/02/les-intemperies-sabattent-sur-la-belgique-plusieurs-communes-fortement-touchees-photos-videos-XFRAIRMYPRDUTIXUKTH5WUZOGY/) |
+| 18 | 6–7 Jul 2025 | Centre and S: Pajottenland, Flemish Ardennes, Halle, … | C/F (convective part dominant for the hourly peaks) | A | 27 | [link](https://www.meteo.be/nl/info/nieuwsoverzicht/extreme-neerslag-op-zondag-6-en-maandag-7-juli) |
+| 19 | 23 Jul 2025 | Basse-Sambre: Sambreville, Jemeppe-sur-Sambre | C | A | 56 | [link](https://interieur.wallonie.be/home/calamites/reconnaissance-d-une-calamite-naturelle-publique/evenements-reconnus.html) |
+| 20 | 24 Jul 2025 | Liège outskirts, Warnant-Dreye | C | C | 15 | [link](https://belgorage.be/breves-et-articles/tornades-et-trombes-marines/bases-de-donnees-breves-et-articles-2025-07-24-orages/) |
+| 21 | 27 Jul 2025 | Flemish Brabant, Buggenhout, Heers, Hélécine, Waremme | C/F | B / C | 28 | [link](https://www.vrt.be/vrtnws/en/2025/07/28/heavy-rain-resulted-in-flooding-in-several-areas-of-flanders-on/) |
+| 22 | 29 Aug 2025 | De Haan | ? | A (rain only) | 89 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2025/augustus) |
+| 23 | 3 Sep 2025 | Pajottegem, Ternat, Zaventem, Assesse – Sint-Truiden, Hannut | C (wind-dominated) | C / B | 46 | [link](https://belgorage.be/breves-et-articles/rafales-convectives/bases-de-donnees-breves-et-articles-2025-09-03-orages/) |
+| 24 | 8–9 Sep 2025 | Luxembourg prov., E Liège, G-D Luxembourg | C/F | A | 36 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20250909%20-%20CP%20CELEX%20Pluies%208h.pdf) |
+| 25 | 13 Sep 2025 | Gembloux, Ramillies, Oreye, Tongeren | C (hail/wind) | C | 21 | [link](https://belgorage.be/breves-et-articles/rafales-convectives/bases-de-donnees-breves-et-articles-2025-09-13-orages/) |
+| 26 | 8–10 Jan 2026 | Whole country | NC | A | 329 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20260108%20-%20CP%20CELEX%20pluies.pdf) |
+| 27 | 2 May 2026 | W Hainaut, Antwerp agglomeration and port, Putte, Mechelen, Brecht | C | B / C | 9 | [link](https://www.vrt.be/vrtnws/nl/2026/05/02/wateroverlast-antwerpen/) |
+| 28 | 4 May 2026 | Leuven region, Bonheiden, Heist-op-den-Berg, Lille, Flemish Ardennes, … | C | B / C | 65 | [link](https://www.vrt.be/vrtnws/nl/2026/05/04/wateroverlast-wolkbreuk-herent/) |
+| 29 | 5–6 May 2026 | S and SE Wallonia | C/F | A (forecast only) | 356 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20260505%20-%20CP%20CELEX%20pluies.pdf) |
+| 30 | 29–31 May 2026 | Phase 1: Flemish Brabant, Brussels, Hesbaye, … | C | A | 3 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2026/mei) |
+| 31 | 19 Jun 2026 | W Hainaut, E/W Flanders | C (wind) | A (warning) / C | 20 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20260619-cp-celex-orages.pdf) |
+| 32 | 20–21 Jun 2026 | W Flanders, E Flanders, Liège Hesbaye, Walloon Brabant, Basse-Sambre | C | A (rain) / C | 2 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2026/juni) |
+| 33 | 27–28 Jun 2026 | Halle | C | A / B | 5 | [link](https://www.parismatch.be/actualites/environnement/2026/06/28/intemperies-en-belgique-des-orages-impressionnants-ont-touche-le-pays-une-personne-est-decedee-videos-O2NYNSAVZRB37HMBFWL3DVL6SI/) |
+| 34 | 16 Jul 2026 | Humain | C (probable) | A (rain only) | 173 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2026/juli) |
+| 35 | 19 Aug 2026 | Botte du Hainaut → Ciney → Marche-en-Famenne → Manhay → Malmedy → Büll, … | C (wind) | A / C | 47 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2026/augustus) |
+| 36 | 27–28 Aug 2026 | Wallonia | C | A (forecast only) | 31 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20260827-cp-celex-orages.pdf) |
+| 37 | 13 Sep 2026 | Ophoven, NE Limburg | ? | A (rain only) | 497 | [link](https://www.meteo.be/nl/klimaat/klimaat-van-belgie/klimatologisch-overzicht/2026/september) |
+| 38 | 22–25 Oct 2026 | Whole country | NC | A / B | 117 | [link](https://cortex.wallonie.be/files/Communiqu%c3%a9s%20Presse/20261023-cp-celex-pluies.pdf) |
+
+### Days ranked on CIRRUS
+
+`notebooks/06-mr-test-events.ipynb`, on 848 days (1/7/2024–9/11/2026).
+- **Data and sums.** For each day and each pixel of Belgium, the highest
+  1 h sum of the Marshall–Palmer rate (7–55 dBZ, Imhoff et al. 2020;
+  values above 70 dBZ count as no rain).
+- **Ranking.** Days are ranked by the area of the contiguous objects of at
+  least 9 km² whose 1 h sum reaches 25 mm (CatRaRE).
+- **These sums are an index.** The composite is a column maximum, so the
+  sums are higher than the rain at the ground. Fixed clutter is not yet
+  cleaned (H2): 1,236 pixels reach 25 mm in 1 h on at least 5% of the days.
+
+![Highest-ranked days](figures/d3-test-events/top-days-cirrus2024-2026.png)
+
+- **The top of the ranking is the reported convective events:**
+  - 1/8/2024 (Leuven, Tienen, Tournai) first;
+  - 20/6/2026 (Roeselare) second;
+  - 30/5/2026 (Charleroi, Basse-Sambre) third;
+  - 9/7/2024 fourth;
+  - 27–28/6/2026 fifth.
+
+  21 of the 37 reported events covered by CIRRUS have a day in the top 40.
+- **The frontal events rank low,** as a convective criterion should place
+  them: 100th to 329th.
+- **Events of wind, hail or very local rain rank in the middle:**
+  - the tornado of 7/6/2025: 49th;
+  - Sambreville, 23/7/2025, 83 mm on a small area: 56th.
+
+  An area-based ranking misses very local storms.
+- **12 days of the top 40 have no report,** for example 18/6/2026, 7/9/2024,
+  3/8/2026 and 31/7/2025. They are candidates to check.
+- **The highest 1 h sum is about 99.9 mm on most days.** That is the 55 dBZ
+  cap, reached by fixed points. So the object area, not the maximum, is the
+  usable key until the H2 cleaning is applied.
+
+### Open questions for the choice (to agree with Vito)
+
+1. **Intensity.** RMI thresholds (20/31/50 mm in 1 h) or CatRaRE
+   (25 mm)? The radar sums are an index, so how should the thresholds be
+   translated?
+2. **Impacts.** Must an event have a documented impact (an orange or red
+   warning, a recognised disaster), or is the radar enough?
+3. **Number and duration.** How many events, and with which window
+   (1, 6 or 24 h)?
+4. **Event types.** Include fronts with embedded convection? Include
+   wind- or hail-only events?
+5. **Buffer.** How much time around each event must be left out of
+   training (D4)?
+6. **Basins.** Should the basins of V5 guide the choice?
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
