@@ -1062,6 +1062,61 @@ because with Gabella part of the same pixels is already gone.
   rings and holes around several radars, where real strong echoes of 2023
   were lowered together with the clutter.
 
+### First version on CIRRUS, July–December 2024 (prototype)
+
+`notebooks/05-mr-artefacts.ipynb`, section 10 (review of #74). These are the
+same steps as on ODYSSEY, with the static mask computed on CIRRUS itself, as
+the operational chain would do. CIRRUS starts on 1/7/2024, so here the mask
+comes from the same six months: the test is in-sample. Applied to later
+months, as the real-time rule requires, it would be out of sample.
+
+- **Data.** 48,939 crops at 1 km and 5 min. The radars come from `how/nodes`
+  of the CIRRUS crops, placed with the OPERA radar database. Steiner classes
+  are computed on the 2 km grid, as in section 1.
+- **Mask.** 1,453 pixels at 1 km, 269 of them in Belgium.
+  - 1,439 pixels have ≥ 55 dBZ in at least 1% of the times, and 254 have
+    > 70 dBZ in at least 0.1%.
+  - 43% of the mask pixels lie within 20 km of a radar.
+  - Far from the radars, rain makes ≥ 55 dBZ in at most 0.20% of the times
+    (99.9th percentile), as on ODYSSEY. So the threshold of 1% transfers
+    to CIRRUS.
+
+![First version, CIRRUS 7-12/2024](figures/h2-artefacts/first-version-cirrus2024.png)
+
+| Gabella | pixels | > 70 dBZ | Gabella | static mask | total (index) |
+|---|---|---:|---:|---:|---:|
+| with | all | 0.06% | 3.24% | 2.49% | 5.80% |
+| with | convective | 0.10% | 4.43% | 3.80% | 8.33% |
+| with | stratiform | 0.00% | 1.00% | 0.02% | 1.02% |
+| without | all | 0.06% | — | 3.21% | 3.27% |
+| without | convective | 0.10% | — | 4.89% | 4.99% |
+| without | stratiform | 0.00% | — | 0.03% | 0.03% |
+
+| | with Gabella | without Gabella |
+|---|---:|---:|
+| Belgium, sum removed | 13.9% | 7.2% |
+| median pixel, sum removed | 0.9% | 0.0% |
+| pixels with ≥ 55 dBZ in > 1% of the times (1,439 before) | 0 | 0 |
+| pixels with ≥ 55 dBZ in > 0.1% of the times (11,614 before) | 5,822 | 9,959 |
+| echoes of 55–70 dBZ kept | 71% | 78% |
+| echoes of 40–55 dBZ kept | 93% | 96% |
+
+- **Gabella removes less on CIRRUS than on ODYSSEY:** 3.2% against 5.1% in
+  2023. This fits the smaller loss at 1 km in *Gabella filter at 2 km and
+  1 km*.
+- **The static mask matters more on CIRRUS.** It removes 2.5–3.2% of the
+  index, against 0.3–0.6% on ODYSSEY 2023. Belgium has 269 mask pixels at
+  1 km; where exactly they lie was not mapped.
+- **What stays:**
+  - large bright patches in the Netherlands and near the Belgian coast, with
+    frequent echoes below 55 dBZ;
+  - part of the North Sea lines.
+
+  These match the discs with no radar of *Catalogue: ODYSSEY 2013–2024*:
+  the second rule or the wind-farm option would be needed for them.
+- **In-sample.** The fact that no pixel stays above 1% at ≥ 55 dBZ is
+  expected, because the mask was built on the same months.
+
 ### Sea clutter and anomalous propagation: literature
 
 Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.
