@@ -10,6 +10,6 @@ code*.
 | `02-mr-degraded-cirrus.ipynb` | H1: degrade CIRRUS to the ODYSSEY grid, interpolate it back to 5 min and score against the real CIRRUS by `alpha`, scale and event type |
 | `03-mr-cirrus-analysis.ipynb` | CIRRUS analysis: Steiner intensity centres against ECCO convectivity, January and September 2025, and maps of the January disagreements (review of #65) |
 | `04-mr-radclim.ipynb` | S5: period of the RADCLIM copy, one 5 min file (grid, projection, units, time attributes), one hour on the OPERA grid beside ODYSSEY `ACRR` |
-| `05-mr-artefacts.ipynb` | H2: artefacts in ODYSSEY; section 1 checks how much rain the Gabella filter removes at 2 km on convective days |
+| `05-mr-artefacts.ipynb` | H2: artefacts in ODYSSEY and CIRRUS. Gabella on convective and January days (1–2), values above 55/70 dBZ (3), yearly catalogue 2013–2024 and stability of `histo_cut` (4–5), radar positions, `how/nodes` and monthly catalogue (5, 7), isolated echoes, blocked sectors, spokes, static-mask rules (8), first version on ODYSSEY 2015, 2017, 2023 (9) and on CIRRUS 7–12/2024 (10), with and without Gabella |
 
 Add a line here when you add a notebook. Name: `NN-<initials>-<topic>.ipynb`.

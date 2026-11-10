@@ -260,6 +260,19 @@ size.
   only the training windows; Europe follows when the method is fast enough (H7)
   and pan-European references exist (decided 3/11/2026).
 - **Zarr for every input and output** (decided 3/11/2026).
+- **ODYSSEY is cleaned per period** (review of #74, 10/11/2026). Two changes of
+  OPERA's processing split the archive: December 2015 and August 2018
+  ([method.md](method.md), *Radars over time*). Masks and catalogues are
+  computed per period, and each static-mask pixel follows its radar in
+  `how/nodes`.
+- **Static mask of the first version** (review of #74, 10/11/2026): ≥ 55 dBZ in
+  at least 1% of the valid times, or > 70 dBZ in at least 0.1%. The thresholds
+  are set on our data. Masked pixels are filled as in EURADCLIM. `histo_cut` on
+  annual sums is ruled out. For CIRRUS the mask comes from past CIRRUS
+  composites ([method.md](method.md), *Choice*).
+- **Gabella stays in the first version** (review of #74, 10/11/2026), but every
+  before/after is reported with and without it. The final choice is made
+  against a reference (RADCLIM or VMM, H5).
 
 ## Open decisions
 
