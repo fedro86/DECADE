@@ -778,6 +778,78 @@ are used.
   supports a per-period catalogue, and the later satellite-mask option for
   the years before late 2015 (*Choice*).
 
+### Catalogue: isolated echoes, blocked sectors, spokes
+
+`notebooks/05-mr-artefacts.ipynb`, section 8. These complete the catalogue with
+one example per artefact type.
+
+**Isolated echoes, ODYSSEY 2023.**
+- **Definition.** An echo pixel is isolated when its echo region has at most
+  11 pixels (echoes above 0 dBZ, 8-connected). This is the size below which
+  Gabella's shape test removes a region, as in section 1 of the notebook.
+- **How common.** 1.2% of the echo pixel-times are isolated. The share is
+  2.0% within 20 km of a radar, 1.6% at 20–60 km, and 0.9% beyond 120 km.
+- **Where they lie:**
+  - in rings and radial lines around the radars;
+  - along the edge of a radar's coverage (an arc in the north-west);
+  - rarely next to the two Dutch radars, where the centre stays empty.
+
+![Isolated echoes, ODYSSEY 2023](figures/h2-artefacts/isolated-echoes-odyssey2023.png)
+
+**Blocked sectors and spokes.** These follow the azimuth test of Wagner et al.
+(2012, section 3).
+- **Data.** The echo frequency (≥ 7 dBZ) of the last period, September 2018 –
+  June 2024. For each radar, the median of each 1° azimuth is taken in a ring
+  at 20–80 km.
+- **No blocked sector.** No profile has a wedge with fewer echoes. The few
+  azimuths below 90% of the radar's median are broad, smooth dips, not
+  wedges with sharp edges.
+- **Why.** The maximum composite fills a blocked sector of one radar with
+  the echoes of its neighbours. OPERA has also corrected beam blockage
+  centrally since late 2015 (Saltikoff et al. 2019). `histo_cut` found no
+  shading either. So for blocked sectors the reason to leave them is written
+  here.
+- **Spoke residual.** On the 2023 annual sum, I counted the edges where two
+  adjacent azimuths differ by more than 10% (Wagner's spoke-edge rule) over
+  the 28 radars:
+  - 1,219 before cleaning;
+  - 1,061 after Gabella;
+  - 993 after the first version (−19%).
+  - One year of rain also makes such edges, so 993 is an upper bound of the
+    spokes left (interference included).
+
+### Static mask: rules in the literature
+
+For the static mask of the first version (*Choice*), our sources give these
+rules on long series of echo frequency:
+- **OPERA central quality control** (Scovell 2013; Saltikoff et al. 2019). A
+  bin is rejected when its normalised monthly echo count exceeds a
+  threshold: 60% as the network's first guess, 90% at the start. In a UK
+  gauge trial the Peirce skill scores were 0.60 at 60% and 0.59 at 90%. It
+  runs on single-radar data before compositing, and month by month.
+- **RADVOL-QC TURBINE** (Ośródka et al. 2022). Echoes are accumulated over
+  dry time steps for a few months, then a radar-specific threshold is
+  applied, followed by editing by hand. No threshold values are given.
+- **Wagner et al. (2012).** An area is drawn by hand around each clutter
+  source, and the obvious pixels inside it are flagged by threshold. A 2 km
+  buffer is added, and pixels inside the 95% interval of the frequency
+  distribution are kept as clean. No threshold values are given.
+- **EURADCLIM `histo_cut`.** Ruled out for our composite (*Catalogue: ODYSSEY
+  2013–2024*).
+
+I applied the OPERA rule (monthly echo frequency ≥ 7 dBZ above 60%) to the
+monthly catalogue:
+
+| period | months | pixels above 60% per month, median (max) | of them within 20 km of a radar | pixels above 90%, median |
+|---|---:|---:|---:|---:|
+| 4/2013–11/2015 | 32 | 2,040 (5,120) | 61% | 465 |
+| 12/2015–7/2018 | 32 | 16 (3,327) | 69% | 0 |
+| 8/2018–6/2024 | 72 | 0 (1,374) | 74% | 0 |
+
+The rule finds almost nothing after 2015. So on our composite most of what
+it targets was already removed upstream, and what it flags before December
+2015 is mostly the near-radar excess.
+
 ### First version on ODYSSEY 2023 (prototype)
 
 `notebooks/05-mr-artefacts.ipynb`, section 6. This is an exploration of the
