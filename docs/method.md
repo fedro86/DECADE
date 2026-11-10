@@ -838,12 +838,10 @@ one example per artefact type.
   here.
 - **Spoke residual.** On the 2023 annual sum, I counted the edges where two
   adjacent azimuths differ by more than 10% (Wagner's spoke-edge rule) over
-  the 39 radars of the crop listed on at least half of the days of 2023:
-  - 1,839 before cleaning;
-  - 1,632 after Gabella;
-  - 1,517 after the first version (−18%).
-  - One year of rain also makes such edges, so 1,517 is an upper bound of the
-    spokes left (interference included).
+  the 39 radars of the crop listed on at least half of the days of 2023. The
+  numbers before and after cleaning are in *First version on ODYSSEY 2023
+  (prototype)*. One year of rain also makes such edges, so the count after
+  cleaning is an upper bound of the spokes left (interference included).
 
 ### Static mask: rules in the literature
 
@@ -911,16 +909,21 @@ Neither 1% nor 0.1% comes from the literature; both are set on our data:
 
 ### First version on ODYSSEY 2023 (prototype)
 
-`notebooks/05-mr-artefacts.ipynb`, section 6. This is an exploration of the
+`notebooks/05-mr-artefacts.ipynb`, section 9. This is an exploration of the
 *Priority* above, before the code in `opera_ds`. Each 15 min composite of
 2023 goes through three steps, in this order:
 
 1. **Impossible values:** echoes above 70 dBZ are set to no rain.
 2. **Gabella:** the cells it flags are set to no rain, as in EURADCLIM.
-3. **Static mask:** `histo_cut` of 2022, as the real-time rule requires.
+3. **Static mask:** the proposal of *Static mask: rules in the literature*,
+   computed on 8/2018–12/2022. That is the third period, before 2023, as the
+   real-time rule requires.
+   - It has 250 pixels, 25 of them in Belgium.
+   - Each pixel belongs to its nearest radar within 20 km, and is on only on
+     the days that radar is listed in `how/nodes`.
    - The rain of a masked cell is replaced by the inverse-distance mean of its
-     4 nearest unmasked cells, but only when that mean is lower.
-   - EURADCLIM does this on hourly sums. Here it is done on each composite.
+     4 nearest unmasked cells, but only when that mean is lower. EURADCLIM
+     does this on hourly sums; here it is done on each composite.
 
 Settings:
 - **Rain:** Marshall–Palmer, capped at 55 dBZ, from 7 dBZ (Imhoff et al.
@@ -932,37 +935,46 @@ Settings:
 
 | pixels | > 70 dBZ | Gabella | static mask | total |
 |---|---:|---:|---:|---:|
-| all | 0.16% | 5.12% | 3.87% | 9.15% |
-| convective | 0.25% | 7.36% | 5.25% | 12.86% |
-| stratiform | 0.00% | 1.37% | 1.56% | 2.93% |
+| all | 0.16% | 5.12% | 0.32% | 5.60% |
+| convective | 0.25% | 7.36% | 0.51% | 8.12% |
+| stratiform | 0.00% | 1.37% | 0.02% | 1.38% |
 
 The table gives the share of the 2023 rain, as an index, that each step
 removes.
 
-- **Belgium.** 12.0% of the annual sum is removed: from 3,765 to 3,312 mm,
+- **Belgium.** 8.4% of the annual sum is removed: from 3,765 to 3,447 mm,
   as an index.
 - **Which echoes are kept:**
-  - above 70 dBZ, 0.2% are kept; the 83 left are exactly 70.0 dBZ;
-  - 55–70 dBZ: 63% kept;
-  - 40–55 dBZ: 85% kept;
-  - 20–40 dBZ: 94% kept;
-  - 0–20 dBZ: 93% kept.
+  - above 70 dBZ, 0.2% are kept; the 101 left are exactly 70.0 dBZ;
+  - 55–70 dBZ: 72% kept;
+  - 40–55 dBZ: 94% kept;
+  - 20–40 dBZ: 98% kept;
+  - 0–20 dBZ: 94% kept.
 - **Strong echoes that repeat** (≥ 55 dBZ):
-  - pixels with them in more than 0.1% of the times: from 1,984 to 209;
-  - pixels with them in more than 1% of the times: from 166 to 0;
-  - the North Sea lines and the fixed points go;
-  - part of the radial lines in the south-east stays. This is the
-    interference residual that *Choice* asks to measure.
-- **The mask of 2022 overshoots on 2023.** After cleaning, the annual sum
-  shows dark rings and holes around several radars. The ≥ 55 dBZ frequency
-  shows blank patches. In these places, real strong echoes of 2023 were
-  lowered together with the clutter. This follows from the instability of the
-  mask across years.
+  - pixels with them in more than 0.1% of the times: from 1,984 to 577;
+  - pixels with them in more than 1% of the times: from 166 to 2;
+  - the North Sea lines and most fixed points go;
+  - part of the radial lines in the south-east stays.
+- **No holes around the radars.** The annual sum after cleaning keeps the
+  discs: they are the near-radar excess, a matter of harmonisation with
+  CIRRUS, not of cleaning.
+- **What stays:**
+  - some of the discs with no radar, as expected (*Static mask: rules in the
+    literature*);
+  - the radial lines.
+- **Spoke residual** (39 radars, as in *Catalogue: isolated echoes, blocked
+  sectors, spokes*): 1,839 edges before, 1,632 after Gabella and 1,629 after
+  the static mask. Gabella removes 11% of the edges; the static mask almost
+  none.
 - **Gabella and real rain.** Over the year, Gabella removes 7.36% of the
   convective rain. That is more than the 4.9% on the five summer days of
   *Gabella filter at 2 km and 1 km*, because here the share also includes the
   fixed points that Steiner classes as convective. This number is to be read
   together with the trimming of real cells noted there.
+- **The earlier prototype with `histo_cut` of 2022** (section 6, ruled out)
+  removed 9.15% of the rain (12.86% of the convective rain). It left dark
+  rings and holes around several radars, where real strong echoes of 2023
+  were lowered together with the clutter.
 
 ### Sea clutter and anomalous propagation: literature
 
