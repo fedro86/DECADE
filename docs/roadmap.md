@@ -96,8 +96,9 @@ left allows it.
   licence, access token, gauge adjustment and start date (F, 3–15/11).
 - [x] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
   the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
-- [ ] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get EURADCLIM and
-  ERA5-Land over the Belgian domain (F, 3–22/11).
+- [ ] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get pan-European
+  bridge data over the Belgian domain: ERA5-Land and CERRA-Land; EURADCLIM 3.0
+  ends in 2023 and its download is left to H4 (F, 3–22/11; decided 10/11/2026).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
   environment on the CINECA modules (F, 18–29/11, if the call is won).
 - [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
@@ -296,9 +297,6 @@ size.
   before DECADE, not in the proposal: parked unless decided otherwise.
 
 ## Open questions (external)
-
-- **EURADCLIM after 2023:** is a version covering 2024–2025 available or
-  planned? To ask KNMI.
 
 - How much does IRENE degrade with fewer years of data? Asked to the authors,
   answer unknown.
