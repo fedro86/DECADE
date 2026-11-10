@@ -725,6 +725,59 @@ next year. So the mask must be stable from year to year.
   are never covered. The notebook therefore passes only the pixels with at
   least one valid time.
 
+### Radars over time: monthly catalogue, ODYSSEY 2012–2024
+
+`notebooks/05-mr-artefacts.ipynb`, section 7 (review of #74). Two sources are
+used:
+- the same per-pixel statistics as the catalogue, one month at a time (140
+  months);
+- the radars listed in `how/nodes` (`data.md`, *Radars in the ODYSSEY
+  composites*).
+
+For each radar with a 2025 position, two areas are compared month by month:
+- *near*: a disc of 20 km around the radar;
+- *far*: a ring at 60–100 km.
+
+The quantity compared is the echo frequency, that is the share of valid
+times with at least 7 dBZ. Rain changes from month to month in both areas,
+so the near/far ratio follows the radar and its processing more than the
+weather. Only months in which the radar is listed on at least 80% of the days
+are used.
+
+![Monthly radar statistics](figures/h2-artefacts/radar-monthly-odyssey2013-2024.png)
+
+- **Two steps shared by almost all radars.**
+  - **December 2015.** The median near-radar echo frequency over the radars
+    falls from 0.44 in November 2015 to 0.22 in December 2015. The far one
+    does not fall. Over 12 months before and after, the ratio falls by a
+    factor of 0.55. The step matches the change of OPERA's central
+    processing in December 2015: satellite filter and beam-blockage
+    correction (Saltikoff et al. 2019).
+  - **August 2018.** The near frequency falls again, from 0.28 in July to
+    0.10 in August 2018. None of our sources explains this step. Saltikoff
+    et al. (2019) describe a gradual change of the input data from March
+    2017.
+  - For 23 of the 29 radars, the largest change of the ratio (median of 6
+    months after against 6 months before) is a fall that starts in November
+    2015–April 2016 or in July 2018–August 2019.
+  - For four of the other six, it is a rise: in 2014 for `frabb`, `frtro`
+    and `frtre`, and in January 2015 for `defld`.
+- **Summer echoes near the radars until 2015.** In 2014 and 2015 the
+  near-radar echo frequency reaches about 0.5 in summer, against 0.14–0.18
+  far away. This summer excess almost disappears after December 2015. It
+  fits echoes without rain near the radars that the satellite filter
+  removes. It is the example of this artefact type for the catalogue.
+- **Since 2019 the near/far ratio is about 1.2 all year** (median of the
+  radars, summer and winter). In 2014–2018 it was 1.5–3.7, with 3.1–3.7 in
+  the summers of 2014, 2015 and 2018.
+  So the near-radar discs of the yearly catalogue belong mostly to
+  2013–2018.
+- **Consequence.** ODYSSEY is three products in a row: before December
+  2015, from December 2015 to July 2018, and from August 2018. A mask or
+  correction computed over one period does not apply to another. This
+  supports a per-period catalogue, and the later satellite-mask option for
+  the years before late 2015 (*Choice*).
+
 ### First version on ODYSSEY 2023 (prototype)
 
 `notebooks/05-mr-artefacts.ipynb`, section 6. This is an exploration of the
