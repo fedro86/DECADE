@@ -30,7 +30,9 @@ IMPOSSIBLE_DBZ = 70.0          # Fluck et al. 2021 (method.md, Impossible values
 STRONG_DBZ = 55.0              # top reflectivity class of Wagner et al. 2012; cap of Imhoff et al. 2020
 STRONG_SHARE = 0.01            # ours: rain far from the radars stays below 0.22% (method.md)
 IMPOSSIBLE_SHARE = 0.001       # ours
-OWNER_KM = 20.0                # a masked pixel within this distance belongs to its nearest radar
+# a masked pixel within this distance belongs to its nearest radar. Ours, not from the literature: from the disc
+# check of method.md, Catalogue: ODYSSEY 2013-2024 (31 of the 44 discs centred within 20 km of a radar)
+OWNER_KM = 20.0
 FILL_NEIGHBOURS = 4            # EURADCLIM, section 3.3
 FILL_POWER = 2.0
 RAIN_MIN_DBZ, RAIN_MAX_DBZ = 7.0, 55.0

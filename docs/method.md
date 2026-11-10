@@ -559,8 +559,10 @@ What the collection shows:
     literature*).
   - **Periods:** the mask is computed per period, split at December 2015 and
     August 2018.
-  - **Per radar:** each pixel is attached to its nearest radar and switched
-    on or off with `how/nodes`.
+  - **Per radar:** each pixel is attached to its nearest radar within 20 km
+    and switched on or off with `how/nodes`. The 20 km are ours, not from the
+    literature: 31 of the 44 discs of *Catalogue: ODYSSEY 2013–2024* are
+    centred within 20 km of a radar.
   - **Fill:** masked pixels are filled as in EURADCLIM.
   - **CIRRUS:** the mask comes from past CIRRUS composites, not from
     ODYSSEY.
@@ -571,6 +573,15 @@ What the collection shows:
   late 2015 (when the OPERA satellite filter started; Saltikoff et al. 2019).
   It would need the CLAAS-2.1 cloud type, which is available only through
   the CM SAF help desk (`data.md`, CLAAS-3 row).
+- **Rolling-window mask** (first refinement after the first version, review
+  of #74). The static mask is recomputed on a rolling window of past
+  composites, which fits the real-time rule.
+  - On CIRRUS 2025, 132 pixels (297 without Gabella) still have ≥ 55 dBZ in
+    more than 1% of the times: they are fixed points that the 2024 mask does
+    not know (*CIRRUS 2025, out of sample*).
+  - A rolling mask would also cover the 57% of the CIRRUS mask pixels that
+    are more than 20 km from any radar. These stay on even when the radar
+    that sees them is off.
 - **Wind turbines** (possible improvement after the first version): if fixed
   points above 70 dBZ remain, turbine positions could check them or give a
   static mask, which the real-time rule allows. Open pan-European sources:
@@ -950,8 +961,11 @@ literature; they are set on our data:
   do by hand) or the wind-farm positions of *Choice* would catch them. Both
   are left for after the first version.
 - **Per radar** (review of #74). Each masked pixel is attached to the
-  nearest radar of `how/nodes` and is on only when that radar is listed. The
-  pixels of the discs with no radar stay on.
+  nearest radar of `how/nodes` within 20 km, and is on only when that radar
+  is listed. The other masked pixels stay on, including those of the discs
+  with no radar.
+  - The 20 km are ours, like the 1% and the 0.1%: 31 of the 44 discs of
+    *Catalogue: ODYSSEY 2013–2024* are centred within 20 km of a radar.
 
 ### Cleaning code (`opera_ds/clean.py`)
 
