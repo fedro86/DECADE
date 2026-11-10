@@ -197,7 +197,7 @@ of January is possible only with 1 seed and runs at about 40% of the planned
 size.
 
 - [ ] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
-  4090 with fake data (F, 3–22/11).
+  4090 with fake data (M, 3–22/11).
 - [ ] [**T2**](https://github.com/fedro86/DECADE/issues/35) Decide the loss and
   the time step of configuration B (F+M, 23/11–6/12).
 - [ ] [**T7**](https://github.com/fedro86/DECADE/issues/36) Train on 4 GPUs with
