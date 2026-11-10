@@ -877,6 +877,38 @@ The rule finds almost nothing after 2015. So on our composite most of what
 it targets was already removed upstream, and what it flags before December
 2015 is mostly the near-radar excess.
 
+**Proposal for the first version** (review of #74, to be confirmed). Per
+period, a pixel is static clutter when either condition holds:
+- ≥ 55 dBZ in at least 1% of its valid times (the top class of Wagner et al.
+  2012, above the 55 dBZ cap of Imhoff et al. 2020);
+- \> 70 dBZ in at least 0.1% of its valid times (Fluck et al. 2021).
+
+Neither 1% nor 0.1% comes from the literature; both are set on our data:
+- **Rain far from the radars.** More than 60 km from any radar, rain makes
+  ≥ 55 dBZ in at most 0.12–0.22% of the times (99.9th percentile of those
+  pixels in each period). 1% is 4.5 to 8 times higher.
+- **Wolff's rule as published** (≥ 55 dBZ in ≥ 50% of the scans of a dry
+  day) flags 1, 0 and 0 pixels in the three periods. OPERA already removes
+  this kind of permanent clutter.
+
+| period | pixels flagged | ≥ 55 dBZ in ≥ 1% | > 70 dBZ in ≥ 0.1% | within 20 km of a radar | discs with no radar touched |
+|---|---:|---:|---:|---:|---:|
+| 4/2013–11/2015 | 763 | 560 | 221 | 58% | 6 of 13 |
+| 12/2015–7/2018 | 664 | 631 | 78 | 72% | 5 of 13 |
+| 8/2018–6/2024 | 231 | 205 | 109 | 52% | 5 of 13 |
+
+- **Near the radars.** The pixels close to the radars are close-range ground
+  clutter at high reflectivity. They are not the weak-echo excess that makes
+  the discs.
+- **Discs with no radar.** The rule touches only 5 or 6 of the 13. Their
+  echoes are frequent but weaker, which points to wind farms. A second rule
+  (a pixel far above its neighbours in a frequency map, as Wagner et al. 2012
+  do by hand) or the wind-farm positions of *Choice* would catch them. Both
+  are left for after the first version.
+- **Per radar** (review of #74). Each masked pixel is attached to the
+  nearest radar of `how/nodes` and is on only when that radar is listed. The
+  pixels of the discs with no radar stay on.
+
 ### First version on ODYSSEY 2023 (prototype)
 
 `notebooks/05-mr-artefacts.ipynb`, section 6. This is an exploration of the
