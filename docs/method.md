@@ -1011,6 +1011,33 @@ because with Gabella part of the same pixels is already gone.
   *Gabella filter at 2 km and 1 km*, because here the share also includes the
   fixed points that Steiner classes as convective. This number is to be read
   together with the trimming of real cells noted there.
+- **The same on the two earlier periods** (section 9). One year of each
+  period is cleaned with a mask computed on the months of that period
+  before the year, as the real-time rule requires:
+  - 2015 uses a mask from 4/2013–12/2014 (490 pixels);
+  - 2017 uses a mask from 12/2015–12/2016 (782 pixels).
+
+  | year | Gabella | > 70 dBZ | Gabella | static mask | total (index) | Belgium | median pixel | pixels ≥ 55 dBZ in > 1% |
+  |---|---|---:|---:|---:|---:|---:|---:|---:|
+  | 2015 | with | 0.22% | 24.11% | 2.36% | 26.69% | 25.1% | 5.0% | 543 → 22 |
+  | 2015 | without | 0.22% | — | 11.21% | 11.43% | 4.2% | 0.1% | 543 → 191 |
+  | 2017 | with | 0.46% | 15.30% | 1.83% | 17.59% | 26.2% | 4.4% | 516 → 18 |
+  | 2017 | without | 0.46% | — | 6.43% | 6.89% | 11.4% | 0.3% | 516 → 143 |
+  | 2023 | with | 0.16% | 5.12% | 0.32% | 5.60% | 8.4% | 3.4% | 166 → 2 |
+  | 2023 | without | 0.16% | — | 0.57% | 0.73% | 0.5% | 0.0% | 166 → 30 |
+
+  - **Earlier periods need more cleaning.** In 2015 and 2017 the total
+    removed is 3 to 5 times that of 2023, with and without Gabella. This
+    matches the three products of *Radars over time*.
+  - **The total is dominated by a few pixels.** The median pixel loses only
+    3–5% of its annual sum with Gabella, and 0.0–0.3% without. So most of
+    what is removed comes from a few strong fixed points: in 2015 and 2017
+    there are over 500 pixels with ≥ 55 dBZ in more than 1% of the times.
+    So the large shares of 2015 and 2017 do not mean that a quarter of the
+    rain is lost; how much real rain is lost is to be measured against a
+    reference (H5).
+  - **Without Gabella, the static mask leaves many fixed points:** 191 such
+    pixels in 2015 and 143 in 2017. With Gabella, 22 and 18 are left.
 - **The earlier prototype with `histo_cut` of 2022** (section 6, ruled out)
   removed 9.15% of the rain (12.86% of the convective rain). It left dark
   rings and holes around several radars, where real strong echoes of 2023
