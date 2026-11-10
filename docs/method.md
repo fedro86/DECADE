@@ -566,6 +566,18 @@ What the collection shows:
   static mask, which the real-time rule allows. Open pan-European sources:
   OpenStreetMap (`generator:source=wind`, ODbL) and the EMODnet offshore wind
   farms; construction dates would be needed for 2012–2024.
+- **Calibration drift** (possible improvement after the first version,
+  review of #74). Radar hardware ages, and a radar can lose sensitivity for
+  months before it is switched off.
+  - The monthly statistics would show such a drift where a radar covers the
+    area alone.
+  - The fixed points above 70 dBZ could serve as stable targets to follow the
+    radar's calibration. This is the relative calibration adjustment
+    (Silberstein et al. 2008): the 95th percentile of the reflectivity of
+    clutter targets is tracked day by day, and it stays within about ±1 dB.
+  - Vaccarono et al. (2016) apply the same idea to two operational C-band
+    radars and detect changes of about 2 dB.
+  - Both work on single-radar data, not on a composite.
 - **Priority:** first a working cleaning on the composite alone (impossible
   values, Gabella, `histo_cut`, frequency maps for the catalogue) on ODYSSEY
   and CIRRUS, with numbers before and after; improvements come after.
