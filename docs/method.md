@@ -953,6 +953,31 @@ literature; they are set on our data:
   nearest radar of `how/nodes` and is on only when that radar is listed. The
   pixels of the discs with no radar stay on.
 
+### Cleaning code (`opera_ds/clean.py`)
+
+The first version is coded in `opera_ds/clean.py`, as the prototypes of notebook 05 describe it, with Gabella as a switch (review of #74):
+- `clean_composite(dbz, static, listed, gabella=True)`:
+  1. > 70 dBZ to no rain;
+  2. Gabella, when `gabella` is true;
+  3. the static mask, with the radars `listed` in `how/nodes` for that time.
+- `StaticCounts`: per-pixel counts on past composites (valid times, ≥ 55 dBZ, > 70 dBZ) and the mask rule.
+- `StaticMask`: the fill tables and the radar each masked pixel belongs to (within 20 km).
+- `static_fill`: the EURADCLIM fill.
+- `odyssey_period`: the three periods of ODYSSEY.
+
+`tests/test_clean.py` checks the steps on synthetic fields:
+- an impossible value is removed;
+- the Gabella switch removes an isolated spike only when on;
+- the coverage is kept;
+- the mask rule flags the right pixels;
+- the fill only lowers;
+- a masked pixel is switched with its radar;
+- in the full chain, the core of a smooth rain cell is kept.
+
+On ODYSSEY 2023, with the mask of 8/2018–12/2022, the code gives the shares of the prototype:
+- with Gabella: 5.60% of the rain index removed, 8.12% of the convective part, 1.39% of the stratiform part (prototype 1.38%);
+- without Gabella: 0.73%, 1.14% and 0.03%.
+
 ### First version on ODYSSEY 2023 (prototype)
 
 `notebooks/05-mr-artefacts.ipynb`, section 9. This is an exploration of the
