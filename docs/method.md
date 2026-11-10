@@ -1146,6 +1146,47 @@ months, as the real-time rule requires, it would be out of sample.
 - **In-sample.** The fact that no pixel stays above 1% at ≥ 55 dBZ is
   expected, because the mask was built on the same months.
 
+### CIRRUS 2025, out of sample
+
+`notebooks/05-mr-artefacts.ipynb`, section 11 (review of #74). The mask of 7–12/2024 is applied to all of 2025, as
+the operational chain would apply a mask from past composites only. The radars come from `how/nodes` of the
+2025 crops. 103,791 composites.
+
+| share of the index removed | > 70 dBZ | Gabella | static mask | total | in-sample 7–12/2024 |
+|---|---:|---:|---:|---:|---:|
+| with Gabella | 0.17% | 3.15% | 2.40% | 5.72% | 5.80% |
+| without Gabella | 0.17% | — | 3.00% | 3.17% | 3.27% |
+
+- **The in-sample numbers hold out of sample.**
+- **Repeated strong echoes** (pixels with ≥ 55 dBZ in more than 1% of the times):
+  - from 1,406 to 132 with Gabella;
+  - from 1,406 to 297 without Gabella.
+
+  Some fixed points of 2025 were not in the mask of 2024.
+
+**Where Belgium loses rain** (review of #74).
+
+![Belgium, CIRRUS 2025](figures/h2-artefacts/belgium-removed-cirrus2025.png)
+
+| | with Gabella | without Gabella |
+|---|---:|---:|
+| Belgium, sum removed | 8.2% (Gabella 6.4%, static mask 1.8%) | 3.3% (static mask) |
+| the whole domain | 5.7% | 3.2% |
+| median pixel | 1.1% | 0.1% |
+| share of the Belgian loss within 20 km of a Belgian radar (11% of the area) | 47% | 69% |
+| share of the Belgian loss on mask pixels | 46% | 100% |
+
+- **Out of sample, Belgium loses 1.4 times the domain with Gabella and about the same without.** In-sample in
+  2024 it lost 13.9% and 7.2%.
+- **The losses are fixed points, not the near-radar excess:**
+  - without Gabella, everything lost is on mask pixels, two thirds of it within 20 km of Jabbeke, Wideumont and
+    Helchteren;
+  - the mask pixels sit in compact patches around the radars and in a few isolated patches;
+  - the weak-echo excess near the radars, which made the discs of *Catalogue: ODYSSEY 2013–2024*, is not
+    touched: the mask needs ≥ 55 dBZ.
+- **With Gabella, the rest of the Belgian loss** is spread over many small spots and short lines across the
+  country, and is largest near Jabbeke and Helchteren.
+
 ### Sea clutter and anomalous propagation: literature
 
 Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.

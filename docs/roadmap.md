@@ -120,7 +120,7 @@ left allows it.
   ([data.md](data.md), *Derived datasets*).
 - [x] [**H1**](https://github.com/fedro86/DECADE/issues/18) Measure
   interpolation error on degraded CIRRUS (M, 16–29/11).
-- [ ] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
+- [x] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
   radar artefacts from ODYSSEY (M→F, 16–29/11).
 - [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Correct the ODYSSEY
   → CIRRUS level difference through a bridge dataset (M→F, 16/11–6/12).
