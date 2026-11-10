@@ -199,6 +199,87 @@ OPERA.
 - **Only from 2024.** Single-radar files are not in the bucket before 2024, so
   the processing of 2012–2023 cannot be checked this way.
 
+### Radars in the ODYSSEY composites (`how/nodes`)
+
+Each composite lists the radars it was made from in `how/nodes`, and so do
+our crops. ODYSSEY writes `NOD:bewid,...` and CIRRUS writes `bewid, ...`.
+
+I read this attribute in all 400,337 ODYSSEY crops on 10/11/2026 (results in
+`results/h2_artefacts/nodes_odyssey.csv`, not in git). A radar counts as
+listed on a day when it is in at least half of that day's composites. Days
+with no composite are left out, so a gap in the archive is not counted as an
+absence.
+
+The table covers two groups of radars:
+- the radars of the 2025 single-radar files that lie within 100 km of the
+  Belgian crop;
+- five radars of Germany and the Netherlands that stopped during the period.
+
+The UK radars are missing: the bucket has no UK single-radar files, so their
+position is unknown.
+
+The archive becomes regular only in April 2013 (*Known problems*). So a
+"first day" before that date is the start of the readable archive, not
+necessarily the radar's.
+
+| node | first day | last day | days listed / days in its period | longest absence, days |
+|---|---|---|---:|---|
+| `behel` | 21/3/2018 | 5/7/2024 | 1,980 / 2,293 | 258 (17/6/2020 to 1/3/2021) |
+| `bejab` | 27/11/2014 | 5/7/2024 | 3,153 / 3,503 | 98 (6/11/2015 to 11/2/2016) |
+| `bewid` | 26/3/2013 | 5/7/2024 | 3,730 / 4,114 | 124 (8/4/2022 to 9/8/2022) |
+| `deasb` | 24/4/2018 | 5/7/2024 | 2,024 / 2,259 | 170 (18/6/2018 to 4/12/2018) |
+| `deboo` | 28/1/2014 | 5/7/2024 | 3,722 / 3,806 | 29 (27/7/2016 to 24/8/2016) |
+| `deeis` | 4/9/2012 | 5/7/2024 | 3,719 / 4,177 | 229 (6/6/2013 to 20/1/2014) |
+| `deemd` | 4/9/2012 | 27/2/2018 | 1,565 / 1,863 | 180 (22/7/2015 to 17/1/2016) |
+| `deess` | 27/3/2013 | 5/7/2024 | 4,032 / 4,113 | 29 (27/7/2016 to 24/8/2016) |
+| `defbg` | 5/2/2019 | 5/7/2024 | 1,945 / 1,972 | 5 (8/7/2023 to 12/7/2023) |
+| `defld` | 4/9/2012 | 5/7/2024 | 3,727 / 4,177 | 197 (29/4/2014 to 11/11/2014) |
+| `deflg` | 22/1/2013 | 4/2/2019 | 2,140 / 2,199 | 29 (27/7/2016 to 24/8/2016) |
+| `deham` | 4/9/2012 | 23/1/2014 | 366 / 367 | 1 (14/3/2013 to 14/3/2013) |
+| `dehan` | 4/9/2012 | 22/4/2015 | 360 / 821 | 317 (26/3/2013 to 5/2/2014) |
+| `dehnr` | 23/4/2015 | 5/7/2024 | 3,282 / 3,356 | 29 (27/7/2016 to 24/8/2016) |
+| `deisn` | 28/1/2014 | 5/7/2024 | 3,707 / 3,806 | 30 (27/7/2016 to 25/8/2016) |
+| `demem` | 12/6/2013 | 5/7/2024 | 3,879 / 4,036 | 68 (14/1/2023 to 22/3/2023) |
+| `deneu` | 26/3/2013 | 5/7/2024 | 4,031 / 4,114 | 29 (27/7/2016 to 24/8/2016) |
+| `denhb` | 4/9/2012 | 5/7/2024 | 3,750 / 4,177 | 252 (28/8/2013 to 6/5/2014) |
+| `deoft` | 4/9/2012 | 5/7/2024 | 4,099 / 4,177 | 30 (26/7/2016 to 24/8/2016) |
+| `deros` | 4/9/2012 | 5/7/2024 | 3,686 / 4,177 | 390 (13/6/2013 to 7/7/2014) |
+| `detur` | 4/9/2012 | 5/7/2024 | 3,717 / 4,177 | 397 (5/4/2013 to 6/5/2014) |
+| `deumd` | 4/9/2012 | 3/7/2024 | 3,738 / 4,175 | 300 (14/2/2013 to 16/12/2013) |
+| `frabb` | 4/9/2012 | 5/7/2024 | 4,125 / 4,177 | 11 (17/3/2019 to 27/3/2019) |
+| `frave` | 4/9/2012 | 5/7/2024 | 4,106 / 4,177 | 25 (2/5/2020 to 26/5/2020) |
+| `frbla` | 4/9/2012 | 5/7/2024 | 4,120 / 4,177 | 11 (9/8/2013 to 19/8/2013) |
+| `frbou` | 4/9/2012 | 5/7/2024 | 4,015 / 4,177 | 94 (23/4/2018 to 25/7/2018) |
+| `frcae` | 4/9/2012 | 5/7/2024 | 3,969 / 4,177 | 122 (25/2/2014 to 26/6/2014) |
+| `frche` | 4/9/2012 | 5/7/2024 | 4,034 / 4,177 | 17 (16/1/2022 to 1/2/2022) |
+| `frgre` | 4/9/2012 | 5/7/2024 | 4,139 / 4,177 | 7 (17/4/2019 to 23/4/2019) |
+| `frlep` | 4/9/2012 | 5/7/2024 | 3,889 / 4,177 | 190 (10/9/2013 to 18/3/2014) |
+| `frmtc` | 4/9/2012 | 5/7/2024 | 3,942 / 4,177 | 73 (9/10/2019 to 20/12/2019) |
+| `frnan` | 4/9/2012 | 5/7/2024 | 3,981 / 4,177 | 141 (16/5/2017 to 3/10/2017) |
+| `frniz` | 4/9/2012 | 5/7/2024 | 3,999 / 4,177 | 155 (15/9/2015 to 16/2/2016) |
+| `frtra` | 4/9/2012 | 5/7/2024 | 4,163 / 4,177 | 3 (7/3/2020 to 9/3/2020) |
+| `frtre` | 4/9/2012 | 5/7/2024 | 3,949 / 4,177 | 211 (8/3/2016 to 4/10/2016) |
+| `frtro` | 4/9/2012 | 5/7/2024 | 3,939 / 4,177 | 161 (18/5/2015 to 25/10/2015) |
+| `nldbl` | 4/9/2012 | 19/1/2017 | 1,397 / 1,459 | 50 (29/1/2013 to 19/3/2013) |
+| `nldhl` | 4/9/2012 | 5/7/2024 | 3,853 / 4,177 | 113 (10/10/2016 to 30/1/2017) |
+| `nlhrw` | 19/5/2017 | 5/7/2024 | 2,567 / 2,599 | 8 (21/6/2017 to 28/6/2017) |
+
+- **Radars that start or stop within the period:**
+  - `bejab` starts on 27/11/2014 and `behel` on 21/3/2018.
+  - `nlhrw` starts on 19/5/2017, four months after the last day of `nldbl`
+    (19/1/2017).
+  - In Germany, `deboo` starts on 28/1/2014, five days after the last day of
+    `deham`. `dehnr` starts on 23/4/2015, the day after the last day of
+    `dehan`. `deasb` starts on 24/4/2018, after `deemd` ends on 27/2/2018.
+    `defbg` starts on 5/2/2019, the day after the last day of `deflg`.
+- **Long absences.** Several radars are missing for months, for example:
+  - `behel` 258 days (2020–2021);
+  - `bewid` 124 days (2022);
+  - `deros` 390 days (2013–2014).
+- **A common absence.** From 28/7 to 23/8/2016 no German radar is listed in
+  any composite. The radars of the table are missing from 26–27/7 to
+  24–25/8/2016.
+
 ## Known problems
 
 - **Outliers in ODYSSEY.** For example on 3/7/2024 12:00 a group of 4 pixels

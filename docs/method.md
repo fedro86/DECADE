@@ -549,6 +549,11 @@ What the collection shows:
   sums; Wagner-style frequency maps for the catalogue. `histo_cut` and the
   frequency maps fit the rule when the mask is computed on past composites and
   applied to new ones.
+- **Static mask of the first version** (review of #74, 10/11/2026). On our
+  maximum composite, `histo_cut` on the annual sum flags discs that sit on the
+  radars: they are the excess near each radar, not clutter (*Catalogue:
+  ODYSSEY 2013–2024*). So the static mask is based on the frequency maps
+  (Wagner et al. 2012) and on the points above 70 dBZ.
 - **Satellite mask:** not in the operational chain, and left out of the
   first version (review of #74: first a result on the composite alone, then
   improvements). A possible later improvement for ODYSSEY 2012–2015 only, to
@@ -691,11 +696,18 @@ next year. So the mask must be stable from year to year.
 - **What the stable pixels are:** the centres of the discs and the fixed
   points. The outer rings of the discs change from year to year, as rain
   would.
-- **What the discs are.** The annual sums show regularly spaced bright discs,
-  each with radial structure. This is consistent with radar sites, but the
-  positions were not checked. The sum falls with distance from each radar.
-  So, with 5% tails, `histo_cut` mixes clutter with this decrease. Wagner et
-  al. (2012) correct the decrease separately, as beam height.
+- **The discs sit on the radars** (review of #74). The radar positions come
+  from the 2025 single-radar files (`scripts/fetch_pvol_positions.py`); the UK
+  radars have no files in the bucket.
+  - Of the 44 discs flagged in at least 6 years (at least 20 pixels each), 26
+    have their centre within 10 km of a radar.
+  - Of the pixels flagged in at least 10 years, 75% lie within 20 km of a
+    radar, against 3.7% of the crop.
+  - So the discs are the excess of a maximum composite near each radar, where
+    the beam is low, and not clutter. With 5% tails, `histo_cut` on the
+    annual sum removes rain there.
+  - For the first version, the static mask is to be based on the frequency
+    maps (Wagner et al. 2012) and on the points above 70 dBZ instead.
 - **Bug in wradlib 2.9.8.** `histo_cut` fails when its input has NaN: it
   starts from `max()`, not `nanmax()`. In 2013 there are 337 crop pixels that
   are never covered. The notebook therefore passes only the pixels with at
