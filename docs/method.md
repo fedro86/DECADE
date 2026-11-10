@@ -554,6 +554,16 @@ What the collection shows:
   radars: they are the excess near each radar, not clutter (*Catalogue:
   ODYSSEY 2013–2024*). So the static mask is based on the frequency maps
   (Wagner et al. 2012) and on the points above 70 dBZ.
+  - **Rule:** ≥ 55 dBZ in at least 1% of the valid times, or > 70 dBZ in at
+    least 0.1%. The thresholds are ours (*Static mask: rules in the
+    literature*).
+  - **Periods:** the mask is computed per period, split at December 2015 and
+    August 2018.
+  - **Per radar:** each pixel is attached to its nearest radar and switched
+    on or off with `how/nodes`.
+  - **Fill:** masked pixels are filled as in EURADCLIM.
+  - **CIRRUS:** the mask comes from past CIRRUS composites, not from
+    ODYSSEY.
 - **Satellite mask:** not in the operational chain, and left out of the
   first version (review of #74: first a result on the composite alone, then
   improvements). A possible later improvement for ODYSSEY 2012–2015 only, to
@@ -590,6 +600,11 @@ What the collection shows:
 - **Gabella:** fits the rule. Its loss of convective rain is to be weighed
   against what it removes of the stationary features of January 2025, with
   the position of the removed pixels, at 2 km and at 1 km on CIRRUS.
+  Kept in the first version (review of #74, 10/11/2026). It is most of
+  what the first version removes, while it mostly trims the peaks of real
+  cells and reduces the spoke edges by only 11%. So every before/after is
+  reported with and without Gabella. The final choice is made later, against
+  a reference (RADCLIM or VMM, H5).
 - **Impossible values:** a threshold fits the rule; 70 dBZ as a cited
   convention (Fluck et al. 2021), separate from the 55 dBZ cap (*Conventions*),
   after counting the pixels between 55 and 70 dBZ and above 70 on ODYSSEY and
@@ -875,19 +890,27 @@ The rule finds almost nothing after 2015. So on our composite most of what
 it targets was already removed upstream, and what it flags before December
 2015 is mostly the near-radar excess.
 
-**Proposal for the first version** (review of #74, to be confirmed). Per
-period, a pixel is static clutter when either condition holds:
+**Rule of the first version** (proposed and agreed in the review of #74,
+10/11/2026). Per period, a pixel is static clutter when either condition
+holds:
 - ≥ 55 dBZ in at least 1% of its valid times (the top class of Wagner et al.
   2012, above the 55 dBZ cap of Imhoff et al. 2020);
 - \> 70 dBZ in at least 0.1% of its valid times (Fluck et al. 2021).
 
-Neither 1% nor 0.1% comes from the literature; both are set on our data:
+**The two thresholds, 1% and 0.1%, are ours.** They do not come from the
+literature; they are set on our data:
 - **Rain far from the radars.** More than 60 km from any radar, rain makes
   ≥ 55 dBZ in at most 0.12–0.22% of the times (99.9th percentile of those
   pixels in each period). 1% is 4.5 to 8 times higher.
 - **Wolff's rule as published** (≥ 55 dBZ in ≥ 50% of the scans of a dry
   day) flags 1, 0 and 0 pixels in the three periods. OPERA already removes
   this kind of permanent clutter.
+- **Fill rule.** A masked pixel is not set to no rain. Its value is
+  replaced by the inverse-distance interpolation (power 2) of at most 4
+  nearest clean neighbours, and only where that value is lower than the
+  original (EURADCLIM, Overeem et al. 2023, section 3.3). EURADCLIM does
+  this on hourly sums; the first version does it on each composite. The
+  prototypes apply it in their before/after numbers.
 
 | period | pixels flagged | ≥ 55 dBZ in ≥ 1% | > 70 dBZ in ≥ 0.1% | within 20 km of a radar | discs with no radar touched |
 |---|---:|---:|---:|---:|---:|
@@ -933,18 +956,31 @@ Settings:
 
 ![First version, ODYSSEY 2023](figures/h2-artefacts/first-version-odyssey2023.png)
 
-| pixels | > 70 dBZ | Gabella | static mask | total |
-|---|---:|---:|---:|---:|
-| all | 0.16% | 5.12% | 0.32% | 5.60% |
-| convective | 0.25% | 7.36% | 0.51% | 8.12% |
-| stratiform | 0.00% | 1.37% | 0.02% | 1.38% |
+Every before/after is given with and without Gabella (review of #74).
+
+| Gabella | pixels | > 70 dBZ | Gabella | static mask | total |
+|---|---|---:|---:|---:|---:|
+| with | all | 0.16% | 5.12% | 0.32% | 5.60% |
+| with | convective | 0.25% | 7.36% | 0.51% | 8.12% |
+| with | stratiform | 0.00% | 1.37% | 0.02% | 1.38% |
+| without | all | 0.16% | — | 0.57% | 0.73% |
+| without | convective | 0.25% | — | 0.89% | 1.14% |
+| without | stratiform | 0.00% | — | 0.03% | 0.03% |
 
 The table gives the share of the 2023 rain, as an index, that each step
-removes.
+removes. Without Gabella the static mask removes more (0.57% against 0.32%),
+because with Gabella part of the same pixels is already gone.
 
-- **Belgium.** 8.4% of the annual sum is removed: from 3,765 to 3,447 mm,
-  as an index.
-- **Which echoes are kept:**
+| | with Gabella | without Gabella |
+|---|---:|---:|
+| Belgium, annual sum removed | 8.4% | 0.5% |
+| pixels with ≥ 55 dBZ in > 1% of the times (166 before) | 2 | 30 |
+| pixels with ≥ 55 dBZ in > 0.1% of the times (1,984 before) | 577 | 1,730 |
+| spoke edges (1,839 before) | 1,629 | 1,836 |
+
+- **Belgium, with Gabella.** 8.4% of the annual sum is removed: from 3,765
+  to 3,447 mm, as an index.
+- **Which echoes are kept (with Gabella):**
   - above 70 dBZ, 0.2% are kept; the 101 left are exactly 70.0 dBZ;
   - 55–70 dBZ: 72% kept;
   - 40–55 dBZ: 94% kept;
@@ -964,8 +1000,12 @@ removes.
   - the radial lines.
 - **Spoke residual** (39 radars, as in *Catalogue: isolated echoes, blocked
   sectors, spokes*): 1,839 edges before, 1,632 after Gabella and 1,629 after
-  the static mask. Gabella removes 11% of the edges; the static mask almost
-  none.
+  the static mask; 1,836 without Gabella. Gabella removes 11% of the edges;
+  the static mask almost none.
+- **Without Gabella** the first version removes only the values above 70 dBZ
+  and the masked fixed points. Most of the North Sea lines stay: 30 pixels
+  remain with ≥ 55 dBZ in more than 1% of the times. The choice between the
+  two is made later, against a reference (RADCLIM or VMM, H5; *Choice*).
 - **Gabella and real rain.** Over the year, Gabella removes 7.36% of the
   convective rain. That is more than the 4.9% on the five summer days of
   *Gabella filter at 2 km and 1 km*, because here the share also includes the
