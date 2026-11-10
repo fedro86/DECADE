@@ -712,18 +712,33 @@ next year. So the mask must be stable from year to year.
 - **What the stable pixels are:** the centres of the discs and the fixed
   points. The outer rings of the discs change from year to year, as rain
   would.
-- **The discs sit on the radars** (review of #74). The radar positions come
-  from the 2025 single-radar files (`scripts/fetch_pvol_positions.py`); the UK
-  radars have no files in the bucket.
-  - Of the 44 discs flagged in at least 6 years (at least 20 pixels each), 26
-    have their centre within 10 km of a radar.
-  - Of the pixels flagged in at least 10 years, 75% lie within 20 km of a
-    radar, against 3.7% of the crop.
-  - So the discs are the excess of a maximum composite near each radar, where
-    the beam is low, and not clutter. With 5% tails, `histo_cut` on the
+- **The discs sit on the radars** (review of #74). The positions of all the
+  radars of `how/nodes` come from the OPERA radar database (`data.md`,
+  *Radars in the ODYSSEY composites*). The database adds the UK radars and the
+  stopped ones that are missing from the 2025 single-radar files.
+  - Of the 44 discs flagged in at least 6 years (at least 20 pixels each), 29
+    have their centre within 10 km of a radar and 31 within 20 km.
+  - Of the pixels flagged in at least 10 years, 80% lie within 20 km of a
+    radar, against 5.5% of the crop.
+  - So these discs are the excess of a maximum composite near each radar,
+    where the beam is low, and not clutter. With 5% tails, `histo_cut` on the
     annual sum removes rain there.
   - For the first version, the static mask is to be based on the frequency
     maps (Wagner et al. 2012) and on the points above 70 dBZ instead.
+- **Discs with no radar** (white squares). 13 discs have their centre more
+  than 20 km from any radar of the database, so they come from another
+  source: a wind farm, a transmitter or strong clutter. These are the ones
+  the static mask must catch.
+  - **At sea or on the coast:**
+    - north of the Wadden islands, at 54.0 N, 6.5 E and 54.0 N, 6.9 E;
+    - off North Holland, at 53.1 N, 4.3 E;
+    - off the Belgian coast, at 51.6 N, 2.9 E.
+  - **Inland, Netherlands:** 53.0 N, 5.4 E and 52.3 N, 4.9 E.
+  - **Ardennes and Luxembourg:** 50.2 N, 5.7 E; 50.0 N, 6.1 E; 49.8 N, 5.1 E.
+  - **Alps:** 47.5 N, 10.3 E; 46.7 N, 7.8 E; 46.8 N, 10.4 E; 46.4 N, 9.3 E.
+  - What each one is was not checked. Wind-farm positions (*Choice*,
+    later improvements) would check the ones at sea and in the Netherlands
+    and the Ardennes. The Alpine ones are consistent with mountain clutter.
 - **Bug in wradlib 2.9.8.** `histo_cut` fails when its input has NaN: it
   starts from `max()`, not `nanmax()`. In 2013 there are 337 crop pixels that
   are never covered. The notebook therefore passes only the pixels with at
@@ -738,7 +753,8 @@ used:
 - the radars listed in `how/nodes` (`data.md`, *Radars in the ODYSSEY
   composites*).
 
-For each radar with a 2025 position, two areas are compared month by month:
+For each radar of the OPERA database whose areas lie in the crop (45 radars),
+two areas are compared month by month:
 - *near*: a disc of 20 km around the radar;
 - *far*: a ring at 60–100 km.
 
@@ -752,28 +768,31 @@ are used.
 
 - **Two steps shared by almost all radars.**
   - **December 2015.** The median near-radar echo frequency over the radars
-    falls from 0.44 in November 2015 to 0.22 in December 2015. The far one
+    falls from 0.42 in November 2015 to 0.22 in December 2015. The far one
     does not fall. Over 12 months before and after, the ratio falls by a
-    factor of 0.55. The step matches the change of OPERA's central
+    factor of 0.57. The step matches the change of OPERA's central
     processing in December 2015: satellite filter and beam-blockage
     correction (Saltikoff et al. 2019).
-  - **August 2018.** The near frequency falls again, from 0.28 in July to
+  - **August 2018.** The near frequency falls again, from 0.23 in July to
     0.10 in August 2018. The OPERA note on CIRRUS and ODYSSEY (Radojevic
     2024, Table 3) says that ODYSSEY uses a 2018 satellite filter. A new
     version of the filter in 2018 is consistent with this step, but it is
     not proven: the note gives the year, not the month.
-  - For 23 of the 29 radars, the largest change of the ratio (median of 6
-    months after against 6 months before) is a fall that starts in November
-    2015–April 2016 or in July 2018–August 2019.
-  - For four of the other six, it is a rise: in 2014 for `frabb`, `frtro`
+  - For each radar, the largest change of the ratio was taken (median of 6
+    months after against 6 months before). For 25 of the 42 radars with
+    enough months, it is a fall that starts in November 2015–April 2016 or in
+    July 2018–August 2019.
+  - All 21 falls stronger than a factor of 0.6 start in these two windows.
+  - The UK and Swiss radars, at the edges of the crop, change less (falls
+    of 0.76–0.87) or rise. Rises are also found in 2014 for `frabb`, `frtro`
     and `frtre`, and in January 2015 for `defld`.
 - **Summer echoes near the radars until 2015.** In 2014 and 2015 the
-  near-radar echo frequency reaches about 0.5 in summer, against 0.14–0.18
+  near-radar echo frequency reaches about 0.45 in summer, against 0.14–0.16
   far away. This summer excess almost disappears after December 2015. It
   fits echoes without rain near the radars that the satellite filter
   removes. It is the example of this artefact type for the catalogue.
 - **Since 2019 the near/far ratio is about 1.2 all year** (median of the
-  radars, summer and winter). In 2014–2018 it was 1.5–3.7, with 3.1–3.7 in
+  radars, summer and winter). In 2014–2018 it was 1.4–3.1, with 2.8–3.1 in
   the summers of 2014, 2015 and 2018.
   So the near-radar discs of the yearly catalogue belong mostly to
   2013–2018.
@@ -793,7 +812,7 @@ one example per artefact type.
   11 pixels (echoes above 0 dBZ, 8-connected). This is the size below which
   Gabella's shape test removes a region, as in section 1 of the notebook.
 - **How common.** 1.2% of the echo pixel-times are isolated. The share is
-  2.0% within 20 km of a radar, 1.6% at 20–60 km, and 0.9% beyond 120 km.
+  1.9% within 20 km of a radar, 1.5% at 20–60 km, and 0.9% beyond 60 km.
 - **Where they lie:**
   - in rings and radial lines around the radars;
   - along the edge of a radar's coverage (an arc in the north-west);
@@ -806,9 +825,12 @@ one example per artefact type.
 - **Data.** The echo frequency (≥ 7 dBZ) of the last period, September 2018 –
   June 2024. For each radar, the median of each 1° azimuth is taken in a ring
   at 20–80 km.
-- **No blocked sector.** No profile has a wedge with fewer echoes. The few
-  azimuths below 90% of the radar's median are broad, smooth dips, not
-  wedges with sharp edges.
+- **No blocked sector.** The profiles of the 39 radars on in that period
+  show no wedge with fewer echoes and sharp edges. The azimuths below 90%
+  of a radar's median form broad, smooth dips. The deepest is that of
+  `chwei` (Weissfluhgipfel), whose frequency falls to about half over the
+  eastern and southern azimuths, towards the inner Alps. This fits shielding
+  by the terrain, but it cannot be told apart from the climate there.
 - **Why.** The maximum composite fills a blocked sector of one radar with
   the echoes of its neighbours. OPERA has also corrected beam blockage
   centrally since late 2015 (Saltikoff et al. 2019). `histo_cut` found no
@@ -816,11 +838,11 @@ one example per artefact type.
   here.
 - **Spoke residual.** On the 2023 annual sum, I counted the edges where two
   adjacent azimuths differ by more than 10% (Wagner's spoke-edge rule) over
-  the 28 radars:
-  - 1,219 before cleaning;
-  - 1,061 after Gabella;
-  - 993 after the first version (−19%).
-  - One year of rain also makes such edges, so 993 is an upper bound of the
+  the 39 radars of the crop listed on at least half of the days of 2023:
+  - 1,839 before cleaning;
+  - 1,632 after Gabella;
+  - 1,517 after the first version (−18%).
+  - One year of rain also makes such edges, so 1,517 is an upper bound of the
     spokes left (interference included).
 
 ### Static mask: rules in the literature
@@ -847,9 +869,9 @@ monthly catalogue:
 
 | period | months | pixels above 60% per month, median (max) | of them within 20 km of a radar | pixels above 90%, median |
 |---|---:|---:|---:|---:|
-| 4/2013–11/2015 | 32 | 2,040 (5,120) | 61% | 465 |
-| 12/2015–7/2018 | 32 | 16 (3,327) | 69% | 0 |
-| 8/2018–6/2024 | 72 | 0 (1,374) | 74% | 0 |
+| 4/2013–11/2015 | 32 | 2,040 (5,120) | 69% | 465 |
+| 12/2015–7/2018 | 32 | 16 (3,327) | 70% | 0 |
+| 8/2018–6/2024 | 72 | 0 (1,374) | 89% | 0 |
 
 The rule finds almost nothing after 2015. So on our composite most of what
 it targets was already removed upstream, and what it flags before December

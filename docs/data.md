@@ -210,59 +210,88 @@ listed on a day when it is in at least half of that day's composites. Days
 with no composite are left out, so a gap in the archive is not counted as an
 absence.
 
-The table covers two groups of radars:
-- the radars of the 2025 single-radar files that lie within 100 km of the
-  Belgian crop;
-- five radars of Germany and the Netherlands that stopped during the period.
+The radar positions come from the OPERA radar database of EUMETNET
+(*Inventory of sources and licences*). Both of its files are used:
+- `OPERA_RADARS_DB.json`, the active radars;
+- `OPERA_RADARS_ARH_DB.json`, the archived ones.
 
-The UK radars are missing: the bucket has no UK single-radar files, so their
-position is unknown.
+They were downloaded on 10/11/2026 into `data/opera_radars/`.
+- **Matching.** Each code of `how/nodes` is matched with the `odimcode` of
+  the database. When a code is in both files (several German radars renewed
+  on almost the same site), the active row is used.
+- **Coverage.** All the ODYSSEY codes of the domain are in the database
+  except `deflg`. The other missing codes are Spanish and old Estonian,
+  Croatian and Icelandic radars.
+- **Check.** For the 47 radars that also have a 2025 single-radar file, the
+  database position matches the one in the file within 0.0003°.
+
+The table lists the 56 radars of `how/nodes` that lie within 100 km of the
+Belgian crop, plus `deflg`, which has no position. The column *in the crop*
+says whether the radar itself is inside the crop.
 
 The archive becomes regular only in April 2013 (*Known problems*). So a
 "first day" before that date is the start of the readable archive, not
 necessarily the radar's.
 
-| node | first day | last day | days listed / days in its period | longest absence, days |
-|---|---|---|---:|---|
-| `behel` | 21/3/2018 | 5/7/2024 | 1,980 / 2,293 | 258 (17/6/2020 to 1/3/2021) |
-| `bejab` | 27/11/2014 | 5/7/2024 | 3,153 / 3,503 | 98 (6/11/2015 to 11/2/2016) |
-| `bewid` | 26/3/2013 | 5/7/2024 | 3,730 / 4,114 | 124 (8/4/2022 to 9/8/2022) |
-| `deasb` | 24/4/2018 | 5/7/2024 | 2,024 / 2,259 | 170 (18/6/2018 to 4/12/2018) |
-| `deboo` | 28/1/2014 | 5/7/2024 | 3,722 / 3,806 | 29 (27/7/2016 to 24/8/2016) |
-| `deeis` | 4/9/2012 | 5/7/2024 | 3,719 / 4,177 | 229 (6/6/2013 to 20/1/2014) |
-| `deemd` | 4/9/2012 | 27/2/2018 | 1,565 / 1,863 | 180 (22/7/2015 to 17/1/2016) |
-| `deess` | 27/3/2013 | 5/7/2024 | 4,032 / 4,113 | 29 (27/7/2016 to 24/8/2016) |
-| `defbg` | 5/2/2019 | 5/7/2024 | 1,945 / 1,972 | 5 (8/7/2023 to 12/7/2023) |
-| `defld` | 4/9/2012 | 5/7/2024 | 3,727 / 4,177 | 197 (29/4/2014 to 11/11/2014) |
-| `deflg` | 22/1/2013 | 4/2/2019 | 2,140 / 2,199 | 29 (27/7/2016 to 24/8/2016) |
-| `deham` | 4/9/2012 | 23/1/2014 | 366 / 367 | 1 (14/3/2013 to 14/3/2013) |
-| `dehan` | 4/9/2012 | 22/4/2015 | 360 / 821 | 317 (26/3/2013 to 5/2/2014) |
-| `dehnr` | 23/4/2015 | 5/7/2024 | 3,282 / 3,356 | 29 (27/7/2016 to 24/8/2016) |
-| `deisn` | 28/1/2014 | 5/7/2024 | 3,707 / 3,806 | 30 (27/7/2016 to 25/8/2016) |
-| `demem` | 12/6/2013 | 5/7/2024 | 3,879 / 4,036 | 68 (14/1/2023 to 22/3/2023) |
-| `deneu` | 26/3/2013 | 5/7/2024 | 4,031 / 4,114 | 29 (27/7/2016 to 24/8/2016) |
-| `denhb` | 4/9/2012 | 5/7/2024 | 3,750 / 4,177 | 252 (28/8/2013 to 6/5/2014) |
-| `deoft` | 4/9/2012 | 5/7/2024 | 4,099 / 4,177 | 30 (26/7/2016 to 24/8/2016) |
-| `deros` | 4/9/2012 | 5/7/2024 | 3,686 / 4,177 | 390 (13/6/2013 to 7/7/2014) |
-| `detur` | 4/9/2012 | 5/7/2024 | 3,717 / 4,177 | 397 (5/4/2013 to 6/5/2014) |
-| `deumd` | 4/9/2012 | 3/7/2024 | 3,738 / 4,175 | 300 (14/2/2013 to 16/12/2013) |
-| `frabb` | 4/9/2012 | 5/7/2024 | 4,125 / 4,177 | 11 (17/3/2019 to 27/3/2019) |
-| `frave` | 4/9/2012 | 5/7/2024 | 4,106 / 4,177 | 25 (2/5/2020 to 26/5/2020) |
-| `frbla` | 4/9/2012 | 5/7/2024 | 4,120 / 4,177 | 11 (9/8/2013 to 19/8/2013) |
-| `frbou` | 4/9/2012 | 5/7/2024 | 4,015 / 4,177 | 94 (23/4/2018 to 25/7/2018) |
-| `frcae` | 4/9/2012 | 5/7/2024 | 3,969 / 4,177 | 122 (25/2/2014 to 26/6/2014) |
-| `frche` | 4/9/2012 | 5/7/2024 | 4,034 / 4,177 | 17 (16/1/2022 to 1/2/2022) |
-| `frgre` | 4/9/2012 | 5/7/2024 | 4,139 / 4,177 | 7 (17/4/2019 to 23/4/2019) |
-| `frlep` | 4/9/2012 | 5/7/2024 | 3,889 / 4,177 | 190 (10/9/2013 to 18/3/2014) |
-| `frmtc` | 4/9/2012 | 5/7/2024 | 3,942 / 4,177 | 73 (9/10/2019 to 20/12/2019) |
-| `frnan` | 4/9/2012 | 5/7/2024 | 3,981 / 4,177 | 141 (16/5/2017 to 3/10/2017) |
-| `frniz` | 4/9/2012 | 5/7/2024 | 3,999 / 4,177 | 155 (15/9/2015 to 16/2/2016) |
-| `frtra` | 4/9/2012 | 5/7/2024 | 4,163 / 4,177 | 3 (7/3/2020 to 9/3/2020) |
-| `frtre` | 4/9/2012 | 5/7/2024 | 3,949 / 4,177 | 211 (8/3/2016 to 4/10/2016) |
-| `frtro` | 4/9/2012 | 5/7/2024 | 3,939 / 4,177 | 161 (18/5/2015 to 25/10/2015) |
-| `nldbl` | 4/9/2012 | 19/1/2017 | 1,397 / 1,459 | 50 (29/1/2013 to 19/3/2013) |
-| `nldhl` | 4/9/2012 | 5/7/2024 | 3,853 / 4,177 | 113 (10/10/2016 to 30/1/2017) |
-| `nlhrw` | 19/5/2017 | 5/7/2024 | 2,567 / 2,599 | 8 (21/6/2017 to 28/6/2017) |
+| node | site | position | in the crop | first day | last day | days listed / days in its period | longest absence, days |
+|---|---|---|---|---|---|---:|---|
+| `behel` | Helchteren | 51.07 N, 5.41 E | yes | 21/3/2018 | 5/7/2024 | 1,980 / 2,293 | 258 (17/6/2020 to 1/3/2021) |
+| `bejab` | Jabbeke | 51.19 N, 3.06 E | yes | 27/11/2014 | 5/7/2024 | 3,153 / 3,503 | 98 (6/11/2015 to 11/2/2016) |
+| `bewid` | Wideumont | 49.91 N, 5.50 E | yes | 26/3/2013 | 5/7/2024 | 3,730 / 4,114 | 124 (8/4/2022 to 9/8/2022) |
+| `chalb` | Albis | 47.28 N, 8.51 E | yes | 7/3/2017 | 5/7/2024 | 2,623 / 2,672 | 8 (21/6/2017 to 28/6/2017) |
+| `chdol` | La Dole | 46.43 N, 6.10 E | yes | 29/6/2017 | 5/7/2024 | 2,532 / 2,558 | 7 (25/10/2017 to 31/10/2017) |
+| `chlem` | Monte Lema | 46.04 N, 8.83 E | no | 16/9/2014 | 5/7/2024 | 3,528 / 3,575 | 11 (12/12/2020 to 22/12/2020) |
+| `chppm` | Plaine Morte | 46.37 N, 7.49 E | yes | 27/2/2018 | 5/7/2024 | 2,255 / 2,315 | 23 (22/1/2019 to 13/2/2019) |
+| `chwei` | Weissfluhgipfel | 46.84 N, 9.79 E | yes | 27/6/2018 | 5/7/2024 | 2,186 / 2,195 | 5 (18/7/2022 to 22/7/2022) |
+| `deasb` | Isle of Borkum | 53.56 N, 6.75 E | yes | 24/4/2018 | 5/7/2024 | 2,024 / 2,259 | 170 (18/6/2018 to 4/12/2018) |
+| `deboo` | Boostedt | 54.00 N, 10.05 E | yes | 28/1/2014 | 5/7/2024 | 3,722 / 3,806 | 29 (27/7/2016 to 24/8/2016) |
+| `deeis` | Eisberg | 49.54 N, 12.40 E | no | 4/9/2012 | 5/7/2024 | 3,719 / 4,177 | 229 (6/6/2013 to 20/1/2014) |
+| `deemd` | Emden | 53.34 N, 7.02 E | yes | 4/9/2012 | 27/2/2018 | 1,565 / 1,863 | 180 (22/7/2015 to 17/1/2016) |
+| `deess` | Essen | 51.41 N, 6.97 E | yes | 27/3/2013 | 5/7/2024 | 4,032 / 4,113 | 29 (27/7/2016 to 24/8/2016) |
+| `defbg` | Feldberg | 47.87 N, 8.00 E | yes | 5/2/2019 | 5/7/2024 | 1,945 / 1,972 | 5 (8/7/2023 to 12/7/2023) |
+| `defld` | Flechtdorf | 51.31 N, 8.80 E | yes | 4/9/2012 | 5/7/2024 | 3,727 / 4,177 | 197 (29/4/2014 to 11/11/2014) |
+| `deflg` | not in the database | — | — | 22/1/2013 | 4/2/2019 | 2,140 / 2,199 | 29 (27/7/2016 to 24/8/2016) |
+| `deham` | Hamburg | 53.62 N, 10.00 E | yes | 4/9/2012 | 23/1/2014 | 366 / 367 | 1 (14/3/2013 to 14/3/2013) |
+| `dehan` | Hannover | 52.46 N, 9.70 E | yes | 4/9/2012 | 22/4/2015 | 360 / 821 | 317 (26/3/2013 to 5/2/2014) |
+| `dehnr` | Hannover | 52.46 N, 9.69 E | yes | 23/4/2015 | 5/7/2024 | 3,282 / 3,356 | 29 (27/7/2016 to 24/8/2016) |
+| `deisn` | Isen/München | 48.17 N, 12.10 E | no | 28/1/2014 | 5/7/2024 | 3,707 / 3,806 | 30 (27/7/2016 to 25/8/2016) |
+| `demem` | Memmingen | 48.04 N, 10.22 E | yes | 12/6/2013 | 5/7/2024 | 3,879 / 4,036 | 68 (14/1/2023 to 22/3/2023) |
+| `demuc` | München | 48.34 N, 11.61 E | no | 26/3/2013 | 21/1/2014 | 293 / 302 | 4 (20/6/2013 to 23/6/2013) |
+| `deneu` | Neuhaus | 50.50 N, 11.14 E | yes | 26/3/2013 | 5/7/2024 | 4,031 / 4,114 | 29 (27/7/2016 to 24/8/2016) |
+| `denhb` | Neuheilenbach | 50.11 N, 6.55 E | yes | 4/9/2012 | 5/7/2024 | 3,750 / 4,177 | 252 (28/8/2013 to 6/5/2014) |
+| `deoft` | Offenthal | 49.98 N, 8.71 E | yes | 4/9/2012 | 5/7/2024 | 4,099 / 4,177 | 30 (26/7/2016 to 24/8/2016) |
+| `deros` | Rostock | 54.18 N, 12.06 E | no | 4/9/2012 | 5/7/2024 | 3,686 / 4,177 | 390 (13/6/2013 to 7/7/2014) |
+| `detur` | Tuerkheim | 48.59 N, 9.78 E | yes | 4/9/2012 | 5/7/2024 | 3,717 / 4,177 | 397 (5/4/2013 to 6/5/2014) |
+| `deumd` | Ummendorf | 52.16 N, 11.18 E | yes | 4/9/2012 | 3/7/2024 | 3,738 / 4,175 | 300 (14/2/2013 to 16/12/2013) |
+| `dkrom` | Römö | 55.17 N, 8.55 E | no | 26/3/2013 | 5/7/2024 | 4,007 / 4,114 | 20 (24/8/2017 to 12/9/2017) |
+| `dkste` | Stevns | 55.33 N, 12.45 E | no | 26/3/2013 | 5/7/2024 | 4,009 / 4,114 | 21 (6/10/2017 to 26/10/2017) |
+| `frabb` | Abbeville | 50.14 N, 1.83 E | yes | 4/9/2012 | 5/7/2024 | 4,125 / 4,177 | 11 (17/3/2019 to 27/3/2019) |
+| `frave` | Avesnes | 50.13 N, 3.81 E | yes | 4/9/2012 | 5/7/2024 | 4,106 / 4,177 | 25 (2/5/2020 to 26/5/2020) |
+| `frbla` | Blaisy-Haut | 47.36 N, 4.78 E | yes | 4/9/2012 | 5/7/2024 | 4,120 / 4,177 | 11 (9/8/2013 to 19/8/2013) |
+| `frbou` | Bourges | 47.06 N, 2.36 E | yes | 4/9/2012 | 5/7/2024 | 4,015 / 4,177 | 94 (23/4/2018 to 25/7/2018) |
+| `frcae` | Falaise | 48.93 N, 0.15 W | yes | 4/9/2012 | 5/7/2024 | 3,969 / 4,177 | 122 (25/2/2014 to 26/6/2014) |
+| `frche` | Cherves | 46.70 N, 0.07 E | yes | 4/9/2012 | 5/7/2024 | 4,034 / 4,177 | 17 (16/1/2022 to 1/2/2022) |
+| `frgre` | Grèzes | 45.10 N, 1.37 E | no | 4/9/2012 | 5/7/2024 | 4,139 / 4,177 | 7 (17/4/2019 to 23/4/2019) |
+| `frlep` | Sembadel | 45.29 N, 3.71 E | no | 4/9/2012 | 5/7/2024 | 3,889 / 4,177 | 190 (10/9/2013 to 18/3/2014) |
+| `frmtc` | Montancy | 47.37 N, 7.02 E | yes | 4/9/2012 | 5/7/2024 | 3,942 / 4,177 | 73 (9/10/2019 to 20/12/2019) |
+| `frnan` | Nancy | 48.72 N, 6.58 E | yes | 4/9/2012 | 5/7/2024 | 3,981 / 4,177 | 141 (16/5/2017 to 3/10/2017) |
+| `frniz` | Saint Nizier | 46.07 N, 4.45 E | no | 4/9/2012 | 5/7/2024 | 3,999 / 4,177 | 155 (15/9/2015 to 16/2/2016) |
+| `frtra` | Trappes | 48.77 N, 2.01 E | yes | 4/9/2012 | 5/7/2024 | 4,163 / 4,177 | 3 (7/3/2020 to 9/3/2020) |
+| `frtre` | Treillères | 47.34 N, 1.66 W | yes | 4/9/2012 | 5/7/2024 | 3,949 / 4,177 | 211 (8/3/2016 to 4/10/2016) |
+| `frtro` | Arcis-sur-Aube | 48.46 N, 4.31 E | yes | 4/9/2012 | 5/7/2024 | 3,939 / 4,177 | 161 (18/5/2015 to 25/10/2015) |
+| `nldbl` | De Bilt | 52.10 N, 5.18 E | yes | 4/9/2012 | 19/1/2017 | 1,397 / 1,459 | 50 (29/1/2013 to 19/3/2013) |
+| `nldhl` | Den Helder | 52.95 N, 4.79 E | yes | 4/9/2012 | 5/7/2024 | 3,853 / 4,177 | 113 (10/10/2016 to 30/1/2017) |
+| `nlhrw` | Herwijnen | 51.84 N, 5.14 E | yes | 19/5/2017 | 5/7/2024 | 2,567 / 2,599 | 8 (21/6/2017 to 28/6/2017) |
+| `ukche` | Chenies | 51.69 N, 0.53 W | yes | 4/9/2012 | 5/7/2024 | 3,956 / 4,177 | 57 (22/1/2013 to 19/3/2013) |
+| `ukcle` | Clee Hill | 52.40 N, 2.60 W | yes | 4/9/2012 | 3/7/2024 | 3,775 / 4,175 | 222 (23/2/2015 to 2/10/2015) |
+| `ukcob` | Cobbacombe Cross | 50.96 N, 3.45 W | no | 4/9/2012 | 5/7/2024 | 3,782 / 4,177 | 134 (25/12/2013 to 7/5/2014) |
+| `ukcyg` | Crug y Gorllwyn | 51.98 N, 4.44 W | no | 4/9/2012 | 5/7/2024 | 3,805 / 4,177 | 295 (14/9/2015 to 4/7/2016) |
+| `ukdea` | Dean Hill | 51.03 N, 1.65 W | yes | 4/9/2012 | 5/7/2024 | 3,799 / 4,177 | 219 (17/10/2016 to 23/5/2017) |
+| `ukham` | Hameldon Hill | 53.75 N, 2.29 W | yes | 4/9/2012 | 5/7/2024 | 3,688 / 4,177 | 318 (3/3/2014 to 14/1/2015) |
+| `ukhmy` | High Moorsley | 54.80 N, 1.47 W | no | 4/9/2012 | 5/7/2024 | 3,874 / 4,177 | 170 (23/5/2016 to 8/11/2016) |
+| `uking` | Ingham | 53.33 N, 0.56 W | yes | 4/9/2012 | 5/7/2024 | 3,793 / 4,177 | 255 (1/9/2014 to 13/5/2015) |
+| `ukjer` | Jersey | 49.18 N, 2.22 W | yes | 4/9/2012 | 5/7/2024 | 3,984 / 4,177 | 99 (1/6/2016 to 7/9/2016) |
+| `ukthu` | Thurnham | 51.29 N, 0.60 E | yes | 26/3/2013 | 5/7/2024 | 3,703 / 4,114 | 202 (28/5/2013 to 15/12/2013) |
 
 - **Radars that start or stop within the period:**
   - `bejab` starts on 27/11/2014 and `behel` on 21/3/2018.
@@ -277,7 +306,7 @@ necessarily the radar's.
   - `bewid` 124 days (2022);
   - `deros` 390 days (2013–2014).
 - **A common absence.** From 28/7 to 23/8/2016 no German radar is listed in
-  any composite. The radars of the table are missing from 26–27/7 to
+  any composite. The German radars of the table are missing from 26–27/7 to
   24–25/8/2016.
 
 ## Known problems
@@ -344,6 +373,7 @@ own documentation.
 | source | content | period | licence | notes |
 |---|---|---|---|---|
 | OPERA ORD bucket (EUMETNET) | ODYSSEY, CIRRUS, NIMBUS composites | 2012 → now | CC BY 4.0 | see *OPERA public archive* above |
+| [OPERA radar database](https://eumetnet.eu/wp-content/themes/aeron-child/observations-programme/current-activities/opera/database/OPERA_Database) (EUMETNET) | ODIM code, site, coordinates, band, start and end year of each OPERA radar; active radars (`OPERA_RADARS_DB.json`) and archived ones (`OPERA_RADARS_ARH_DB.json`), also as CSV and XLSX | the database as published (downloaded 10/11/2026) | not stated | positions of the radars of `how/nodes` (*Radars in the ODYSSEY composites*); local copy in `data/opera_radars/` |
 | MeteoGate ORD API (`https://api.meteogate.eu/eu-eumetnet-weather-radar`, OGC EDR) | the same OPERA products | **last 24 hours only** | CC BY 4.0 (OPERA data) | also with a key (which raises the limit to 2000 requests/hour). Useful for recent CIRRUS metadata, not for history. Credentials in `.env` |
 | [EURADCLIM 3.0](https://dataplatform.knmi.nl/dataset/rad-opera-24h-rainfall-accumulation-euradclim-3-0) (KNMI Data Platform) | OPERA rain accumulations adjusted with rain gauges, 1 h and 24 h, 2 km | 2013–2023 | CC BY 4.0 | versions 1.0 and 2.0 are deprecated; a yearly rerun is expected |
 | [ECA&D](https://www.ecad.eu) (KNMI) | daily station series, including precipitation | from the 19th century, varies by station | **non-commercial research and education only**; results must be published in the open literature | about 85% of the series can be downloaded; E-OBS (gridded) has the [same terms](https://ewds.climate.copernicus.eu/licences/licence-to-use-E-OBS-products) |
