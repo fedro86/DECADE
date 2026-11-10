@@ -609,7 +609,11 @@ What the collection shows:
   convention (Fluck et al. 2021), separate from the 55 dBZ cap (*Conventions*),
   after counting the pixels between 55 and 70 dBZ and above 70 on ODYSSEY and
   CIRRUS.
-- **`QIND`:** not now; decided after the catalogue.
+- **`QIND`: left out** (review of #74, 10/11/2026). The crops are not redone
+  with the quality bands. CIRRUS has no equivalent: its `quality1` is almost
+  binary and its meaning is unclear (`data.md`, *Quality fields*). So a mask
+  built on `QIND` could not run in the operational chain, and it would make
+  ODYSSEY less like CIRRUS, not more.
 - **Sea clutter and anomalous propagation:** a seventh type, only for what the
   single-radar processing upstream leaves; the speckle filter on the
   composite, the satellite mask only for ODYSSEY before late 2015.
@@ -630,8 +634,8 @@ and the numbers are in the sections below.
 | echoes without rain | none in the first version; OPERA's satellite filter upstream since December 2015 | summer excess near the radars until 2015 (section 7) | satellite mask for 2013–2015 as a later option |
 | sea clutter, anomalous propagation | Gabella and the static mask | lines over the North Sea (sections 4, 9) | most lines go with Gabella; without it, 30 pixels stay in 2023 |
 
-`QIND` is still open: *Choice* deferred it until the catalogue was done, and
-the catalogue is now done.
+`QIND` is left out (*Choice*): CIRRUS has no equivalent field, so it could not
+run in the operational chain.
 
 ### Impossible values: discard threshold in the literature
 

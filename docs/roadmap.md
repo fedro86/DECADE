@@ -273,6 +273,9 @@ size.
 - **Gabella stays in the first version** (review of #74, 10/11/2026), but every
   before/after is reported with and without it. The final choice is made
   against a reference (RADCLIM or VMM, H5).
+- **No quality fields (`QIND`) in the cleaning** (review of #74, 10/11/2026):
+  CIRRUS has no equivalent, so a `QIND` mask could not run in the
+  operational chain. The crops stay without quality bands.
 
 ## Open decisions
 
@@ -287,8 +290,6 @@ size.
   repeated three times; the choice changes what B vs C measures.
 - **Time shift in production (H6):** with shift 0 the labels keep the offset
   between the products' time windows ([data.md](data.md), *Time windows*).
-- **Quality fields (H2):** redo the Belgian crops with quality bands, at the
-  same network cost?
 - **Basins and thresholds (V5).**
 - **Rain archive at 2 km / 15 min** (ODYSSEY `RATE`/`ACRR` plus NIMBUS, outlier
   cleaning, homogenisation of the two periods anchored to ECA&D gauges). Planned
