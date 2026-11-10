@@ -94,6 +94,7 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `opera_ds/sampling.py` | window selection on ODYSSEY: `SamplerConfig`, `sample_block`, `block_times` |
 | `opera_ds/windows.py` | ML windows: `Window`, `make_window`, `WindowStore`, `dbz_to_rr` |
 | `opera_ds/plots.py` | validation figures |
+| `opera_ds/clean.py` | first-version cleaning (H2): `clean_composite` (> 70 dBZ, Gabella as a switch, static mask), `StaticCounts` (per-pixel counts on past composites and the mask rule), `StaticMask` (fill tables, radar of each masked pixel, switched with `how/nodes`), `static_fill` (EURADCLIM fill), `odyssey_period` |
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
 | `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py` | download and masks; single-radar files for the radar positions of a day |
 
