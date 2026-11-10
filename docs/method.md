@@ -758,9 +758,10 @@ are used.
     processing in December 2015: satellite filter and beam-blockage
     correction (Saltikoff et al. 2019).
   - **August 2018.** The near frequency falls again, from 0.28 in July to
-    0.10 in August 2018. None of our sources explains this step. Saltikoff
-    et al. (2019) describe a gradual change of the input data from March
-    2017.
+    0.10 in August 2018. The OPERA note on CIRRUS and ODYSSEY (Radojevic
+    2024, Table 3) says that ODYSSEY uses a 2018 satellite filter. A new
+    version of the filter in 2018 is consistent with this step, but it is
+    not proven: the note gives the year, not the month.
   - For 23 of the 29 radars, the largest change of the ratio (median of 6
     months after against 6 months before) is a fall that starts in November
     2015–April 2016 or in July 2018–August 2019.
