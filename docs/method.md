@@ -671,6 +671,91 @@ before the 2012–2024 crops. One pass per product and year gives, per pixel:
 - **What the frequency of ≥ 55 dBZ shows:** the lines over the North Sea in
   both products, and radial lines in the south-east of ODYSSEY.
 
+### Catalogue: ODYSSEY 2013–2024
+
+`notebooks/05-mr-artefacts.ipynb`, sections 4–5, on the 2012–2024 crops.
+2012 is left out because only 576 of its frames can be read (`data.md`,
+*Known problems*).
+
+Under the real-time rule, the `histo_cut` mask of one year is applied to the
+next year. So the mask must be stable from year to year.
+
+![histo_cut across years](figures/h2-artefacts/histo-cut-years-odyssey2013-2024.png)
+
+- **How much is flagged.** With 5% tails, `histo_cut` flags 6,042–12,172
+  pixels a year as static clutter. It never flags shading.
+- **The mask is not stable:**
+  - 631 pixels are flagged in all 12 years, and 1,949 in 10 or more;
+  - 15,748 pixels are flagged in only 1 to 3 years;
+  - of each year's mask, 59–83% was already flagged the year before.
+- **What the stable pixels are:** the centres of the discs and the fixed
+  points. The outer rings of the discs change from year to year, as rain
+  would.
+- **What the discs are.** The annual sums show regularly spaced bright discs,
+  each with radial structure. This is consistent with radar sites, but the
+  positions were not checked. The sum falls with distance from each radar.
+  So, with 5% tails, `histo_cut` mixes clutter with this decrease. Wagner et
+  al. (2012) correct the decrease separately, as beam height.
+- **Bug in wradlib 2.9.8.** `histo_cut` fails when its input has NaN: it
+  starts from `max()`, not `nanmax()`. In 2013 there are 337 crop pixels that
+  are never covered. The notebook therefore passes only the pixels with at
+  least one valid time.
+
+### First version on ODYSSEY 2023 (prototype)
+
+`notebooks/05-mr-artefacts.ipynb`, section 6. This is an exploration of the
+*Priority* above, before the code in `opera_ds`. Each 15 min composite of
+2023 goes through three steps, in this order:
+
+1. **Impossible values:** echoes above 70 dBZ are set to no rain.
+2. **Gabella:** the cells it flags are set to no rain, as in EURADCLIM.
+3. **Static mask:** `histo_cut` of 2022, as the real-time rule requires.
+   - The rain of a masked cell is replaced by the inverse-distance mean of its
+     4 nearest unmasked cells, but only when that mean is lower.
+   - EURADCLIM does this on hourly sums. Here it is done on each composite.
+
+Settings:
+- **Rain:** Marshall–Palmer, capped at 55 dBZ, from 7 dBZ (Imhoff et al.
+  2020).
+- **Classes:** Steiner on the original field at 2 km.
+- **Belgium:** cells at least half inside the Natural Earth mask.
+
+![First version, ODYSSEY 2023](figures/h2-artefacts/first-version-odyssey2023.png)
+
+| pixels | > 70 dBZ | Gabella | static mask | total |
+|---|---:|---:|---:|---:|
+| all | 0.16% | 5.12% | 3.87% | 9.15% |
+| convective | 0.25% | 7.36% | 5.25% | 12.86% |
+| stratiform | 0.00% | 1.37% | 1.56% | 2.93% |
+
+The table gives the share of the 2023 rain, as an index, that each step
+removes.
+
+- **Belgium.** 12.0% of the annual sum is removed: from 3,765 to 3,312 mm,
+  as an index.
+- **Which echoes are kept:**
+  - above 70 dBZ, 0.2% are kept; the 83 left are exactly 70.0 dBZ;
+  - 55–70 dBZ: 63% kept;
+  - 40–55 dBZ: 85% kept;
+  - 20–40 dBZ: 94% kept;
+  - 0–20 dBZ: 93% kept.
+- **Strong echoes that repeat** (≥ 55 dBZ):
+  - pixels with them in more than 0.1% of the times: from 1,984 to 209;
+  - pixels with them in more than 1% of the times: from 166 to 0;
+  - the North Sea lines and the fixed points go;
+  - part of the radial lines in the south-east stays. This is the
+    interference residual that *Choice* asks to measure.
+- **The mask of 2022 overshoots on 2023.** After cleaning, the annual sum
+  shows dark rings and holes around several radars. The ≥ 55 dBZ frequency
+  shows blank patches. In these places, real strong echoes of 2023 were
+  lowered together with the clutter. This follows from the instability of the
+  mask across years.
+- **Gabella and real rain.** Over the year, Gabella removes 7.36% of the
+  convective rain. That is more than the 4.9% on the five summer days of
+  *Gabella filter at 2 km and 1 km*, because here the share also includes the
+  fixed points that Steiner classes as convective. This number is to be read
+  together with the trimming of real cells noted there.
+
 ### Sea clutter and anomalous propagation: literature
 
 Leads given in the review of #74. The "DMI paper at ERAD" is Bøvith et al.
