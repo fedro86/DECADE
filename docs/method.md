@@ -575,6 +575,10 @@ What the collection shows:
     radar's calibration. This is the relative calibration adjustment
     (Silberstein et al. 2008): the 95th percentile of the reflectivity of
     clutter targets is tracked day by day, and it stays within about ±1 dB.
+  - Wolff et al. (2015) turn it into a general recipe. The clutter map has
+    the cells above 55 dBZ in at least 50% of the scans of one dry day, at
+    1–5 km from the radar. Their daily value varies by 0.13 dB (standard
+    deviation), and a change of 0.05° in elevation shows as about 0.5 dB.
   - Vaccarono et al. (2016) apply the same idea to two operational C-band
     radars and detect changes of about 2 dB.
   - Both work on single-radar data, not on a composite.
