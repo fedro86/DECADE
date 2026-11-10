@@ -58,14 +58,22 @@ and put them in this folder with the name of their summary.
 | 1995 - Steiner | convective / stratiform classification | [10.1175/1520-0450(1995)034<1978:CCOTDS>2.0.CO;2](https://doi.org/10.1175/1520-0450(1995)034%3C1978:CCOTDS%3E2.0.CO;2) | to download (paywall); summary from the full text (sections 1, 4–6) |
 | 2013 - Goudenhoofdt | convective / stratiform classification | [10.1175/JAMC-D-12-079.1](https://doi.org/10.1175/JAMC-D-12-079.1) | to download (paywall); summary from the full text (sections 1–3, 4c) |
 | 2016 - Foresti | nowcasting verification in the Benelux | [10.5194/hess-20-505-2016](https://doi.org/10.5194/hess-20-505-2016) | open ([PDF](https://hess.copernicus.org/articles/20/505/2016/hess-20-505-2016.pdf)); summary from the full text |
+| 2017 - Goudenhoofdt | test events: 1 h radar extremes in Belgium, separation of events | [10.5194/hess-21-5385-2017](https://doi.org/10.5194/hess-21-5385-2017) | open, CC BY 3.0; summary from the sections read |
 | 2018 - Poelman | convective / stratiform classification | [EUMETNET report](https://www.eumetnet.eu/wp-content/uploads/2019/01/Daily_convective_precipitation_Maps_OPERA.pdf) | open; summary from the full text |
+| 2019 - Ayzel | test events: rainymotion benchmark, the 11 events used by RainNet | [10.5194/gmd-12-1387-2019](https://doi.org/10.5194/gmd-12-1387-2019) | open, CC BY 4.0; summary from the sections read |
 | 2019 - Saltikoff | OPERA composites: compositing rule, central quality control | [10.3390/atmos10060320](https://doi.org/10.3390/atmos10060320) | open, CC BY 4.0 (blocked for automatic download); summary from the full text |
+| 2020 - Ayzel | test events: RainNet, events from the held-out years | [10.5194/gmd-13-2631-2020](https://doi.org/10.5194/gmd-13-2631-2020) | open, CC BY 4.0; summary from the sections read |
+| 2020 - Franch | test events: extreme-event days from an official list (FBK, the IRENE group) | [10.3390/atmos11030267](https://doi.org/10.3390/atmos11030267) | open, CC BY 4.0 (copy from the University of Trento repository); summary from the sections read |
 | 2020 - Imhoff | nowcasting verification in the Benelux | [10.1029/2019WR026723](https://doi.org/10.1029/2019WR026723) | to download (blocked for automatic download; open access, CC BY); summary from the full text (sections 1, 2.2, 3.2) |
+| 2021 - Lengfeld | test events: CatRaRE, objective catalogue of heavy-rain events (DWD) | [10.1127/metz/2021/1088](https://doi.org/10.1127/metz/2021/1088) | free download, licence not stated; summary from the full text and the DWD note on event selection |
+| 2021 - Ravuri | test events: DGMR test year and importance sampling | [10.1038/s41586-021-03854-z](https://doi.org/10.1038/s41586-021-03854-z) | open, CC BY 4.0; summary from the main text, Methods and Supplementary Information |
 | 2022 - Dixon | convective / stratiform classification; bright band; test on the 2D OPERA mosaic | [10.1175/JTECH-D-22-0018.1](https://doi.org/10.1175/JTECH-D-22-0018.1) | open copy on [OSTI](https://www.osti.gov/pages/servlets/purl/1897074); summary from the full text (sections 1–3c, 3f, 4a, 5c, 6) |
 | 2023 - Perschke | convective / stratiform classification | [10.5194/egusphere-2023-1907](https://doi.org/10.5194/egusphere-2023-1907) | open, CC BY 4.0; summary from the full text |
 | 2023 - RMI | RADCLIM product: radars, gauges, compositing, time convention, grid | [user guide, version 2](https://opendata.meteo.be/cases/202107/radclim_userguide.pdf) | open; summary from the full text |
 | 2024 - EUMETNET | OPERA CIRRUS product: compositing rule, time window | [product sheet 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA_Max-Reflectivity_Product-Sheet_Ed-2.0.pdf) | open; summary from the full text |
 | 2024 - Radojevic | OPERA CIRRUS and ODYSSEY: time windows, configuration | [OPERA note, ed. 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA5_Report_Cirrus-vs-Odyssey_Ed-2.0.pdf) | open; summary from the full text |
+| 2026 - Camilletti | IRENE: the model of DECADE; test set and importance sampling | [arXiv 2609.17175](https://arxiv.org/abs/2609.17175) | open, CC BY-SA 4.0; summary from the sections read |
+| 2026 - RMI | test events: RMI warning thresholds for rain and thunderstorms | [meteo.be](https://www.meteo.be/nl/weer/waarschuwingen/uitleg) | free web page, no licence stated; read on 10/11/2026 |
 
 When a PDF marked "to download" is added, rewrite its summary from the full
 text and update its row.
