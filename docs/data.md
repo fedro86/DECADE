@@ -213,6 +213,20 @@ OPERA.
   1–5/7/2024: a gap of 3.5–5 dB at all quantiles, POD at 10 dBZ about 0.69. It
   is a difference between products, present even without interpolation.
 - **Incomplete CIRRUS days**, e.g. 192 frames out of 288 on 2/7/2024.
+- **ODYSSEY before April 2013 is sparse** (`DBZH_QIND`, crop download of
+  9/11/2026, `data/odyssey_bel/failed.txt`):
+  - 2012 has only 576 readable frames, 4–9/9/2012.
+  - From 10/9 to 22/11/2012, the 3,338 files in the bucket cannot be read:
+    `fetch_cog_crop.py` fails with "Unable to synchronously open object
+    (object 'what' doesn't exist)".
+  - December 2012 has no file.
+  - January 2013 has files only from 22/1 (900 frames), and March 2013 has
+    2,286 of 2,976.
+  - 32 more files fail with the same error on 17/5/2013, 16:00–23:45.
+  - In all, 3,370 files cannot be read. The 400,337 frames of the crops
+    (*Derived datasets*) do not include them.
+  - So yearly statistics start in 2013, and 2013 lacks most of January and
+    part of March.
 
 ## Derived datasets on the project machine
 
