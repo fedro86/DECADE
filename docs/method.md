@@ -614,6 +614,25 @@ What the collection shows:
   single-radar processing upstream leaves; the speckle filter on the
   composite, the satellite mask only for ODYSSEY before late 2015.
 
+### Summary: each artefact type, its method and its example
+
+The H2 ticket (#19) asks, for each type of artefact, for a method or a
+written reason to leave it. This table collects the answers. The details
+and the numbers are in the sections below.
+
+| artefact type | first version | example in the catalogue (notebook 05) | what is left, or why it is left |
+|---|---|---|---|
+| impossible values | > 70 dBZ set to no rain (Fluck et al. 2021) | values ≥ 100 dBZ at fixed points (sections 3, 4) | 0.2% of the values above 70 dBZ stay, all exactly 70.0 dBZ |
+| fixed clutter | static mask: ≥ 55 dBZ in ≥ 1% or > 70 dBZ in ≥ 0.1% of the times, per period and per radar, EURADCLIM fill | fixed points and discs (sections 4, 5) | discs with no radar, probably wind farms: later option |
+| interference spikes | Gabella (EURADCLIM) | radial lines in the south-east (sections 4, 8) | spoke edges −11% with Gabella; the rest stays (*Choice*: only reduced) |
+| blocked sectors | none | none with sharp edges (section 8) | the maximum composite fills them, and OPERA corrects blockage since late 2015 |
+| isolated echoes | Gabella (shape test) | 1.2% of the echo pixel-times of 2023 (section 8) | measured, not yet compared before and after |
+| echoes without rain | none in the first version; OPERA's satellite filter upstream since December 2015 | summer excess near the radars until 2015 (section 7) | satellite mask for 2013–2015 as a later option |
+| sea clutter, anomalous propagation | Gabella and the static mask | lines over the North Sea (sections 4, 9) | most lines go with Gabella; without it, 30 pixels stay in 2023 |
+
+`QIND` is still open: *Choice* deferred it until the catalogue was done, and
+the catalogue is now done.
+
 ### Impossible values: discard threshold in the literature
 
 Asked in the review of #74: an upper limit to discard reflectivity, separate
