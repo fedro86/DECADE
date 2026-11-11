@@ -1,0 +1,45 @@
+name: Plan page
+
+# Publishes site/ on GitHub Pages. Ticket status, owners, dates and dependencies are read from the
+# issues when the page is built (site/fetch_data.sh), so the page is rebuilt when issues change,
+# every six hours for pull requests, and when site/ changes on main.
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/pages.yml"]
+  issues:
+    types: [opened, edited, closed, reopened, deleted, labeled, unlabeled, milestoned, demilestoned]
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Read issues, pull requests and milestones
+        run: bash site/fetch_data.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
