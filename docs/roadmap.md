@@ -97,8 +97,12 @@ left allows it.
 - [x] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
   the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
 - [ ] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get pan-European
-  bridge data over the Belgian domain: ERA5-Land and CERRA-Land; EURADCLIM 3.0
-  ends in 2023 and its download is left to H4 (F, 3–22/11; decided 10/11/2026).
+  bridge data over the Belgian domain: ERA5-Land, and the CERRA-Land download
+  started newest year first; EURADCLIM 3.0 ends in 2023 and its download is
+  left to H4 (F, 3–22/11; decided 10/11/2026).
+- [ ] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
+  CERRA-Land download over the Belgian domain (F, 11/11–6/12; split from S7
+  on 11/11/2026).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
   environment on the CINECA modules (F, 18–29/11, if the call is won).
 - [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
@@ -277,6 +281,12 @@ size.
 - **No quality fields (`QIND`) in the cleaning** (review of #74, 10/11/2026):
   CIRRUS has no equivalent, so a `QIND` mask could not run in the
   operational chain. The crops stay without quality bands.
+
+- **CERRA-Land moves to its own ticket** (11/11/2026). It is read from the
+  ECMWF MARS archive, where all CDS users share one queue and each user runs
+  one request at a time ([data.md](data.md), *Inventory of sources and
+  licences*), so its end date cannot be planned. S7 closes with ERA5-Land, H3
+  starts with it, and the CERRA-Land variant of H3 waits for S8.
 
 ## Open decisions
 
