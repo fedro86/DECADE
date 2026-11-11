@@ -84,6 +84,7 @@ and put them in this folder with the name of their summary.
 | 2023 - RMI | RADCLIM product: radars, gauges, compositing, time convention, grid | [user guide, version 2](https://opendata.meteo.be/cases/202107/radclim_userguide.pdf) | open; summary from the full text |
 | 2024 - EUMETNET | OPERA CIRRUS product: compositing rule, time window | [product sheet 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA_Max-Reflectivity_Product-Sheet_Ed-2.0.pdf) | open; summary from the full text |
 | 2024 - Radojevic | OPERA CIRRUS and ODYSSEY: time windows, configuration | [OPERA note, ed. 2.0](https://eumetnet.eu/wp-content/uploads/2024/06/OPERA5_Report_Cirrus-vs-Odyssey_Ed-2.0.pdf) | open; summary from the full text |
+| 2026 - Camilletti | IRENE: training cubes, normalisation, model, afCRPS loss, verification | [10.48550/arXiv.2609.17175](https://doi.org/10.48550/arXiv.2609.17175) | open, CC BY-SA 4.0; summary from the full text |
 | 2026 - wradlib | clutter from satellite cloud type (`classify.filter_cloudtype`) | [wradlib documentation](https://docs.wradlib.org/en/latest/notebooks/classify/clutter/clutter_cloud.html) | open, CC BY-SA 4.0 (code MIT); summary from the notebook and the code |
 
 When a PDF marked "to download" is added, rewrite its summary from the full
