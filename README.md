@@ -8,7 +8,9 @@
 validates OPERA data, but the harmonised archive and the IRENE experiments are
 still being built. The plan, what is done and the decisions are in
 [docs/roadmap.md](docs/roadmap.md); the work is tracked as
-[issues](https://github.com/fedro86/DECADE/issues) grouped by gate:
+[issues](https://github.com/fedro86/DECADE/issues) grouped by gate. The
+[project plan page](https://fedro86.github.io/DECADE/) shows the same plan as a
+timeline, with the status of each ticket read from the issues.
 
 | gate | progress |
 |---|---|
@@ -62,6 +64,7 @@ notebooks/       exploration and figures, built on opera_ds
 tests/           synthetic end-to-end test, run by CI
 configs/         parameter files for the scripts
 docs/            project documentation (below)
+site/            the project plan page, published on GitHub Pages
 data/, results/  downloaded data and outputs, never in git
 ```
 
