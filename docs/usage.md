@@ -29,7 +29,8 @@ uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
 
 # pan-European bridge data from the Copernicus Climate Data Store, one file per
 # month over Belgium + 350 km (token COPERNICUS_CDS_API_KEY in .env; accept the
-# dataset licence on the CDS website first)
+# dataset licence on the CDS website first); a rerun skips the months on disk
+# and waits for a request already queued instead of sending it again
 uv run python scripts/fetch_cds.py --dataset era5-land --start 2012-01 --end 2026-10 --out data/era5land_bel
 uv run python scripts/fetch_cds.py --dataset cerra-land --start 2012-01 --end 2025-12 --out data/cerraland_bel
 
