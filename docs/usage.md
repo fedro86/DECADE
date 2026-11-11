@@ -213,6 +213,7 @@ measured in November 2026 for S0). "—" means not measured on that machine.
 | `fetch_ord_archive.py`, whole files of both products, 1–6/7/2024 | — | 3.1 GB in 5 min |
 | `fetch_cog_crop.py`, Belgium + 350 km, ODYSSEY | about 3 h for 12 years with 32 threads | 15 min and 3.0 GB for one year (2023) with 32 threads |
 | `fetch_cog_crop.py`, Belgium + 350 km, CIRRUS | — | 1.2 h and 25.5 GB (258 kB per frame) for one year (2025) with 32 threads |
+| `fetch_cds.py`, ERA5-Land, Belgium + 350 km | 6.6 h and 2.9 GB for 178 months with 4 requests at a time (queue on the CDS, not local work) | — |
 | synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions | 3.9 min |
 
 With the IRENE parameters `sample` selects about 56,000 windows in 5 days, so

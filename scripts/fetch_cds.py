@@ -107,7 +107,9 @@ def main() -> None:
     ap.add_argument("--end", required=True, help="last month, YYYY-MM")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--area", type=float, nargs=4, default=AREA, metavar=("N", "W", "S", "E"))
-    ap.add_argument("--workers", type=int, default=4, help="requests queued on the CDS at the same time")
+    # ECMWF asks for sequential requests and may suspend accounts that send them in parallel
+    # (https://forum.ecmwf.int/t/data-stores-service-protection-measures-affecting-data-downloads-and-account-access-cds-ads-ewds-ecds/15481)
+    ap.add_argument("--workers", type=int, default=1, help="requests queued on the CDS at the same time")
     a = ap.parse_args()
 
     import cdsapi

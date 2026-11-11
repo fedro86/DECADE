@@ -362,6 +362,12 @@ whole files, also with `extent` as long as the extent is inside the crop.
   (289 files, 67 MB).
 - `data/odyssey_acrr/`: whole ODYSSEY `ACRR_QIND` files downloaded by
   `opera_ds.ord.download` (one for now, 14/7/2021 21:00).
+- `data/era5land_bel/`: ERA5-Land hourly `tp`, 1/2012–10/2026, made with
+  `fetch_cds.py` over 55.0–45.6 N, 3.9 W–11.8 E (95 × 158 cells). 178 monthly
+  netCDF files, 2.9 GB (8–24 MB a month).
+- `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
+  with `fetch_cds.py` (window of 204 × 224 cells of the CERRA grid, about
+  4 MB a month); download in progress (23 months on 11/11/2026).
 
 ## Inventory of sources and licences
 
