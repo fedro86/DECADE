@@ -1305,6 +1305,47 @@ What the literature says about the two pan-European candidates:
   earlier part is not documented (S7, #77).
 - **Neither paper evaluates hourly precipitation or the diurnal cycle.**
 
+### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
+
+`notebooks/07-mr-level-correction.ipynb`: distributions of reflectivity over Belgium (Natural Earth mask) per
+month and hour of day, ODYSSEY at 2 km and CIRRUS degraded to 2 km by `zmean` (H1), with no cleaning other than
+the split at 70 dBZ (#20 starts with the cap only).
+
+**Overlap days.** On the 382 paired times of 1–5/7/2024 (ODYSSEY at NT, CIRRUS at NT+5, cells covered by
+both):
+
+| | share of pixels with echoes ≥ 10 dBZ | q10 | q25 | q50 | q75 | q90 | q99 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ODYSSEY, all echoes [dBZ] | 15.6% | −3.75 | 2.75 | 10.75 | 21.75 | 31.25 | 41.75 |
+| CIRRUS 2 km, all echoes [dBZ] | 22.6% | −2.75 | 4.75 | 14.75 | 25.25 | 33.75 | 46.75 |
+| CIRRUS − ODYSSEY, all echoes [dB] | | 1.0 | 2.0 | 4.0 | 3.5 | 2.5 | 5.0 |
+| CIRRUS − ODYSSEY, echoes ≥ 10 dBZ [dB] | | 0.5 | 1.5 | 1.0 | 1.0 | 1.5 | 5.5 |
+
+- Most of the gap is in **how often** ODYSSEY has an echo, not in how strong: among echoes of at least 10 dBZ
+  the shift is 0.5–1.5 dB up to the 90th percentile, close to the 1.30 dB median offset of the `zmean`
+  degradation over Belgium (*Degraded CIRRUS as a stand-in for ODYSSEY*). It is 5.5 dB only at the 99th
+  percentile.
+- `data.md`, *Known problems*, gives "3.5–5 dB at all quantiles" for the same days. On all echoes the shift
+  here is 1–5 dB, and on echoes of at least 10 dBZ it is smaller. The two numbers do not come from the same
+  selection of pixels; which one #20 should start from is open.
+
+**Calendar months.** ODYSSEY 8/2018–6/2024 (its last period, *Radars over time*) against CIRRUS 8/2024–11/2026
+on the ODYSSEY times, July 2024 left out:
+
+- Each month changes much more from year to year than the products differ on the overlap days. In June, the
+  ODYSSEY share of pixels with echoes ≥ 10 dBZ goes from 7.5% (2023) to 25% (2020), and its median echo from 7
+  to 15 dBZ.
+- The CIRRUS months fall inside the ODYSSEY spread, often at its low end; spring 2025 and July 2026 are dry.
+- July 2026 has echoes on 5% of the Belgian pixel-times, against 17–26% in the other summer months, while the
+  Belgian radars are listed in `how/nodes`. Not checked against gauges.
+
+![ODYSSEY and CIRRUS per month, 2018–2026](figures/h3-level/months-odyssey-cirrus.png)
+
+**Consequence for the plain seasonal quantile mapping.** With two years of CIRRUS, a mapping fitted month by
+month between the products would carry the weather of 2024–2026 into the ODYSSEY years instead of the product
+difference. A bridge is needed to separate the two (#20, *Goal*). The plain mapping stays as the reference that
+the bridges must beat on the overlap days.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
