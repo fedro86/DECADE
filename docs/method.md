@@ -1437,7 +1437,7 @@ pp. 13–15).
   is not: the weather is in both. The same months are therefore compared on
   both sides, and a wet ODYSSEY year (2021, 2023) is set against the wet 2024.
 
-**Test in the data (to run when the files are here).** ERA5-Land and VMM,
+**Test in the data.** ERA5-Land and VMM,
 monthly on the Belgian ERA5-Land cells, from 2023, as the ratio of the two
 sums; a break is looked for at 7/2024 and 9/2024, with the days of the ERA5
 events above left out. VMM pixels (500 m) take the ERA5-Land cell with the
@@ -1470,8 +1470,40 @@ at a date, in log10, beside the month-to-month spread before it.
 - **What a result means.** Real precipitation breaks in station networks are
   of the order of 10% (Venema et al. 2012, p. 108), about 0.04 in log10. A
   step smaller than the detectable one is not proof of homogeneity; it only
-  bounds the size of a break. The ERA5-Land / CERRA-Land
-comparison over 2012–2025 is in H3b (#82).
+  bounds the size of a break.
+
+The ERA5-Land / CERRA-Land comparison over 2012–2025 is in H3b (#82).
+
+**Result (11/11/2026): no break in the bridge at 7/2024 or 9/2024.**
+`notebooks/07-mr-level-correction.ipynb`, section 8. VMM on 466 Belgian
+ERA5-Land cells, 1/2023 → 8/2026 (44 months; 31,835 of 32,742 hours with all
+12 rasters), against final ERA5-Land on the same hours.
+
+![Monthly ratios of VMM to ERA5-Land, and of the radar index to both, over Belgium, 2023–2026](figures/h3-level/vmm-era5-monthly.png)
+
+| ratio (log10 step, `opera_ds.homog.step`) | 7/2024, 12 months | 7/2024, 18 months | 9/2024, 12 months |
+|---|---|---|---|
+| VMM / ERA5-Land | −0.009 (×0.98), t-test p 0.79, Mann–Whitney p 0.89 | +0.001 (×1.00), p 0.97 and 0.94 | −0.004 (×0.99), p 0.91 and 0.93 |
+| radar index / VMM | +0.096 (×1.25), p 0.015 and 0.035 | +0.082 (×1.21), p 0.005 and 0.012 | +0.055 (×1.13), p 0.19 and 0.19 |
+| radar index / ERA5-Land, same hours and cells | +0.095 (×1.25), p 0.005 and 0.005 | +0.091 (×1.23), p 0.001 and 0.001 | +0.055 (×1.13), p 0.13 and 0.08 |
+
+- **The two bridges agree across the switch.** VMM / ERA5-Land has no step at
+  7/2024 or 9/2024; its monthly spread is 0.06–0.08 in log10, so a break of
+  about 0.075 (about 19%) would have been found with 80% probability
+  (1.2 standard deviations with 12 months, 0.96 with 18; *Window* above). A change common to both is unlikely: they share no input
+  (ERA5 assimilates no European radar or gauge rain; *ERA5-Land* above). The
+  Jabbeke problem of 9/2024 does not show in the VMM monthly totals.
+- **ODYSSEY → CIRRUS against either bridge: about +21–25% in amounts.** The
+  radar step is the same against VMM and against ERA5-Land, and significant
+  with 12 and 18 months. It is much smaller than the factor of about 2 of the
+  overlap days, which were almost dry (*Climate around the switch*).
+- **CIRRUS drops again in 2026.** From 1/2026 the radar index falls against
+  both bridges while VMM / ERA5-Land does not: with 8 months each side the step
+  at 1/2026 is −0.223 (×0.60) against VMM and −0.159 (×0.69) against ERA5-Land,
+  and +0.063 (×1.16, p 0.34) for VMM / ERA5-Land. 1/2026 was read from the data,
+  not from metadata, so these p-values (below 0.03) are optimistic (WMO 2020,
+  section 2.3.1, p. 14); no radar is missing from CIRRUS in 2026 (*Radars in
+  the CIRRUS composites*, data.md). The cause is not known.
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
@@ -1630,11 +1662,11 @@ final ERA5-Land hours only (to 8/2026). 163 months, 2/2013 → 8/2026.
 - **Not explained by radars missing from CIRRUS.** The Belgian, Dutch and
   nearby French and German radars are in at least 77% of the CIRRUS hours of
   every month of 2026 ([data.md](data.md), *Radars in the CIRRUS
-  composites*). Whether the 2026 drop is in CIRRUS or in ERA5-Land is open:
-  the VMM comparison (*Homogeneity of the bridge*) can tell them apart.
+  composites*). Against VMM the drop is also there
+  and VMM / ERA5-Land is stable, so it is in CIRRUS (*Homogeneity of the
+  bridge*, result).
 - **Next.** Repeat on ODYSSEY cleaned as in H2, which #20 requires and which
-  removes the artefact months; then the VMM / ERA5-Land ratio at 7/2024 and
-  9/2024, and VMM / CIRRUS through 2026.
+  removes the artefact months.
 
 ## Training windows
 

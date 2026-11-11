@@ -402,7 +402,15 @@ whole files, also with `extent` as long as the extent is inside the crop.
   store attributes). 3.0 GB; lossless Zarr is no smaller than the netCDF files,
   and rounding to 0.01 mm would save about 40% (tested on 2013) but was not
   applied. On July 2013 the store gives the same window sums as the files
-  within 0.0003 mm.
+  within 0.0003 mm. On Marìca's workstation it comes from the zip shared by
+  Federico (11/11/2026, SHA-256 checked) and is extracted into `data/`.
+- `data/vmm/vmm/YYYY/MM/VMMYYYYmmddHHMM.hdf5`: the project's copy of the VMM
+  5 min intensity (VMM row of *Inventory of sources and licences*), downloaded
+  on 11/11/2026 as four zips, one per year, and extracted with their
+  `manifest_*.json` beside them. 1/1/2023 → 11/11/2026: 101,049 files in 2023
+  (96.1% of the 5 min steps), 104,328 in 2024 (99.0%), 103,126 in 2025
+  (98.1%), 81,923 in 2026; 66.9 GB. Read by `opera_ds.vmm.read_vmm`; same
+  layout, grid and nodata as the rasters of the VMM service.
 - `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
   with `fetch_cds.py` (window of 204 × 224 cells of the CERRA grid, about
   4 MB a month); download in progress, newest year first (23 months on
