@@ -30,7 +30,7 @@ motivation is in the [README](../README.md).
 
 ### Constraints
 
-- **Only pan-European sources in the method** (OPERA, EURADCLIM, ERA5-Land), so
+- **Only pan-European sources in the method** (OPERA, EURADCLIM, ERA5-Land, CERRA-Land), so
   that it scales to the whole OPERA domain. National products only as validation,
   unless the level correction decides otherwise (*Open decisions*, bridge).
 - **Only real-time inputs in the operational chain** (decided 9/11/2026, review
