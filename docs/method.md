@@ -1280,6 +1280,13 @@ to [0, 60] as in IRENE, NaN outside coverage, and `alpha` for every frame.
 Motion is estimated on a crop larger than the window (`context_km` on each
 side). Windows with missing ODYSSEY frames are discarded.
 
+## IRENE on the workstation (T0)
+
+Test training of the IRENE code (ConvGRU-Ensemble, FBK) on the RTX 4090 with
+fake data shaped like the training windows (24 × 256 × 256), before the stores
+exist. Work in progress (#34): installation, native Windows or WSL2,
+normalisation, loss and GPU memory per batch.
+
 ## Limitations
 
 - **Detail below 2 km is not created.** Recovering that variability would need
