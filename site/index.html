@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DECADE · Project plan</title>
+<meta name="description" content="Project plan of DECADE: harmonising the 2012–2024 OPERA radar archive to 1 km / 5 min and pre-training the IRENE nowcasting model on it. Ticket status is read from the GitHub issues.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (max 1180px) with the Gantt chart full width in a scrolling container;
+   owner colours are the same across the page (Federico blue, Marìca orange, both purple, Vito's review ochre). */
+:root {
+  --bg: #f3f6f8;
+  --surface: #ffffff;
+  --surface-2: #e9eef2;
+  --ink: #132029;
+  --muted: #566572;
+  --line: #d3dce3;
+  --line-soft: #e4eaee;
+  --accent: #0a7385;
+  --fed: #1f66ad;
+  --mar: #c4520f;
+  --both: #6a4cb0;
+  --rev: #a07400;
+  --on-bar: #ffffff;
+  --hatch: rgba(255,255,255,.32);
+  --holiday: rgba(19,32,41,.06);
+  --intensive: rgba(10,115,133,.07);
+  --today: #c0262d;
+  --ok: #2f7d4f;
+  --warn: #a35d00;
+  --f-display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --label-w: 290px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e151a; --surface: #152029; --surface-2: #1c2a35; --ink: #e5edf2; --muted: #98a8b4;
+    --line: #2b3a46; --line-soft: #22313c; --accent: #3fb8c9; --fed: #6aa9ec; --mar: #f0905a;
+    --both: #a88ce6; --rev: #e3b94d; --on-bar: #0e151a; --hatch: rgba(14,21,26,.30);
+    --holiday: rgba(229,237,242,.05); --intensive: rgba(63,184,201,.08); --today: #ff6b6b;
+    --ok: #5cc28a; --warn: #f0a94a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e151a; --surface: #152029; --surface-2: #1c2a35; --ink: #e5edf2; --muted: #98a8b4;
+  --line: #2b3a46; --line-soft: #22313c; --accent: #3fb8c9; --fed: #6aa9ec; --mar: #f0905a;
+  --both: #a88ce6; --rev: #e3b94d; --on-bar: #0e151a; --hatch: rgba(14,21,26,.30);
+  --holiday: rgba(229,237,242,.05); --intensive: rgba(63,184,201,.08); --today: #ff6b6b;
+  --ok: #5cc28a; --warn: #f0a94a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.55 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.col { max-width: 1180px; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; font-stretch: 85%; line-height: 1.02; }
+h2 { font-size: 1.55rem; font-weight: 750; font-stretch: 90%; }
+h3 { font-size: 1.12rem; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); }
+code { font-family: var(--f-mono); font-size: .86em; overflow-wrap: anywhere; }
+.eyebrow { font: 500 .74rem/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+section { margin-top: 48px; display: grid; gap: 16px; min-width: 0; }
+.section-head { display: grid; gap: 6px; }
+
+/* ---------- header ---------- */
+.top { display: grid; gap: 18px; }
+.top .lede { font-size: 1.05rem; color: var(--muted); max-width: 72ch; }
+.resline { font-family: var(--f-mono); font-size: .82rem; color: var(--accent); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.resline .arrow { color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.fact { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.fact .v { font: 700 1.35rem/1.15 var(--f-display); font-stretch: 90%; }
+.fact .k { font-size: .82rem; color: var(--muted); }
+@media (max-width: 820px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .facts { grid-template-columns: 1fr; } }
+
+.team { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.person { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); min-width: 0; }
+.person .dot { width: 14px; height: 14px; border-radius: 50%; grid-row: span 2; }
+.person b { font-weight: 600; }
+.person span { font-size: .85rem; color: var(--muted); }
+@media (max-width: 720px) { .team { grid-template-columns: 1fr; } }
+
+/* ---------- questions + configurations ---------- */
+.stack { display: grid; gap: 22px; }
+.stack .rq { max-width: 82ch; }
+.rq { display: grid; gap: 12px; counter-reset: rq; margin: 0; padding: 0; list-style: none; }
+.rq li { display: grid; grid-template-columns: 2.2rem 1fr; gap: 4px; }
+.rq li::before { counter-increment: rq; content: counter(rq); font: 800 1.6rem/1 var(--f-display); color: var(--accent); }
+.rq b { display: block; }
+.rq-when { display: block; margin-top: 4px; font-size: .84rem; color: var(--ink); border-left: 2px solid var(--line); padding-left: 8px; }
+.ft { vertical-align: middle; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line-soft); }
+th { font: 600 .74rem/1.2 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+.cfg { font: 800 1.15rem/1 var(--f-display); color: var(--accent); }
+
+/* ---------- gantt controls ---------- */
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button, .chip {
+  font: 500 .85rem/1 var(--f-body); color: var(--ink); background: transparent; border: 0; padding: 9px 12px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { border: 1px solid var(--line); border-radius: 999px; background: var(--surface); display: inline-flex; gap: 7px; align-items: center; padding: 7px 11px; }
+.chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.chip[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 26px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.i { background: var(--muted); }
+.sw.e { background: var(--muted); background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--hatch) 4px 7px); }
+.sw.ei { background: linear-gradient(90deg, var(--mar), var(--fed)); }
+.sw.d { background: transparent; border: 2px solid var(--muted); }
+.sw.w { background: var(--muted); opacity: .6; }
+.sw.c { background: transparent; border: 1.5px dashed var(--muted); }
+.sw.rv { width: 12px; height: 12px; border-radius: 50%; background: var(--rev); }
+.sw.msd { width: 11px; height: 11px; background: var(--ink); transform: rotate(45deg); border-radius: 1px; }
+.sw.hol { background: var(--holiday); border: 1px solid var(--line); }
+.sw.now { width: 2px; height: 14px; background: var(--today); border-radius: 0; }
+
+/* ---------- gantt ---------- */
+.gantt-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.gantt { position: relative; }
+.g-row { display: grid; grid-template-columns: var(--label-w) auto; min-height: 30px; }
+.g-row + .g-row { border-top: 1px solid var(--line-soft); }
+.g-label {
+  position: sticky; left: 0; z-index: 3; background: var(--surface);
+  padding: 6px 12px; display: flex; gap: 8px; align-items: center; min-width: 0;
+  border-right: 1px solid var(--line); font-size: .84rem;
+}
+.g-label .id { font: 500 .78rem/1 var(--f-mono); color: var(--muted); min-width: 2.4em; }
+.g-label .id.ok { color: var(--ok); }
+.g-label .id.wip { color: var(--warn); }
+.g-label .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-track { position: relative; }
+.g-head .g-label, .g-head .g-track { background: var(--surface-2); }
+.g-head { position: relative; z-index: 4; min-height: 46px; }
+.g-head .g-track { height: 46px; }
+.tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); padding: 4px 0 0 4px; font: 500 .7rem/1.15 var(--f-mono); color: var(--muted); white-space: nowrap; }
+.tick.major { font-weight: 600; color: var(--ink); }
+.tick small { display: block; font-weight: 400; color: var(--muted); }
+.g-wp .g-label { background: var(--surface-2); font: 700 .86rem/1.2 var(--f-display); font-stretch: 92%; letter-spacing: .01em; }
+.g-wp .g-track { background: var(--surface-2); }
+.g-wp { min-height: 28px; }
+.g-ms { min-height: 40px; }
+.g-ms .g-track { height: 40px; }
+
+.bar {
+  position: absolute; top: 5px; height: 20px; border-radius: 4px; display: flex; align-items: center;
+  padding: 0 6px; font: 600 .7rem/1 var(--f-mono); color: var(--on-bar); text-decoration: none; white-space: nowrap;
+  overflow: hidden; transition: transform .12s ease, box-shadow .12s ease; z-index: 2;
+}
+.bar:hover, .bar:focus-visible { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.bar.F { background-color: var(--fed); }
+.bar.M { background-color: var(--mar); }
+.bar.FM { background-color: var(--both); }
+.bar.t-E { background-image: repeating-linear-gradient(135deg, transparent 0 5px, var(--hatch) 5px 9px); }
+.bar.t-EI { background-image: repeating-linear-gradient(135deg, transparent 0 5px, var(--hatch) 5px 9px), linear-gradient(90deg, var(--mar) 0 50%, var(--fed) 50%); background-size: 50% 100%, 100% 100%; background-repeat: no-repeat; }
+.bar.t-D { background: transparent !important; color: var(--ink); border: 2px solid var(--both); }
+.bar.t-D.F { border-color: var(--fed); }
+.bar.t-D.M { border-color: var(--mar); }
+.bar.t-W { opacity: .72; }
+.bar.cond { outline: 1.5px dashed var(--ink); outline-offset: 1px; opacity: .78; }
+.bar .rv { width: 8px; height: 8px; border-radius: 50%; background: var(--rev); margin-left: 5px; flex: none; box-shadow: 0 0 0 1.5px var(--surface); }
+.bar.narrow { padding: 0 3px; }
+
+.ms { position: absolute; top: 8px; transform: translateX(-50%); display: grid; justify-items: center; gap: 3px; z-index: 2; text-decoration: none; color: var(--ink); }
+.ms i { width: 12px; height: 12px; background: var(--ink); transform: rotate(45deg); border-radius: 1px; }
+.ms.gate i { background: var(--accent); }
+.ms b { font: 600 .68rem/1 var(--f-mono); white-space: nowrap; }
+
+.overlay { position: absolute; top: 0; bottom: 0; pointer-events: none; z-index: 1; }
+.ov-band { position: absolute; top: 0; bottom: 0; }
+.ov-band.hol { background: var(--holiday); background-image: repeating-linear-gradient(90deg, transparent 0 6px, var(--holiday) 6px 7px); }
+.ov-band.int { background: var(--intensive); }
+.ov-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--accent); opacity: .55; }
+.ov-line.now { border-left: 2px solid var(--today); opacity: 1; }
+.ov-tag { position: absolute; bottom: 4px; font: 500 .66rem/1 var(--f-mono); color: var(--muted); white-space: nowrap; padding-left: 4px; }
+
+.dim { opacity: .2; }
+.g-row.dim .g-label { opacity: .5; }
+
+@media (max-width: 640px) { :root { --label-w: 168px; } .g-label { font-size: .78rem; padding: 6px 8px; } }
+
+.hint { font-size: .82rem; color: var(--muted); }
+.notice { padding: 14px 16px; border: 1px solid var(--warn); border-left-width: 3px; border-radius: 8px; background: var(--surface); font-size: .9rem; max-width: 78ch; }
+.gantt .notice { margin: 14px; border-color: var(--line); border-left-color: var(--warn); }
+.loading { padding: 14px 16px; font-size: .88rem; color: var(--muted); }
+
+/* ---------- critical path ---------- */
+.path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.node { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 10px; display: grid; gap: 2px; min-width: 0; }
+a.node { text-decoration: none; color: inherit; }
+a.node:hover { border-color: var(--accent); }
+.node b { font: 600 .8rem/1.1 var(--f-mono); }
+.node span { font-size: .78rem; color: var(--muted); }
+.node.gate { border-color: var(--accent); background: var(--intensive); }
+.node.gate b { color: var(--accent); }
+.node.ok b::before { content: "✓ "; color: var(--ok); }
+.node.wip { border-color: var(--warn); }
+.node.wip b::before { content: "◐ "; color: var(--warn); }
+.path .arr { color: var(--muted); font-family: var(--f-mono); }
+.cp { display: grid; gap: 18px; }
+.cp-stage { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; align-items: center; }
+.cp-title { grid-column: 1 / -1; }
+.cp-branches { display: grid; gap: 10px; border-right: 2px solid var(--line); padding-right: 16px; min-width: 0; }
+.cp-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 4px 10px; align-items: center; }
+.cp-row.cond .node { border-style: dashed; }
+.cp-lab { font-weight: 600; font-size: .86rem; }
+.cp-slack { grid-column: 2; font: 500 .74rem/1.2 var(--f-mono); color: var(--warn); }
+.cp-slack:empty { display: none; }
+.cp-row.cond .cp-lab, .cp-row.cond .cp-slack { color: var(--muted); }
+.cp-join { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+@media (max-width: 760px) {
+  .cp-stage { grid-template-columns: 1fr; }
+  .cp-branches { border-right: 0; padding-right: 0; border-bottom: 2px solid var(--line); padding-bottom: 12px; }
+  .cp-row { grid-template-columns: 1fr; }
+  .cp-slack { grid-column: 1; }
+  .cp-join > .arr:first-child { transform: rotate(90deg); }
+}
+
+/* ---------- budget ---------- */
+.budget { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.budget svg { width: 100%; height: auto; display: block; }
+.budget-wrap { overflow-x: auto; }
+.budget-wrap svg { min-width: 640px; }
+svg text { font-family: var(--f-mono); }
+.sv-ink { fill: var(--ink); }
+.sv-muted { fill: var(--muted); }
+.sv-on { fill: var(--on-bar); }
+.sv-line { stroke: var(--line); }
+.sv-res { fill: var(--muted); opacity: .45; }
+.sv-p1 { fill: var(--fed); }
+.sv-p2 { fill: var(--both); }
+.sv-p3 { fill: var(--accent); }
+.sv-gpu { fill: var(--mar); }
+.sv-gpu2 { fill: var(--mar); opacity: .35; }
+.sv-gpu-red { fill: var(--ink); opacity: .45; }
+.sv-mark { stroke: var(--ink); stroke-dasharray: 3 3; }
+.cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.cards3 > div { border-top: 2px solid var(--line); padding-top: 10px; display: grid; gap: 4px; min-width: 0; }
+.cards3 .v { font: 700 1.2rem/1.1 var(--f-display); font-stretch: 90%; }
+.cards3 .k { font-size: .84rem; color: var(--muted); }
+@media (max-width: 760px) { .cards3 { grid-template-columns: 1fr; } }
+
+/* ---------- work packages ---------- */
+.wp { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; min-width: 0; }
+.wp-head { padding: 16px 18px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 16px; align-items: baseline; border-bottom: 1px solid var(--line); }
+.wp-head .code { font: 800 1.5rem/1 var(--f-display); font-stretch: 85%; color: var(--accent); }
+.wp-head .when { font: 500 .8rem/1.2 var(--f-mono); color: var(--muted); text-align: right; }
+.wp-head p { grid-column: 2 / -1; color: var(--muted); font-size: .92rem; }
+@media (max-width: 640px) { .wp-head { grid-template-columns: auto minmax(0, 1fr); } .wp-head .when { grid-column: 2; text-align: left; } .wp-head p { grid-column: 1 / -1; } }
+.wp-head p.intro { color: var(--ink); font-size: .93rem; line-height: 1.55; max-width: 78ch; }
+.wp-head p.goal b { color: var(--ink); font-weight: 600; }
+.tk { padding: 14px 18px 16px; border-top: 1px solid var(--line); display: grid; gap: 8px; scroll-margin-top: 16px; min-width: 0; }
+.tk:first-of-type { border-top: 0; }
+.tk:target { background: var(--intensive); }
+.tk-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.tk-id { font: 600 .9rem/1.2 var(--f-mono); color: var(--accent); }
+.tk-issue { margin-left: auto; font: .78rem/1.2 var(--f-mono); white-space: nowrap; }
+.tk-name { font-weight: 600; }
+.tk-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: .8rem; color: var(--muted); }
+.tk-meta .mono { font-size: .78rem; }
+.tk-md { font-size: .9rem; line-height: 1.55; max-width: 78ch; display: grid; gap: 6px; min-width: 0; }
+.tk-md p, .tk-md ul, .tk-md ol { margin: 0; }
+.tk-md ul, .tk-md ol { padding-left: 1.2em; display: grid; gap: 2px; }
+.tk-md .lab { font-weight: 600; }
+.tk-scope { color: var(--muted); font-size: .86rem; }
+.tk-scope li { color: var(--ink); }
+.tk-list { display: grid; }
+.who { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.who i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.tag { display: inline-block; font: 600 .68rem/1 var(--f-mono); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; text-decoration: none; }
+.tag.E { color: var(--mar); border-color: currentColor; }
+.tag.I { color: var(--fed); border-color: currentColor; }
+.tag.EI { color: var(--both); border-color: currentColor; }
+.tag.D { color: var(--ink); }
+.tag.cond { border-style: dashed; color: var(--warn); border-color: currentColor; white-space: normal; }
+.tag.ok { color: var(--ok); border-color: currentColor; }
+.tag.wip { color: var(--warn); border-color: currentColor; }
+.dep.ok::before { content: "✓"; color: var(--ok); margin-right: 2px; }
+.wp-list { display: grid; gap: 18px; }
+
+/* ---------- scenarios, data, risks ---------- */
+.scen td:first-child, .qty td:first-child { font-weight: 600; }
+.qty td { font-size: .86rem; vertical-align: top; }
+.qty td.mono { white-space: nowrap; font-size: .8rem; }
+.risks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.risk { border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; padding: 12px 14px; background: var(--surface); display: grid; gap: 6px; min-width: 0; }
+.risk b { font-weight: 600; }
+.risk p { font-size: .88rem; color: var(--muted); }
+@media (max-width: 760px) { .risks { grid-template-columns: 1fr; } }
+
+/* ---------- progress ---------- */
+.upd { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.upd > div { border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 10px; background: var(--surface); padding: 14px 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.upd > div.ok { border-top-color: var(--ok); }
+.upd > div.wip { border-top-color: var(--warn); }
+.upd > div.prob { border-top-color: var(--line); }
+.upd h3 { font-size: 1rem; }
+.upd ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; font-size: .88rem; }
+.upd li b { font-weight: 600; }
+.upd .mono { font-size: .8rem; }
+.upd .empty { font-size: .86rem; color: var(--muted); }
+.gates { display: grid; gap: 8px; font-size: .86rem; }
+.gate-row { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; }
+.gate-row b { font: 600 .82rem/1.2 var(--f-mono); color: var(--accent); }
+.gate-row .n { font: 500 .78rem/1.2 var(--f-mono); color: var(--muted); white-space: nowrap; }
+.meter { grid-column: 2 / -1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--ok); }
+@media (max-width: 760px) { .upd { grid-template-columns: 1fr; } }
+.sw.ck, .sw.ip { width: auto; height: auto; background: none; font-weight: 700; }
+.sw.ck { color: var(--ok); }
+.sw.ip { color: var(--warn); }
+footer { margin-top: 48px; font-size: .82rem; color: var(--muted); display: grid; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+</style>
+</head>
+<body>
+<div class="col">
+  <header class="top">
+    <div class="eyebrow" id="eyebrow">Project plan</div>
+    <h1>DECADE</h1>
+    <div class="resline"><span>ODYSSEY 2 km / 15 min · 2012–2024</span><span class="arrow">→</span><span>1 km / 5 min</span><span class="arrow">→</span><span>IRENE pre-training</span></div>
+    <p class="lede"><b>DE</b>ep-learning now<b>C</b>asting from <b>A</b> harmonised <b>DE</b>cade of radar data. The project develops a method to harmonise the legacy OPERA archive to the resolution of the current products, built only on pan-European data so that it can later be applied to the whole OPERA domain, and tests it on a Belgian pilot domain: it produces and releases the harmonised archive for Belgium + 350 km and measures how much pre-training on that decade improves IRENE nowcasts. ODYSSEY is the European OPERA radar reflectivity composite of 2012–2024, at 2 km and 15 min; CIRRUS is the current one, since July 2024, at 1 km and 5 min. Rain rate is derived from reflectivity with Marshall-Palmer. IRENE is the neural-network nowcasting model of FBK, currently trained on recent data only. HydroScan with the University of Basilicata.</p>
+    <div class="facts">
+      <div class="fact"><span class="v mono">3/11/2026</span><span class="k">start of the work and of the intensive phase: Marìca full time on the project</span></div>
+      <div class="fact"><span class="v mono">28/2/2027</span><span class="k">end of the intensive phase, extendable by 3 months if needed: dataset v1 produced and tested with IRENE</span></div>
+      <div class="fact"><span class="v mono">4500 node-hours</span><span class="k">Leonardo Booster, nodes with 4 GPUs, for 12 months from 16/11 if the call is won (deadline 1/11, result expected around 15/11)</span></div>
+      <div class="fact"><span class="v mono">1 × RTX 4090</span><span class="k">workstation: development machine in any case, production machine if the call is lost</span></div>
+    </div>
+    <div class="team">
+      <div class="person"><i class="dot" style="background:var(--fed)"></i><b>Federico Conticello</b><span>code and method · HydroScan</span></div>
+      <div class="person"><i class="dot" style="background:var(--mar)"></i><b>Marìca Rondinone</b><span>notebooks and exploration · PhD student, University of Basilicata (UniBAS), full time until the end of February, extendable by 3 months</span></div>
+      <div class="person"><i class="dot" style="background:var(--rev)"></i><b>Vito Telesca</b><span>professor, UniBAS · periodic reviews, one or more a week as available, and review at gates G1, G2, G3</span></div>
+    </div>
+  </header>
+
+  <section id="progress">
+    <div class="section-head">
+      <div class="eyebrow" id="progress-eyebrow">Progress</div>
+      <h2>Where the work stands</h2>
+      <p class="muted">Computed from the GitHub issues each time the page is built: closed tickets, tickets with an open pull request, and progress by gate. Decisions and their reasons are recorded in <a href="https://github.com/fedro86/DECADE/blob/main/docs/roadmap.md">docs/roadmap.md</a>.</p>
+    </div>
+    <div class="upd" id="upd"><div class="loading">Loading ticket data…</div></div>
+  </section>
+
+  <section>
+    <div class="section-head"><div class="eyebrow">Goal</div><h2>Research questions and configurations</h2></div>
+    <div class="stack">
+      <ol class="rq">
+        <li><div><b>Harmonisation</b><span class="muted">Can ODYSSEY be brought to 1 km / 5 min, with optical-flow interpolation plus a statistical correction, consistently with the current products, accurately enough for training and fast enough for the whole continent?</span><span class="rq-when">Answered by WP1: method frozen at gate G1, validation in January (H5), 2012–2024 consistency in spring (H4).</span></div></li>
+        <li><div><b>Value of the data</b><span class="muted">How much does pre-training on the legacy decade improve on the current products alone, and how much of the gain comes from harmonisation rather than from data volume?</span><span class="rq-when">First answer in February with phase 1 (V3); the curve over the years, if the budget allows, in September 2027 (V4).</span></div></li>
+        <li><div><b>Hydrological value</b><span class="muted">Does the best configuration improve rainfall accumulations and intense-rain thresholds on Belgian convective events, compared with STEPS and the LK nowcast of Flood4Cast?</span><span class="rq-when">First signal in February (V3), full answer in September 2027 (V4).</span></div></li>
+      </ol>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>config.</th><th>pre-training</th><th>fine-tuning</th><th>what it measures</th></tr></thead>
+          <tbody>
+            <tr><td class="cfg">A</td><td>none</td><td rowspan="3" class="ft">CIRRUS (current OPERA, from 7/2024), the same for all</td><td>the baseline: current data only, about two years</td></tr>
+            <tr><td class="cfg">B</td><td>raw ODYSSEY, only regridded, 15 min</td><td>the value of the legacy data as they are</td></tr>
+            <tr><td class="cfg">C</td><td>ODYSSEY interpolated to 1 km / 5 min and corrected</td><td>the value of harmonisation (against B) and of the archive (against A)</td></tr>
+            <tr><td colspan="4" class="muted" style="font-size:.84rem">The three configurations are trained with the same number of training steps, so that differences come from the data and not from compute. The learning curve (phases 2 and 3) repeats C pre-trained only on the last k years of ODYSSEY (k = 1, 2, 4, 8), to see how many years are really needed: A is the point k = 0, C the point k = 12.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Gantt</div>
+      <h2>Timing, owners and dependencies</h2>
+      <p class="muted">Click a bar to open the ticket. Dates after February are indicative.</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Period">
+        <button type="button" id="v-year" aria-pressed="true">Whole project</button>
+        <button type="button" id="v-int" aria-pressed="false">Intensive phase</button>
+      </div>
+      <div class="chips" role="group" aria-label="Highlight">
+        <button type="button" class="chip" data-who="all" aria-pressed="true">Everyone</button>
+        <button type="button" class="chip" data-who="F" aria-pressed="false"><i style="background:var(--fed)"></i>Federico</button>
+        <button type="button" class="chip" data-who="M" aria-pressed="false"><i style="background:var(--mar)"></i>Marìca</button>
+        <button type="button" class="chip" data-who="V" aria-pressed="false"><i style="background:var(--rev)"></i>Vito</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="sw i"></i>implementation</span>
+      <span><i class="sw e"></i>exploratory</span>
+      <span><i class="sw ei"></i>Marìca explores → Federico codes</span>
+      <span><i class="sw d"></i>decision</span>
+      <span><i class="sw w"></i>writing</span>
+      <span><i class="sw c"></i>conditional</span>
+      <span><i class="sw rv"></i>Vito review</span>
+      <span><i class="sw msd"></i>milestone / gate</span>
+      <span><i class="sw hol"></i>holidays</span>
+      <span><i class="sw now"></i>today</span>
+      <span><i class="sw ck">✓</i>ticket closed</span>
+      <span><i class="sw ip">◐</i>in progress (open pull request)</span>
+    </div>
+    <div class="gantt-scroll" id="gscroll"><div class="gantt" id="gantt"><div class="loading">Loading ticket data…</div></div></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Critical path</div>
+      <h2>What cannot slip before the end of February</h2>
+      <p class="muted">Several branches run in parallel and join in phase 1 and then in the analysis. Under each branch, its end and its slack before the next step are computed from the planned dates in the issues. With zero slack, a delay on any branch moves phase 1 past the holidays or the analysis past 28/2.</p>
+    </div>
+    <div class="cp">
+      <div class="cp-stage">
+        <div class="cp-title eyebrow">Up to G2<span data-gdate="G2"></span> · dataset v1 and model ready</div>
+        <div class="cp-branches">
+          <div class="cp-row"><span class="cp-lab">Data</span><div class="path"><a class="node" data-t="S0" href="#t-S0"><b>S0</b><span>reproduction</span></a><span class="arr">→</span><a class="node" data-t="H2" href="#t-H2"><b>H2</b><span>outliers</span></a><span class="arr">→</span><a class="node" data-t="H3" href="#t-H3"><b>H3</b><span>level correction</span></a><span class="arr">→</span><div class="node gate" data-g="G1"><b>G1</b><span>method and bridge</span></div><span class="arr">→</span><a class="node" data-t="D6" href="#t-D6"><b>D6</b><span>store C</span></a><span class="arr">→</span><div class="node gate" data-g="G2"><b>G2</b><span>dataset v1</span></div></div><span class="cp-slack" data-branch="S0 H2 H3 D6" data-next="T4"></span></div>
+          <div class="cp-row"><span class="cp-lab">Model</span><div class="path"><a class="node" data-t="T0" href="#t-T0"><b>T0</b><span>IRENE on the 4090</span></a><span class="arr">→</span><a class="node" data-t="T1" href="#t-T1"><b>T1</b><span>data loader</span></a><span class="arr">+</span><a class="node" data-t="T7" href="#t-T7"><b>T7</b><span>4 GPUs</span></a><span class="arr">→</span><a class="node" data-t="T3" href="#t-T3"><b>T3</b><span>small run, cost</span></a></div><span class="cp-slack" data-branch="T0 T1 T7 T3" data-next="T4"></span></div>
+          <div class="cp-row cond"><span class="cp-lab">Leonardo</span><div class="path"><a class="node" data-t="S1" href="#t-S1"><b>S1</b><span>environment</span></a><span class="arr">→</span><a class="node" data-t="S3" href="#t-S3"><b>S3</b><span>Slurm scripts</span></a><span class="arr">+</span><a class="node" data-t="S2" href="#t-S2"><b>S2</b><span>data on the cluster</span></a></div><span class="cp-slack" data-branch="S1 S3 S2" data-next="T4" data-prefix="only if the call is won · "></span></div>
+        </div>
+        <div class="cp-join"><span class="arr">→</span><a class="node" data-t="T4" href="#t-T4"><b>T4</b><span data-tstart="T4">phase 1</span></a></div>
+      </div>
+      <div class="cp-stage">
+        <div class="cp-title eyebrow">Up to G3<span data-gdate="G3"></span> · phase 1, analysis and report</div>
+        <div class="cp-branches">
+          <div class="cp-row"><span class="cp-lab">Training</span><div class="path"><a class="node" data-t="T4" href="#t-T4"><b>T4</b><span>A and C, then B</span></a></div><span class="cp-slack" data-branch="T4" data-next="V3"></span></div>
+          <div class="cp-row"><span class="cp-lab">Verification</span><div class="path"><a class="node" data-t="V1" href="#t-V1"><b>V1</b><span>STEPS and LK</span></a><span class="arr">+</span><a class="node" data-t="V2" href="#t-V2"><b>V2</b><span>scores</span></a></div><span class="cp-slack" data-branch="V1 V2" data-next="V3"></span></div>
+        </div>
+        <div class="cp-join"><span class="arr">→</span><a class="node" data-t="V3" href="#t-V3"><b>V3</b><span>A/B/C analysis</span></a><span class="arr">→</span><a class="node" data-t="R2" href="#t-R2"><b>R2</b><span>report</span></a><span class="arr">→</span><div class="node gate" data-g="G3"><b>G3</b><span>dataset tested</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Compute</div>
+      <h2>How the 4500 node-hours are spent</h2>
+      <p class="muted">A node-hour is one 4-GPU node used for one hour. Planning estimate: 10% in reserve, the rest split over the 24 distinct runs of the three phases. The true cost of a training run is measured in T3 and replaces these numbers.</p>
+    </div>
+    <div class="budget">
+      <div class="budget-wrap">
+        <svg viewBox="0 0 1060 190" role="img" aria-label="Split of the 4500 node-hours by phase, compared with the 4090 alone">
+          <!-- scale: x = 30 + node-hours × 1000/4500 -->
+          <g class="sv-line" stroke-width="1">
+            <line x1="30" y1="22" x2="30" y2="150"/><line x1="252.2" y1="22" x2="252.2" y2="150" stroke-dasharray="2 4"/>
+            <line x1="474.4" y1="22" x2="474.4" y2="150" stroke-dasharray="2 4"/><line x1="696.7" y1="22" x2="696.7" y2="150" stroke-dasharray="2 4"/>
+            <line x1="918.9" y1="22" x2="918.9" y2="150" stroke-dasharray="2 4"/><line x1="1030" y1="22" x2="1030" y2="150"/>
+          </g>
+          <text x="30" y="14" class="sv-muted" font-size="12">Leonardo, 12 months</text>
+          <rect x="30" y="22" width="100" height="40" class="sv-res"/>
+          <rect x="130" y="22" width="337.5" height="40" class="sv-p1"/>
+          <rect x="467.5" y="22" width="112.5" height="40" class="sv-p2"/>
+          <rect x="580" y="22" width="450" height="40" class="sv-p3"/>
+          <text x="80" y="47" text-anchor="middle" font-size="12" class="sv-ink">reserve</text>
+          <text x="298.8" y="40" text-anchor="middle" font-size="12.5" font-weight="600" class="sv-on">Phase 1 · 9 runs</text>
+          <text x="298.8" y="55" text-anchor="middle" font-size="11" class="sv-on">≈ 1520</text>
+          <text x="523.8" y="40" text-anchor="middle" font-size="12.5" font-weight="600" class="sv-on">Phase 2</text>
+          <text x="523.8" y="55" text-anchor="middle" font-size="11" class="sv-on">≈ 505</text>
+          <text x="805" y="40" text-anchor="middle" font-size="12.5" font-weight="600" class="sv-on">Phase 3 · 12 more runs</text>
+          <text x="805" y="55" text-anchor="middle" font-size="11" class="sv-on">≈ 2025</text>
+          <text x="80" y="78" text-anchor="middle" font-size="11" class="sv-muted">450</text>
+
+          <text x="30" y="98" class="sv-muted" font-size="12">4090 only, 12 months (equivalent, to be measured)</text>
+          <rect x="30" y="106" width="355.6" height="26" class="sv-gpu"/>
+          <rect x="385.6" y="106" width="88.9" height="26" class="sv-gpu2"/>
+          <rect x="30" y="106" width="44.4" height="26" class="sv-gpu-red"/>
+          <text x="84" y="124" font-size="11.5" font-weight="600" class="sv-on">≈ 1600–2000 node-hours eq.</text>
+          <text x="30" y="146" font-size="11" class="sv-ink">▲ phase 1 reduced if the call is lost ≈ 200</text>
+          <line x1="467.5" y1="16" x2="467.5" y2="140" class="sv-mark"/>
+          <text x="472" y="146" font-size="11" class="sv-ink">end of phase 1 (reserve + 9 runs)</text>
+
+          <text x="30" y="172" font-size="11" class="sv-muted">0</text>
+          <text x="252.2" y="172" font-size="11" text-anchor="middle" class="sv-muted">1000</text>
+          <text x="474.4" y="172" font-size="11" text-anchor="middle" class="sv-muted">2000</text>
+          <text x="696.7" y="172" font-size="11" text-anchor="middle" class="sv-muted">3000</text>
+          <text x="918.9" y="172" font-size="11" text-anchor="middle" class="sv-muted">4000</text>
+          <text x="1030" y="172" font-size="11" text-anchor="end" class="sv-muted">4500 node-hours</text>
+        </svg>
+      </div>
+      <div class="cards3">
+        <div><span class="v mono">≈ 169 node-hours</span><span class="k">per run (4050 / 24): about 7 days on one 4-GPU node, pre-training and fine-tuning included; that is, about 7 chained 24-hour jobs</span></div>
+        <div><span class="v mono">5 rounds</span><span class="k">of about a week for phase 1 with 2 nodes (A A, A C, C C, B B, B): starting on 21/12 it ends around 25/1. With 3 nodes, 3 rounds are enough</span></div>
+        <div><span class="v mono">≈ 0.5 nodes</span><span class="k">busy on average over 12 months: the limit is compute, not the calendar. Ask for concurrent jobs</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><div class="eyebrow">Scenarios</div><h2>With and without Leonardo</h2></div>
+    <div class="tbl-wrap">
+      <table class="scen">
+        <thead><tr><th></th><th>call won: Leonardo + 4090</th><th>call lost: 4090 and a new request for a smaller HPC</th></tr></thead>
+        <tbody>
+          <tr><td>Compute</td><td>4500 node-hours, 4-GPU nodes, several jobs in parallel</td><td>one GPU, about 1/5 of a node (to be measured); in parallel, a request for access to a smaller HPC machine (P1)</td></tr>
+          <tr><td>By 28/2</td><td>dataset v1; full phase 1 (A, B, C × 3 seeds)</td><td>dataset v1; phase 1 with 1 seed and runs reduced to about 40% of the planned size (≈ 200 equivalent node-hours in all)</td></tr>
+          <tr><td>By November 2027</td><td>phases 2 and 3 if the small run (T3) confirms the estimated costs; full verification</td><td>on the 4090 alone: phase 1 with 3 seeds or phase 2 with reduced runs, no full curve. The 4090 is needed almost only for training: development goes on the laptops or in the gaps between runs</td></tr>
+          <tr><td>If P1 succeeds</td><td>—</td><td>phases 2 and 3 move to the new allocation, within the hours obtained</td></tr>
+          <tr><td>Costs and proposal for Europe</td><td>costs measured on Leonardo (C1), a solid Regular Access proposal (C2)</td><td>costs measured on the 4090 or on the P1 machine, more uncertain. P1 opens the way anyway: a first HPC access obtained and used makes later requests more credible</td></tr>
+          <tr><td>Extra work</td><td>Leonardo setup (S1–S3)</td><td>request for a smaller HPC (P1), then the setup on that machine</td></tr>
+          <tr><td>The same in both</td><td colspan="2">harmonisation, dataset v1, data loader and small run developed on the 4090; verification with STEPS and LK</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Data and quantities</div>
+      <h2>Which data are used where, and when</h2>
+      <p class="muted">The OPERA products we harmonise are reflectivity. Rain rate is derived with Marshall-Palmer; accumulations are obtained by summing the rate over time. The external references measure different quantities, so each comparison is made in their quantity and at their resolution: rain rate at 5 min with VMM, accumulations with RADCLIM, EURADCLIM, ERA5-Land and CERRA-Land. Details, periods and licences are in <a href="https://github.com/fedro86/DECADE/blob/main/docs/data.md">docs/data.md</a>.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table class="qty">
+        <thead><tr><th>data</th><th>quantity</th><th>resolution</th><th>period</th><th>where it is used</th><th>phase</th></tr></thead>
+        <tbody>
+          <tr><td>ODYSSEY <span class="mono">DBZH</span></td><td>maximum reflectivity (dBZ); the quality index QIND is not used, because CIRRUS has no equivalent</td><td class="mono">2 km / 15 min</td><td>9/2012 – 7/2024</td><td>the source to harmonise: cleaning (H2), correction (H3), interpolation and archive (D1, D6), store B (D5)</td><td>harmonisation Nov–Dec, production Dec</td></tr>
+          <tr><td>CIRRUS <span class="mono">DBZH</span></td><td>reflectivity (dBZ)</td><td class="mono">1 km / 5 min</td><td>from 7/2024</td><td>target of the correction (H3); degraded to 2 km / 15 min to test the interpolation (H1); fine-tuning and test (D4); truth of the verification (V2)</td><td>all</td></tr>
+          <tr><td>Harmonised archive (ours)</td><td>reflectivity (dBZ) and alpha for each frame</td><td class="mono">1 km / 5 min</td><td>2012–2024, Belgium + 350 km</td><td>release (R1, C3); the windows of store C are cut from it (D6)</td><td>Dec, release Feb</td></tr>
+          <tr><td>Rain rate R (derived)</td><td>mm/h, with Marshall-Palmer Z = 200 R<sup>1.6</sup> and capped at 55 dBZ, as in NIMBUS and IRENE</td><td class="mono">as the source</td><td>—</td><td>training stores (D4, D5, D6), which IRENE maps back to dBZ between 0 and 60; volumes and quantiles (H1, H3); outputs of IRENE, STEPS and LK (V1); thresholds (V5)</td><td>all</td></tr>
+          <tr><td>Accumulations (derived)</td><td>sum of R over time: 1 h, 24 h, month</td><td class="mono">as the source</td><td>—</td><td>comparison with the bridges (H3); validation (H5); monthly break points (H4); basins (V2, V5)</td><td>Nov, Jan, Mar–Apr</td></tr>
+          <tr><td>VMM</td><td>rain intensity SRI (CAPPI at 1 km height), radar only, not adjusted with rain gauges; rasters from the KiWIS service without a token, under the licence of the VMM catalogue</td><td class="mono">1 km / 5 min</td><td>API: about the last six months only; the project's copy has scattered data in 2021–2022 and is almost continuous from 2023</td><td>national bridge, one of the variants (H3); validation of the rain-rate fields (H5, V2)</td><td>Nov, Jan</td></tr>
+          <tr><td>RADCLIM (RMI)</td><td>5 min rate, radars merged with rain gauges (kriging, QPE_EDK); a public version with mean-field bias correction is in the MLCast catalogue</td><td class="mono">1 km / 5 min</td><td>project's copy 1/1/2017 – 30/11/2023: no time in common with CIRRUS</td><td>validation of accumulations only (H5, V2); cannot serve as a bridge in H3</td><td>Jan</td></tr>
+          <tr><td>EURADCLIM 3.0</td><td>1 h and 24 h accumulations, OPERA adjusted with rain gauges</td><td class="mono">2 km</td><td>2013–2023; no later version published; the announced v4 (2013–2024) is built on OPERA and inherits the jump</td><td>reference for the break-point tests (H4)</td><td>Mar–Apr</td></tr>
+          <tr><td>ERA5-Land</td><td>hourly reanalysis precipitation</td><td class="mono">about 9 km / 1 h</td><td>1950 → now</td><td>pan-European bridge, for levels and seasonal frequencies only (H3); second reference in H4</td><td>Nov</td></tr>
+          <tr><td>CERRA-Land</td><td>daily precipitation 06–06 UTC, regional reanalysis with rain gauges</td><td class="mono">5.5 km / 24 h</td><td>9/1984 – 12/2025, extended twice a year</td><td>daily pan-European bridge (H3); second reference in H4</td><td>Nov</td></tr>
+          <tr><td>Météo-France (MLCast catalogue)</td><td>rain rate, mm/h; gauge adjustment not stated</td><td class="mono">1 km / 5 min</td><td>2020–2024</td><td>candidate national bridge or reference for H3: covers northern France and the change of July 2024</td><td>Nov</td></tr>
+          <tr><td>Met Office (MLCast catalogue)</td><td>rain rate, mm/h, C-band composite</td><td class="mono">1 km / 5 min</td><td>2005–2025</td><td>candidate national bridge or reference for H3: covers south-east England and the change of July 2024</td><td>Nov</td></tr>
+          <tr><td>OPERA radar database (EUMETNET)</td><td>codes and coordinates of active and archived radars</td><td class="mono">—</td><td>—</td><td>positions of the radars in <span class="mono">how/nodes</span>: each pixel of the static mask follows its radar (H2)</td><td>Nov</td></tr>
+          <tr><td>Basins (EU-Hydro or HydroSHEDS)</td><td>boundaries</td><td class="mono">—</td><td>—</td><td>mean accumulations over basins (V5, V2)</td><td>Dec–Jan</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint" style="margin-top:10px">Not used in DECADE: the OPERA rain products (ODYSSEY <span class="mono">RATE</span> and <span class="mono">ACRR</span>, NIMBUS), kept for the parked rain archive, and ECA&amp;D.</p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Work packages</div>
+      <h2>Details and tickets</h2>
+      <p class="muted">Tickets are written by Federico. Each ticket links to its GitHub issue, which holds the goal, what is in and out of scope, data and compute, how to verify and the acceptance criteria; the goal and scope shown here are read from it. Closed tickets show their closing date, tickets in progress a link to their pull request. The “Vito review” dot marks the tickets Vito reviews in depth; beyond these he reviews the work periodically. Exploratory: notebook, conclusion in <span class="mono">docs/method.md</span>, decision in the roadmap. Implementation: module in <span class="mono">opera_ds/</span>, script, tests. An E→I ticket closes only when the method is in the code.</p>
+    </div>
+    <div class="wp-list" id="wps"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><div class="eyebrow">Risks</div><h2>What can go wrong and how to respond</h2><p class="muted">In order of severity: the first five touch the critical path.</p></div>
+    <div class="risks">
+      <div class="risk"><b>G1 slips</b><p>Archive v1 comes out with interpolation and cleaning only; the level correction moves to v1.1 (H8). Phase 1 still starts before the holidays.</p></div>
+      <div class="risk"><b>Call lost</b><p>Phase 1 on the 4090 with 1 seed and runs reduced to about 40% of the planned size, with the same compute for A, B and C: with larger runs it would not finish by January. In parallel P1, the request for a smaller HPC allocation, which also helps later requests. P1 adds work in the weeks just before G1 and G2: if the chosen call closes before G2, G1 is allowed to slip and the correction moves to v1.1.</p></div>
+      <div class="risk"><b>Full archive too slow on CPU</b><p>If the cost measured in D1 does not fit in the two weeks of D6, the windows for phase 1 are produced first and the full archive follows in January. The February release (R1) does not change.</p></div>
+      <div class="risk"><b>Long queues on Leonardo</b><p>With fewer than 2 nodes in parallel, phase 1 runs past January, and every wait in the queue between one 24-hour job and the next lengthens the run. Ask for concurrent jobs, consider the 4-day lprod queue and launch everything before 24/12.</p></div>
+      <div class="risk"><b>IRENE not ready in time</b><p>T0 starts at the beginning of the project, with fake data, so that the data loader (T1) has a target before the dataset exists; T7 brings training to 4 GPUs before the small run (T3).</p></div>
+      <div class="risk"><b>VMM: only six months through the API</b><p>The API serves only about the last six months: the ODYSSEY period needs the data already downloaded by the project, scattered in 2021–2022 and almost continuous from 2023. If they are not enough, validation relies on RADCLIM, which reaches November 2023. VMM data do not enter the released archive.</p></div>
+      <div class="risk"><b>No adequate pan-European bridge</b><p>If ERA5-Land and CERRA-Land are too coarse (EURADCLIM ends in 2023), a national bridge is used for Belgium: VMM, or Météo-France or Met Office from the MLCast catalogue (not RADCLIM, which ends in 2023). The bridge for Europe then becomes a stated limitation and future work.</p></div>
+      <div class="risk"><b>End of the intensive phase in February</b><p>Every result of Marìca's goes into <span class="mono">opera_ds/</span> by February: no method that lives only in a notebook. The 3-month extension is possible, but the plan does not take it for granted.</p></div>
+      <div class="risk"><b>The code does not run on Windows</b><p>Marìca and the workstation are on Windows. S0 finds this out in a few days and with a few GB, before the H tickets; Federico fixes it, and CI tests on Linux and Windows keep it from coming back.</p></div>
+      <div class="risk"><b>Laptop too slow or full</b><p>The full crops are about 95 GB and <span class="mono">sample</span> over 12 years takes about 10 h: full downloads and long runs go on the workstation.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span id="foot-data">Ticket status, owners, planned dates and dependencies are read from the <a href="https://github.com/fedro86/DECADE/issues">GitHub issues</a>, gates from the milestones.</span>
+    <span>The specification is <a href="https://github.com/fedro86/DECADE/blob/main/docs/roadmap.md">docs/roadmap.md</a>; the data are described in <a href="https://github.com/fedro86/DECADE/blob/main/docs/data.md">docs/data.md</a>. Dates after February are indicative.</span>
+    <span>The compute estimates use 4500 node-hours, 24 runs and 10% reserve; the real cost of a run comes from T3.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const DEFAULT_REPO = "fedro86/DECADE";
+
+  // Work packages: the plan (static). Tickets, owners, dates, dependencies and status come from data/issues.json.
+  const WP = [
+    { code: "Setup", area: "setup", name: "Infrastructure and clarifications", when: "Nov–Dec 2026",
+      goal: "Leonardo ready for jobs, external questions sent, an alternative ready if the call is lost.",
+      intro: "Prepares the conditions for the work: Marìca's machine, the answers of the providers of the validation data and, if the call is won, Leonardo. On Leonardo the compute nodes have no internet access, no computation runs on the login nodes and a job lasts at most 24 hours (4 days on the lprod queue, at most 8 nodes per project): data and environment must be prepared beforehand, and every long computation must save partial results and resume from them. The result of the call, expected around 15/11, splits the work into two branches: S1–S3 if it is won, P1 if it is lost. S4 and S5 settle licence, access and period of VMM and RADCLIM: VMM is a possible bridge for the level correction (H3), RADCLIM serves validation (H5). The pan-European data (S7) must be ready before H3 uses them. Everything closes by gate G2, when phase 1 of training starts." },
+    { code: "WP1", area: "wp1", name: "Harmonisation of ODYSSEY", when: "Nov 2026 – Jul 2027",
+      goal: "ODYSSEY 2012–2024 at 1 km / 5 min with LK interpolation and statistical correction, validated over Belgium.",
+      intro: "The core of the project: bring the legacy ODYSSEY archive (2 km, 15 min, 2012–2024) to the resolution of the current CIRRUS products (1 km, 5 min) over the Belgium + 350 km domain, and release it; the extension to Europe comes later. Time interpolation with optical flow (Lucas-Kanade) already exists and conserves rain mass. On the 4 days where the two products overlap, however, ODYSSEY has about half the rain volume of CIRRUS: this is a difference between products, not an interpolation error, and IRENE does not absorb it because it normalises the data in a fixed way. Two steps are therefore needed: cleaning of outliers and artefacts (H2), and a level correction through a bridge dataset that is stable across the product change. Method and bridge are chosen at gate G1 with Vito, and the archive is validated against VMM and RADCLIM in January. After February: a year-by-year consistency check, a version 1.1 of the dataset and, if needed, the GPU version." },
+    { code: "WP2", area: "wp2", name: "Training data in IRENE format", when: "Nov 2026 – Feb 2027",
+      goal: "Stores A, B and C with the splits: dataset v1, released with documentation.",
+      intro: "Turns the harmonised archive into data that IRENE can read: sequences of 24 frames (2 hours at 5 min) of 256 × 256 km, saved in Zarr archives called stores. Not the whole archive is used, but windows chosen with the same rule as IRENE, which favours those with rain; the window sampler and the writing of windows already exist. Three stores are needed, one per configuration (C harmonised, B raw, CIRRUS for fine-tuning and test), and a list of convective events held out for verification. All data, inputs and outputs, are in Zarr, designed for parallel reads by many processes and GPUs; the number of windows must be limited to what training can use. Everything must be ready at gate G2, because phase 1 starts the next day." },
+    { code: "WP3", area: "wp3", name: "IRENE training", when: "Nov 2026 – Aug 2027",
+      goal: "A, B and C compared (phase 1), then the learning curve over the years of pre-training (phases 2 and 3).",
+      intro: "Measures how much the legacy decade helps a nowcasting model. IRENE (ConvGRU-Ensemble by FBK) is trained from scratch in three configurations: A on current data only, B pre-trained on raw ODYSSEY, C pre-trained on harmonised ODYSSEY; all end with the same fine-tuning on CIRRUS. A against C tells how much the archive is worth, B against C how much the harmonisation is worth. Phase 1 (A, B and C with 3 random seeds, 9 runs) must be completed by the end of January; phases 2 and 3, the learning curve over the number of years, only if the budget allows. Before that, IRENE must run on the 4090, the data loader must exist, and a small run must measure the true cost." },
+    { code: "WP4", area: "wp4", name: "Verification", when: "Dec 2026 – Sep 2027",
+      goal: "STEPS and LK reference nowcasts, common scores, analysis of the results on Belgian events.",
+      intro: "Tells whether the models are really useful for hydrology, not only for the training metrics. All configurations are compared with two references: STEPS, the probabilistic nowcast of pysteps, and the Lucas-Kanade nowcast of Flood4Cast. The comparison is made on the Belgian convective events chosen in D3, which the models never see in training. The scores, computed with pysteps against CIRRUS, cover the quality of the ensemble members, the position of the rain, accumulations over basins and the exceedance of intense-rain thresholds, to be defined with Vito. In February the analysis of phase 1 gives the first answer; the full verification follows phases 2 and 3." },
+    { code: "WP5", area: "wp5", name: "Costs, release and publication", when: "Feb – Nov 2027",
+      goal: "Technical report in February; then measured costs, a proposal for Europe, open release, papers.",
+      intro: "Closes the project with products others can use. In January an abstract for EGU; in February a technical report that records what was done in the intensive phase and is the basis of gate G3. After that, the costs measured on Leonardo are used to estimate the cost of harmonising the whole OPERA domain and to write a Regular Access proposal to EuroHPC. Archive and code are released openly; the archive goes into a data paper, the results into a second paper. Dates after February are indicative." }
+  ];
+
+  const AREA_TO_WP = { "area:setup": "Setup", "area:wp1": "WP1", "area:wp2": "WP2", "area:wp3": "WP3", "area:wp4": "WP4", "area:wp5": "WP5" };
+  const TYPE_FROM_LABEL = { "type:implementation": "I", "type:exploratory": "E", "type:decision": "D", "type:writing": "W", "type:explore-then-code": "EI" };
+  const COND_FROM_LABEL = { "if:call-won": "only if the Leonardo call is won", "if:call-lost": "only if the Leonardo call is lost",
+                            "if:budget": "only if the compute budget allows", "optional": "optional" };
+  const NAMES = { F: "Federico", M: "Marìca", FM: "Federico + Marìca" };
+  const COLORS = { F: "var(--fed)", M: "var(--mar)", FM: "var(--both)" };
+  const TYPES = { E: "exploratory", I: "implementation", EI: "E → I", D: "decision", W: "writing" };
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // Plan constants: not ticket data.
+  const CALL_MS = { id: "Call", d: "2026-11-15", label: "result of the Leonardo call (about)" };
+  const INTENSIVE = ["2026-11-03", "2027-02-28"];
+  const HOLIDAYS = ["2026-12-24", "2027-01-06"];
+  const VIEWS = {
+    year: { from: "2026-11-01", to: "2027-11-30", pxd: 3 },
+    int: { from: "2026-11-02", to: "2027-03-07", pxd: 10 }
+  };
+
+  const DAY = 86400000;
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (t) => { const d = new Date(t); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); };
+  const utc = (s) => { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d); };
+  const fmt = (s) => { const d = new Date(utc(s)); return d.getUTCDate() + "/" + (d.getUTCMonth() + 1) + "/" + String(d.getUTCFullYear()).slice(2); };
+  const fmtLong = (s) => { const d = new Date(utc(s)); return d.getUTCDate() + "/" + (d.getUTCMonth() + 1) + "/" + d.getUTCFullYear(); };
+  const fmtDM = (s) => { const d = new Date(utc(s)); return d.getUTCDate() + "/" + (d.getUTCMonth() + 1); };
+  const now = new Date();
+  const TODAY = iso(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const W1 = utc("2026-11-02");
+
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  function el(tag, cls, html) { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; }
+
+  let D = { loaded: false, repo: DEFAULT_REPO, tickets: [], byId: {}, byNum: {}, gates: [], gateById: {}, problems: [], generated: null };
+  const issueUrl = (n) => "https://github.com/" + D.repo + "/issues/" + n;
+  const pullUrl = (n) => "https://github.com/" + D.repo + "/pull/" + n;
+  const failNotice = () => "Ticket data could not be loaded; see the <a href=\"https://github.com/" + esc(D.repo) + "/issues\">issues on GitHub</a>.";
+
+  // ---------- parsing ----------
+  function headerRows(body) {
+    // The key/value table at the top of a ticket body, before the first "## " heading.
+    const top = body.split(/\n##\s/)[0];
+    const rows = {};
+    top.split(/\r?\n/).forEach((l) => {
+      const m = /^\|\s*([^|]*?)\s*\|\s*(.*?)\s*\|\s*$/.exec(l.trim());
+      if (m && m[1] && !/^:?-+:?$/.test(m[1])) rows[m[1].toLowerCase()] = m[2];
+    });
+    return rows;
+  }
+  function sections(body) {
+    const out = {};
+    const parts = body.split(/^##[ \t]+(.+?)[ \t]*$/m);
+    for (let i = 1; i < parts.length; i += 2) out[parts[i].trim().toLowerCase()] = parts[i + 1] || "";
+    return out;
+  }
+  function parsePlanned(s) {
+    if (!s) return null;
+    const m = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(?:→|->|–|-)\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);
+    if (!m) return null;
+    const a = m[3] + "-" + pad(+m[2]) + "-" + pad(+m[1]), b = m[6] + "-" + pad(+m[5]) + "-" + pad(+m[4]);
+    return { s: a, e: b, late: /indicative/i.test(s) };
+  }
+  function parseDeps(s) {
+    if (!s || /^[—–-]?$/.test(s.trim())) return [];
+    return s.split(/,\s*/).map((p) => p.trim()).filter(Boolean).map((p) => {
+      const m = /^#(\d+)(?:\s+([A-Z]\d+))?\s*(.*)$/.exec(p);
+      return m ? { num: +m[1], hint: m[2] || null, note: m[3] || "" } : { text: p };
+    });
+  }
+
+  function makeTicket(i, m, prs) {
+    const body = i.body || "";
+    const labels = i.labels || [];
+    const rows = headerRows(body);
+    const sec = sections(body);
+    const ownerRow = rows["owner"] || "";
+    let f = labels.includes("who:federico"), mm = labels.includes("who:marica");
+    if (!f && !mm) { f = /federico/i.test(ownerRow); mm = /mar[iì]ca/i.test(ownerRow); }
+    let type = null;
+    labels.forEach((l) => { if (TYPE_FROM_LABEL[l]) type = TYPE_FROM_LABEL[l]; });
+    if (/explores.*codes/i.test(ownerRow)) type = "EI";
+    if (!type) type = "I";
+    const owner = type === "EI" ? "FM" : (f && mm ? "FM" : (mm ? "M" : "F"));
+    let cond = rows["condition"] || null;
+    if (!cond) labels.forEach((l) => { if (COND_FROM_LABEL[l]) cond = COND_FROM_LABEL[l]; });
+    let wp = null;
+    labels.forEach((l) => { if (AREA_TO_WP[l]) wp = AREA_TO_WP[l]; });
+    const plan = parsePlanned(rows["planned"]);
+    const t = {
+      num: i.number, id: m[1], name: m[2].trim(), wp: wp || "Other", type, owner, cond,
+      rev: labels.includes("review:vito") || /vito/i.test(rows["review"] || ""),
+      s: plan ? plan.s : null, e: plan ? plan.e : null, late: plan ? plan.late : false,
+      depsRaw: parseDeps(rows["depends on"]), deps: [],
+      goal: sec["goal"] || "", scope: sec["in scope"] || "",
+      gate: null, done: null, wip: null, mergedPr: null
+    };
+    if (i.milestone && i.milestone.title) { const g = /^(G\d+)/.exec(i.milestone.title); t.gate = g ? g[1] : i.milestone.title; }
+    const same = prs.filter((p) => p.title === t.id || (p.title || "").startsWith(t.id + " ") || (p.title || "").startsWith(t.id + " ·"));
+    if (i.state === "closed") {
+      t.done = (i.closed_at || "").slice(0, 10) || null;
+      const merged = same.filter((p) => p.merged_at).sort((a, b) => b.number - a.number)[0];
+      if (merged) t.mergedPr = merged.number;
+    } else {
+      const open = same.filter((p) => p.state === "open").sort((a, b) => b.number - a.number)[0];
+      if (open) t.wip = { pr: open.number, draft: !!open.draft };
+    }
+    return t;
+  }
+
+  function parseData(j) {
+    D.repo = j.repo || DEFAULT_REPO;
+    D.generated = j.generated_at || null;
+    const items = Array.isArray(j.issues) ? j.issues : [];
+    const prs = items.filter((x) => x.pr);
+    const TRE = /^([A-Z]\d+) · (.+)$/;
+    items.forEach((x) => {
+      if (x.pr) return;
+      const m = TRE.exec(x.title || "");
+      if (!m) { if (x.state === "open") D.problems.push(x); return; }
+      D.tickets.push(makeTicket(x, m, prs));
+    });
+    D.tickets.sort((a, b) => a.num - b.num);
+    D.tickets.forEach((t) => { D.byNum[t.num] = t; if (!D.byId[t.id]) D.byId[t.id] = t; });
+    D.tickets.forEach((t) => {
+      t.deps = t.depsRaw.map((d) => {
+        if (d.text) return { text: d.text };
+        const r = D.byNum[d.num];
+        if (r) return { ticket: r, note: d.note };
+        return { text: "#" + d.num + (d.hint ? " " + d.hint : "") + (d.note ? " " + d.note : ""), num: d.num };
+      });
+    });
+    (Array.isArray(j.milestones) ? j.milestones : []).forEach((m) => {
+      const g = /^(G\d+)\s*·\s*(.+)$/.exec(m.title || "");
+      if (!g || !m.due_on) return;
+      const gate = { id: g[1], name: g[2], d: m.due_on.slice(0, 10), desc: m.description || "", number: m.number, state: m.state };
+      D.gates.push(gate); D.gateById[gate.id] = gate;
+    });
+    D.gates.sort((a, b) => utc(a.d) - utc(b.d));
+    D.problems.sort((a, b) => a.number - b.number);
+    D.loaded = true;
+  }
+
+  // ---------- minimal markdown: paragraphs, bullets, `code`, links, **bold**, *italic* ----------
+  function inline(src) {
+    return src.split(/(`[^`]+`)/).map((p) => {
+      if (/^`[^`]+`$/.test(p)) return "<code>" + esc(p.slice(1, -1)) + "</code>";
+      let h = esc(p);
+      h = h.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (all, txt, url) =>
+        /^https?:\/\//i.test(url) ? "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\">" + txt + "</a>" : txt);
+      h = h.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+      h = h.replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?![*\w])/g, "$1<i>$2</i>");
+      return h;
+    }).join("");
+  }
+  function md(src) {
+    const lines = src.replace(/\r/g, "").split("\n");
+    let html = "", para = [], list = null, ordered = false;
+    const flushPara = () => { if (para.length) { html += "<p>" + inline(para.join(" ")) + "</p>"; para = []; } };
+    const flushList = () => { if (list) { const tag = ordered ? "ol" : "ul"; html += "<" + tag + ">" + list.map((x) => "<li>" + inline(x) + "</li>").join("") + "</" + tag + ">"; list = null; } };
+    let inFence = false;
+    lines.forEach((line) => {
+      if (/^\s*```/.test(line)) { inFence = !inFence; return; }
+      if (inFence) return;
+      let m;
+      if (/^\s*$/.test(line)) { flushPara(); flushList(); }
+      else if ((m = /^\s*[-*]\s+(?:\[[ xX]\]\s+)?(.*)$/.exec(line))) { flushPara(); if (list && ordered) flushList(); if (!list) { list = []; ordered = false; } list.push(m[1]); }
+      else if ((m = /^\s*\d+\.\s+(.*)$/.exec(line))) { flushPara(); if (list && !ordered) flushList(); if (!list) { list = []; ordered = true; } list.push(m[1]); }
+      else if (list && /^\s{2,}\S/.test(line)) { list[list.length - 1] += " " + line.trim(); }
+      else if ((m = /^#{3,6}\s+(.*)$/.exec(line))) { flushPara(); flushList(); html += "<p><b>" + inline(m[1]) + "</b></p>"; }
+      else { flushList(); para.push(line.trim()); }
+    });
+    flushPara(); flushList();
+    return html;
+  }
+
+  // ---------- gantt ----------
+  let view = "year", who = "all";
+  try { const v = localStorage.getItem("decade-view"); if (v && VIEWS[v]) view = v; } catch (e) {}
+  const owners = (t) => t.type === "EI" ? ["M", "F"] : (t.owner === "FM" ? ["F", "M"] : [t.owner]);
+  const involves = (t, w) => w === "all" || (w === "V" ? !!t.rev : owners(t).includes(w));
+  const ownerText = (t) => t.type === "EI" ? "Marìca → Federico" : NAMES[t.owner];
+  const statusText = (t) => t.done ? "closed on " + fmtLong(t.done) : (t.wip ? "in progress · PR #" + t.wip.pr + (t.wip.draft ? " (draft)" : "") : "");
+  function wpGroups() {
+    const groups = WP.map((w) => ({ code: w.code, name: w.name, wp: w }));
+    if (D.tickets.some((t) => t.wp === "Other")) groups.push({ code: "Other", name: "Other tickets", wp: null });
+    return groups;
+  }
+
+  function render() {
+    const g = document.getElementById("gantt");
+    g.innerHTML = "";
+    if (!D.loaded) { g.style.width = "auto"; g.append(el("div", "notice", failNotice())); return; }
+    const V = VIEWS[view];
+    const x0 = utc(V.from), xEnd = utc(V.to), days = Math.round((xEnd - x0) / DAY) + 1, W = days * V.pxd;
+    const X = (s) => Math.round((utc(s) - x0) / DAY) * V.pxd;
+    g.style.width = "calc(var(--label-w) + " + W + "px)";
+
+    const head = el("div", "g-row g-head");
+    head.append(el("div", "g-label", "<span class='eyebrow'>" + (view === "year" ? "months" : "weeks") + "</span>"));
+    const ht = el("div", "g-track"); ht.style.width = W + "px";
+    if (view === "year") {
+      let d = new Date(x0);
+      while (d.getTime() <= xEnd) {
+        const s = iso(d.getTime());
+        const tk = el("div", "tick" + (d.getUTCMonth() === 0 ? " major" : ""), MONTHS[d.getUTCMonth()] + "<small>" + d.getUTCFullYear() + "</small>");
+        tk.style.left = X(s) + "px"; ht.append(tk);
+        d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
+      }
+    } else {
+      for (let t = W1; t <= xEnd; t += 7 * DAY) {
+        const s = iso(t);
+        const n = Math.floor((t - W1) / (7 * DAY)) + 1;
+        const tk = el("div", "tick" + (new Date(t).getUTCDate() <= 7 ? " major" : ""), "W" + n + "<small>" + fmtDM(s) + "</small>");
+        tk.style.left = X(s) + "px"; ht.append(tk);
+      }
+    }
+    head.append(ht); g.append(head);
+
+    const MS = [CALL_MS].concat(D.gates.map((x) => ({ id: x.id, d: x.d, label: x.name + (x.desc ? " · " + x.desc : ""), gate: true, number: x.number })));
+    const mr = el("div", "g-row g-ms");
+    mr.append(el("div", "g-label", "<span class='id'>◆</span><span class='nm'>Milestones and gates</span>"));
+    const mt = el("div", "g-track"); mt.style.width = W + "px";
+    MS.forEach((m) => {
+      if (utc(m.d) < x0 || utc(m.d) > xEnd) return;
+      const a = el(m.number ? "a" : "div", "ms" + (m.gate ? " gate" : ""), "<i></i><b>" + esc(m.id) + "</b>");
+      if (m.number) { a.href = "https://github.com/" + D.repo + "/milestone/" + m.number; a.target = "_blank"; a.rel = "noopener"; }
+      a.style.left = (X(m.d) + V.pxd / 2) + "px";
+      a.title = m.id + " · " + fmtLong(m.d) + " · " + m.label;
+      mt.append(a);
+    });
+    mr.append(mt);
+    if (who !== "all" && who !== "V") mr.classList.add("dim");
+    g.append(mr);
+
+    wpGroups().forEach((grp) => {
+      const ts = D.tickets.filter((t) => t.wp === grp.code);
+      if (!ts.length) return;
+      const wr = el("div", "g-row g-wp");
+      wr.append(el("div", "g-label", esc(grp.code + " · " + grp.name)));
+      const wt = el("div", "g-track"); wt.style.width = W + "px"; wr.append(wt);
+      g.append(wr);
+      ts.forEach((t) => {
+        const r = el("div", "g-row");
+        if (!involves(t, who)) r.classList.add("dim");
+        const lab = el("div", "g-label");
+        lab.innerHTML = "<span class='id" + (t.done ? " ok" : (t.wip ? " wip" : "")) + "'>" + esc(t.id) + "</span><span class='nm'></span>";
+        lab.querySelector(".nm").textContent = t.name;
+        lab.title = t.id + " · " + t.name;
+        r.append(lab);
+        const tr = el("div", "g-track"); tr.style.width = W + "px";
+        if (t.s && t.e && utc(t.e) >= x0 && utc(t.s) <= xEnd) {
+          const s = utc(t.s) < x0 ? V.from : t.s;
+          const endC = utc(t.e) > xEnd ? V.to : t.e;
+          const w = X(endC) - X(s) + V.pxd;
+          const b = el("a", "bar " + t.owner + " t-" + t.type + (t.cond ? " cond" : "") + (w < 34 ? " narrow" : ""));
+          b.href = "#t-" + t.id;
+          b.style.left = X(s) + "px"; b.style.width = Math.max(w, 6) + "px";
+          if (w >= 22) b.append(document.createTextNode((t.done ? "✓ " : (t.wip ? "◐ " : "")) + t.id));
+          if (t.rev && w >= 40) b.append(el("span", "rv"));
+          b.title = t.id + " · " + t.name + "\n" + ownerText(t) + (t.rev ? " · Vito review" : "") +
+                    "\n" + fmt(t.s) + " → " + fmt(t.e) + (t.cond ? "\n" + t.cond : "") + (t.late ? "\nindicative dates" : "") +
+                    (statusText(t) ? "\n" + statusText(t) : "");
+          tr.append(b);
+        }
+        r.append(tr); g.append(r);
+      });
+    });
+
+    const ov = el("div", "overlay");
+    ov.style.left = "var(--label-w)"; ov.style.width = W + "px";
+    const band = (a, b, cls, tag) => {
+      const n = el("div", "ov-band " + cls); n.style.left = X(a) + "px"; n.style.width = (X(b) - X(a) + V.pxd) + "px"; ov.append(n);
+      if (tag) { const t = el("div", "ov-tag", tag); t.style.left = X(a) + "px"; ov.append(t); }
+    };
+    if (view === "year") band(INTENSIVE[0], INTENSIVE[1], "int", "intensive phase");
+    band(HOLIDAYS[0], HOLIDAYS[1], "hol", view === "int" ? "holidays" : null);
+    D.gates.forEach((m) => { if (utc(m.d) >= x0 && utc(m.d) <= xEnd) { const l = el("div", "ov-line"); l.style.left = (X(m.d) + V.pxd / 2) + "px"; ov.append(l); } });
+    if (utc(TODAY) >= x0 && utc(TODAY) <= xEnd) {
+      const nl = el("div", "ov-line now"); nl.style.left = (X(TODAY) + V.pxd / 2) + "px"; nl.title = "today, " + fmtLong(TODAY); ov.append(nl);
+    }
+    g.append(ov);
+  }
+
+  // ---------- work-package cards ----------
+  function depsHtml(t) {
+    if (!t.deps.length) return "—";
+    return t.deps.map((d) => {
+      if (d.ticket) return "<a class='dep" + (d.ticket.done ? " ok" : "") + "' href='#t-" + esc(d.ticket.id) + "'>" + esc(d.ticket.id) + "</a>" + (d.note ? " " + esc(d.note) : "");
+      if (d.num) return "<a href='" + issueUrl(d.num) + "' target='_blank' rel='noopener'>" + esc(d.text) + "</a>";
+      return esc(d.text);
+    }).join(", ");
+  }
+  function ticketCard(t) {
+    const k = el("div", "tk"); k.id = "t-" + t.id;
+    const whoH = t.type === "EI"
+      ? "<span class='who'><i style='background:var(--mar)'></i>Marìca</span> → <span class='who'><i style='background:var(--fed)'></i>Federico</span>"
+      : "<span class='who'><i style='background:" + COLORS[t.owner] + "'></i>" + NAMES[t.owner] + "</span>";
+    const rev = t.rev ? "<span class='who'><i style='background:var(--rev)'></i>Vito review</span>" : "";
+    let st = "";
+    if (t.done) st = "<span class='tag ok'>✓ closed on " + fmtLong(t.done) + "</span>" +
+      (t.mergedPr ? "<a class='tag ok' href='" + pullUrl(t.mergedPr) + "' target='_blank' rel='noopener'>PR #" + t.mergedPr + "</a>" : "");
+    else if (t.wip) st = "<a class='tag wip' href='" + pullUrl(t.wip.pr) + "' target='_blank' rel='noopener'>◐ in progress · PR #" + t.wip.pr + (t.wip.draft ? " (draft)" : "") + " ↗</a>";
+    const dates = t.s ? fmt(t.s) + " → " + fmt(t.e) + (t.late ? " (indicative)" : "") : "dates not set";
+    k.innerHTML = "<div class='tk-head'><span class='tk-id'>" + esc(t.id) + "</span><span class='tk-name'>" + esc(t.name) + "</span>" +
+      "<a class='tk-issue' target='_blank' rel='noopener' href='" + issueUrl(t.num) + "'>issue #" + t.num + " ↗</a></div>" +
+      "<div class='tk-meta'>" + st +
+      "<span class='tag " + t.type + "'>" + TYPES[t.type] + "</span>" + (t.cond ? "<span class='tag cond'>" + esc(t.cond) + "</span>" : "") +
+      (t.gate ? "<span class='tag'>gate " + esc(t.gate) + "</span>" : "") +
+      whoH + rev + "<span class='mono'>" + dates + "</span>" +
+      "<span>depends on: <span class='mono'>" + depsHtml(t) + "</span></span></div>";
+    const body = el("div", "tk-md");
+    if (t.goal.trim()) body.append(el("div", "tk-goal", md(t.goal)));
+    if (t.scope.trim()) { const sc = el("div", "tk-scope", "<span class='lab'>In scope</span>" + md(t.scope)); body.append(sc); }
+    if (body.childNodes.length) k.append(body);
+    return k;
+  }
+  function renderWPs() {
+    const box = document.getElementById("wps");
+    box.innerHTML = "";
+    if (!D.loaded) box.append(el("div", "notice", failNotice()));
+    wpGroups().forEach((grp) => {
+      const ts = D.tickets.filter((t) => t.wp === grp.code);
+      if (!grp.wp && !ts.length) return;
+      const card = el("article", "wp");
+      card.id = "wp-" + grp.code;
+      const h = el("div", "wp-head");
+      h.append(el("span", "code", grp.code === "Setup" ? "S" : esc(grp.code)));
+      const h3 = el("h3"); h3.textContent = grp.name; h.append(h3);
+      if (grp.wp) {
+        h.append(el("span", "when", esc(grp.wp.when)));
+        const p = el("p", "goal", "<b>Goal.</b> "); p.append(document.createTextNode(grp.wp.goal)); h.append(p);
+        const pi = el("p", "intro"); pi.textContent = grp.wp.intro; h.append(pi);
+      }
+      card.append(h);
+      if (ts.length) { const list = el("div", "tk-list"); ts.forEach((t) => list.append(ticketCard(t))); card.append(list); }
+      box.append(card);
+    });
+  }
+
+  // ---------- progress ----------
+  function renderProgress() {
+    const box = document.getElementById("upd");
+    box.innerHTML = "";
+    if (!D.loaded) { box.style.display = "block"; box.append(el("div", "notice", failNotice())); return; }
+    const closed = D.tickets.filter((t) => t.done).sort((a, b) => utc(b.done) - utc(a.done) || b.num - a.num);
+    const wip = D.tickets.filter((t) => !t.done && t.wip);
+    const tline = (t) => "<a href='#t-" + esc(t.id) + "'><b>" + esc(t.id) + "</b></a> ";
+
+    const c = el("div", "ok", "<h3>Tickets closed · " + closed.length + " of " + D.tickets.length + "</h3>");
+    if (closed.length) {
+      const ul = el("ul");
+      closed.forEach((t) => ul.append(el("li", null, tline(t) + "<span class='mono'>" + fmtLong(t.done) + "</span> · " + esc(t.name) +
+        " · <a href='" + issueUrl(t.num) + "' target='_blank' rel='noopener'>#" + t.num + "</a>")));
+      c.append(ul);
+    } else c.append(el("p", "empty", "No ticket closed yet."));
+    box.append(c);
+
+    const w = el("div", "wip", "<h3>In progress · " + wip.length + "</h3>");
+    if (wip.length) {
+      const ul = el("ul");
+      wip.forEach((t) => ul.append(el("li", null, tline(t) + esc(t.name) + " · <a href='" + pullUrl(t.wip.pr) + "' target='_blank' rel='noopener'>PR #" + t.wip.pr + "</a>" + (t.wip.draft ? " (draft)" : "") +
+        (t.e ? " · <span class='mono'>planned to end " + fmtLong(t.e) + "</span>" : ""))));
+      w.append(ul);
+    } else w.append(el("p", "empty", "No ticket has an open pull request."));
+    box.append(w);
+
+    const gb = el("div", null, "<h3>Tickets closed by gate</h3>");
+    const gl = el("div", "gates");
+    D.gates.forEach((gt) => {
+      const ts = D.tickets.filter((t) => t.gate === gt.id);
+      const done = ts.filter((t) => t.done).length;
+      const pct = ts.length ? Math.round(100 * done / ts.length) : 0;
+      const row = el("div", "gate-row", "<b>" + esc(gt.id) + "</b><span>" + esc(gt.name) + " · <span class='mono'>" + fmtLong(gt.d) + "</span></span>" +
+        "<span class='n'>" + done + " / " + ts.length + "</span><span class='meter'><i style='width:" + pct + "%'></i></span>");
+      row.title = gt.desc;
+      gl.append(row);
+    });
+    if (!D.gates.length) gl.append(el("p", "empty", "No gates found."));
+    gb.append(gl); box.append(gb);
+
+    const pb = el("div", "prob", "<h3>Open problems · " + D.problems.length + "</h3>");
+    if (D.problems.length) {
+      const ul = el("ul");
+      D.problems.forEach((p) => ul.append(el("li", null, "<a href='" + issueUrl(p.number) + "' target='_blank' rel='noopener'>#" + p.number + "</a> " + esc(p.title))));
+      pb.append(ul);
+    } else pb.append(el("p", "empty", "No open problem reported outside the tickets."));
+    box.append(pb);
+  }
+
+  // ---------- critical path ----------
+  function renderCriticalPath() {
+    document.querySelectorAll(".node[data-t]").forEach((n) => {
+      const t = D.byId[n.dataset.t];
+      n.classList.remove("ok", "wip");
+      if (!t) return;
+      if (t.done) n.classList.add("ok"); else if (t.wip) n.classList.add("wip");
+      n.title = t.id + " · " + t.name + (t.s ? "\n" + fmt(t.s) + " → " + fmt(t.e) : "") + (statusText(t) ? "\n" + statusText(t) : "");
+    });
+    document.querySelectorAll(".node[data-g]").forEach((n) => {
+      const g = D.gateById[n.dataset.g];
+      if (g) { n.querySelector("b").textContent = g.id + " · " + fmtDM(g.d); n.title = g.name + (g.desc ? "\n" + g.desc : ""); }
+    });
+    document.querySelectorAll("[data-gdate]").forEach((s) => { const g = D.gateById[s.dataset.gdate]; s.textContent = g ? " (" + fmtDM(g.d) + ")" : ""; });
+    document.querySelectorAll("[data-tstart]").forEach((s) => { const t = D.byId[s.dataset.tstart]; if (t && t.s) s.textContent = "phase 1 from " + fmtDM(t.s); });
+    document.querySelectorAll(".cp-slack").forEach((s) => {
+      s.textContent = "";
+      if (!D.loaded) return;
+      const ts = s.dataset.branch.split(" ").map((id) => D.byId[id]).filter((t) => t && t.e);
+      const nx = D.byId[s.dataset.next];
+      if (!ts.length) return;
+      const prefix = s.dataset.prefix || "";
+      if (ts.every((t) => t.done)) { s.textContent = prefix + "done"; return; }
+      const end = ts.reduce((a, t) => utc(t.e) > utc(a) ? t.e : a, ts[0].e);
+      let txt = prefix + "ends " + fmtDM(end);
+      if (nx && nx.s) {
+        const slack = Math.round((utc(nx.s) - utc(end)) / DAY) - 1;
+        txt += " · slack " + (slack === 1 || slack === -1 ? slack + " day" : slack + " days");
+      }
+      s.textContent = txt;
+    });
+  }
+
+  function renderMeta() {
+    if (!D.loaded || !D.generated) return;
+    const gd = D.generated.slice(0, 10), hm = D.generated.slice(11, 16);
+    const stamp = fmtLong(gd) + (hm ? " " + hm + " UTC" : "");
+    document.getElementById("eyebrow").textContent = "Project plan · ticket status as of " + stamp;
+    document.getElementById("progress-eyebrow").textContent = "Progress · as of " + stamp;
+    const f = document.getElementById("foot-data");
+    f.innerHTML = "Ticket status, owners, planned dates and dependencies are read from the <a href='https://github.com/" + esc(D.repo) +
+      "/issues'>GitHub issues</a> of " + esc(D.repo) + ", gates from its milestones; data generated on " + esc(stamp) + ".";
+  }
+
+  function setView(v) {
+    view = v;
+    document.getElementById("v-year").setAttribute("aria-pressed", v === "year");
+    document.getElementById("v-int").setAttribute("aria-pressed", v === "int");
+    try { localStorage.setItem("decade-view", v); } catch (e) {}
+    render();
+  }
+  document.getElementById("v-year").addEventListener("click", () => setView("year"));
+  document.getElementById("v-int").addEventListener("click", () => setView("int"));
+  document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
+    who = c.dataset.who;
+    document.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", x === c));
+    render();
+  }));
+
+  function renderAll() {
+    renderMeta();
+    renderProgress();
+    renderWPs();
+    renderCriticalPath();
+    setView(view);
+    if (location.hash) { const t = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (t) t.scrollIntoView(); }
+  }
+
+  renderWPs();
+  fetch("data/issues.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then((j) => { parseData(j); })
+    .catch((err) => { D = Object.assign(D, { loaded: false, tickets: [], byId: {}, byNum: {}, gates: [], gateById: {}, problems: [] });
+                       if (window.console) console.warn("DECADE plan: ticket data not loaded (" + err.message + ")"); })
+    .then(renderAll);
+})();
+</script>
+</body>
+</html>
