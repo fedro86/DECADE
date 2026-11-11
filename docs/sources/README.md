@@ -55,6 +55,7 @@ and put them in this folder with the name of their summary.
 
 | summary | topic | DOI or link | PDF |
 |---|---|---|---|
+| 1993 - Rosenfeld | level correction: probability matching of radar reflectivity to gauge rain, wet fraction matched first | [10.1175/1520-0450(1993)032<0050:GPMRBR>2.0.CO;2](https://doi.org/10.1175/1520-0450(1993)032%3C0050:GPMRBR%3E2.0.CO;2) | to download (AMS, blocked for automatic download); summary from the full text (scanned) |
 | 1995 - Steiner | convective / stratiform classification | [10.1175/1520-0450(1995)034<1978:CCOTDS>2.0.CO;2](https://doi.org/10.1175/1520-0450(1995)034%3C1978:CCOTDS%3E2.0.CO;2) | to download (paywall); summary from the full text (sections 1, 4–6) |
 | 2002 - Gabella | cleaning: original of the Gabella texture filter | [ERAD 2002, 305–311](https://web.archive.org/web/20170809110607/https://www.copernicus.org/erad/online/erad-305.pdf) | free copy via the Internet Archive (the ERAD address is dead); summary from the full text |
 | 2002 - Peura | cleaning: image-processing detectors (speckle, emitters, sun, ships, birds) | [ERAD 2002, 312–317](https://web.archive.org/web/2023/https://www.copernicus.org/erad/online/erad-312.pdf) | free copy via the Internet Archive (the ERAD address is dead); summary from the full text |
@@ -84,6 +85,7 @@ and put them in this folder with the name of their summary.
 | 2021 - Muñoz-Sabater | level correction: ERA5-Land, how its precipitation is made, accumulation convention | [10.5194/essd-13-4349-2021](https://doi.org/10.5194/essd-13-4349-2021) | open (CC BY 4.0); summary from the full text |
 | 2022 - Dixon | convective / stratiform classification; bright band; test on the 2D OPERA mosaic | [10.1175/JTECH-D-22-0018.1](https://doi.org/10.1175/JTECH-D-22-0018.1) | open copy on [OSTI](https://www.osti.gov/pages/servlets/purl/1897074); summary from the full text (sections 1–3c, 3f, 4a, 5c, 6) |
 | 2022 - Hänsler | level correction: quantile mapping of radar extremes (RADKLIM) to station statistics | [10.5194/hess-26-5069-2022](https://doi.org/10.5194/hess-26-5069-2022) | open (CC BY 4.0); summary from the full text |
+| 2022 - Lavers | level correction: ERA5 daily precipitation against 5,637 gauges, wet bias, extremes, seasons | [10.1002/qj.4351](https://doi.org/10.1002/qj.4351) | open (CC BY-NC-ND 4.0), blocked for automatic download; summary from the full text |
 | 2022 - Ośródka | cleaning: RADVOL-QC algorithms on single-radar volumes (spikes, clutter, non-meteorological echoes) | [10.5194/amt-15-261-2022](https://doi.org/10.5194/amt-15-261-2022) | open, CC BY 4.0; summary from the full text |
 | 2023 - Overeem | cleaning of the OPERA composite (EURADCLIM): Gabella, satellite mask, static clutter | [10.5194/essd-15-1441-2023](https://doi.org/10.5194/essd-15-1441-2023) | open, CC BY 4.0; summary from the full text |
 | 2023 - Perschke | convective / stratiform classification | [10.5194/egusphere-2023-1907](https://doi.org/10.5194/egusphere-2023-1907) | open, CC BY 4.0; summary from the full text |

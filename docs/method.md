@@ -1295,10 +1295,21 @@ What the literature says about the two pan-European candidates:
   wettest day of the year about 22% too low and daily variability about 20% too
   low; CERRA-Land is close to the gauges on all three
   ([Wood et al. 2025](sources/2025%20-%20Wood%20-%20Comparison%20of%20high-resolution%20climate%20reanalysis%20datasets%20for%20hydro-climatic%20impact%20studies.md),
-  Figs. 3 and 5, values read from the figures). This is why the wet frequency
-  has to be matched before the quantiles
+  Figs. 3 and 5, values read from the figures). Against 5,637 gauges in
+  2001–2020, ERA5 is wetter than the gauges by 0.14–0.26 mm/day, mostly from
+  rain on days that are dry at the gauge. In the extratropics its mean annual
+  maximum is 36.5 mm/day against 52.3 at the gauges, and in Europe its skill
+  is highest in winter and drops in summer
+  ([Lavers et al. 2022](sources/2022%20-%20Lavers%20-%20An%20evaluation%20of%20ERA5%20precipitation%20for%20climate%20monitoring.md),
+  section 3, Figs. 2, 6–8). This is why the wet frequency has to be matched
+  before the quantiles
   ([Themeßl et al. 2012](sources/2012%20-%20Themeßl%20-%20Empirical-statistical%20downscaling%20and%20error%20correction%20of%20regional%20climate%20models%20and%20its%20impact%20on%20the%20climate%20change%20signal.md),
-  section 2.2.2).
+  section 2.2.2). For radar, the same order is the probability matching
+  method: first the reflectivity whose exceedance frequency equals the
+  reference wet fraction, then the distributions above it, matched rank by
+  rank and with no time pairing
+  ([Rosenfeld et al. 1993](sources/1993%20-%20Rosenfeld%20-%20General%20probability-matched%20relations%20between%20radar%20reflectivity%20and%20rain%20rate.md),
+  section 5a, Eqs. 4–5).
 - **CERRA-Land depends on its gauge network.** A changing number of stations
   can create spurious trends (Wood et al. 2025, section 7). The part after
   6/2021 comes from a new production contract, and its homogeneity with the
