@@ -364,7 +364,24 @@ whole files, also with `extent` as long as the extent is inside the crop.
   `opera_ds.ord.download` (one for now, 14/7/2021 21:00).
 - `data/era5land_bel/`: ERA5-Land hourly `tp`, 1/2012–10/2026, made with
   `fetch_cds.py` over 55.0–45.6 N, 3.9 W–11.8 E (95 × 158 cells). 178 monthly
-  netCDF files, 2.9 GB (8–24 MB a month).
+  netCDF files, 2.9 GB (8–24 MB a month). 9/2026 and 10/2026 hold preliminary
+  hours (`expver` 0005 instead of 0001; 1,463 hours): ECMWF marks the
+  preliminary ERA5T data with 0005 and replaces them with the final data about
+  two months later
+  ([ERA5 data documentation](https://confluence.ecmwf.int/spaces/CKB/pages/76414402/ERA5+data+documentation)).
+  A later `fetch_cds.py` run fetches those months again.
+- `data/era5land_bel.zarr`: the same data as one Zarr store (S9), made with
+  `bridge_to_zarr.py` and read by `opera_ds.bridge.era5land_sum`. `tp` is the
+  amount in mm of the hour ending at `valid_time`, float32, lossless (zstd with
+  bitshuffle), one chunk of 744 hours over the whole domain; the first hour
+  (1/1/2012 00 UTC) is NaN and sea cells are NaN. `expver` (1 final, 5
+  preliminary) is kept for every hour, and `era5land_sum` refuses preliminary
+  hours unless asked. The differences of the accumulation leave small negative
+  amounts, 19.5 million values down to −6·10⁻⁵ mm, set to 0 (counted in the
+  store attributes). 3.0 GB; lossless Zarr is no smaller than the netCDF files,
+  and rounding to 0.01 mm would save about 40% (tested on 2013) but was not
+  applied. On July 2013 the store gives the same window sums as the files
+  within 0.0003 mm.
 - `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
   with `fetch_cds.py` (window of 204 × 224 cells of the CERRA grid, about
   4 MB a month); download in progress, newest year first (23 months on
