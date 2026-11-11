@@ -100,6 +100,34 @@ uv run python scripts/opera_ds_cli.py windows \
   `row0` and `col0` (n,) on the OPERA 1 km grid; its attributes describe grid,
   Z–R and configuration.
 
+## IRENE test training on the workstation (T0)
+
+IRENE has its own environment (Python 3.13, torch with CUDA), next to DECADE;
+why each step is needed is in [method.md](method.md), *IRENE on the workstation
+(T0)*. On Windows, from the folder that holds `DECADE`:
+
+```bash
+git clone https://github.com/DSIP-FBK/IT4LIA-FBK-Seminar.git
+cd IT4LIA-FBK-Seminar/module2-irene-nowcasting
+uv venv --python 3.13 .venv
+uv run --no-project python -c "import tomllib; d = tomllib.load(open('pyproject.toml', 'rb')); print('\n'.join(x for x in d['project']['dependencies'] if not x.startswith('pysteps')))" > ../deps_no_pysteps.txt
+uv pip install --python .venv/Scripts/python.exe --torch-backend cu128 -r ../deps_no_pysteps.txt
+uv pip install --python .venv/Scripts/python.exe --no-deps -e .
+```
+
+Then, from `DECADE`, with that Python:
+
+```bash
+../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_t0.py \
+  --out results/irene_t0 --batch-size 16 --steps 300
+```
+
+It writes 400 fake windows (about 600 MB) to `--out` once, trains with IRENE's
+`train.py`, and prints a line `T0 STATS` with time per step and GPU memory
+(also in `stats_bs<batch>.json`); TensorBoard logs and checkpoints go to
+`--out/logs`. `--precision bf16-mixed`, `--ensemble-size` and `--num-workers`
+change the run.
+
 ## Options shared by the sub-commands
 
 - `--time-regex` must capture the timestamp in the file name; without it the
