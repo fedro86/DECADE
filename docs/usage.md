@@ -127,7 +127,8 @@ uv run python scripts/vmm_hourly.py --vmm-dir data/vmm --out results/h3_level --
   ERA5-Land axes (0.1° over the default `--area` of `scripts/fetch_cds.py`).
 - A raster stands for the step ending at its label, so the hour ending at H
   sums the labels H−55 min … H, as ERA5-Land hourly amounts.
-- `--pattern` sets the file name pattern (default `*.h5`); `--chunk` the
+- `--pattern` sets the file name pattern (default `*.hdf5`, as in the
+  project's copy, e.g. `vmm/2026/01/VMM202601010000.hdf5`); `--chunk` the
   rasters per task.
 - A cell not fully covered in any raster of an hour is NaN for that hour.
 

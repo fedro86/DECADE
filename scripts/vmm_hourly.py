@@ -56,7 +56,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--vmm-dir", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--pattern", default="*.h5", help="file name pattern of the rasters (default *.h5)")
+    ap.add_argument("--pattern", default="*.hdf5",
+                    help="file name pattern of the rasters (default *.hdf5, as in the project's copy)")
     ap.add_argument("--processes", type=int, default=8)
     ap.add_argument("--chunk", type=int, default=2000, help="rasters per task")
     a = ap.parse_args()

@@ -77,6 +77,6 @@ def steps_in_month(year: int, month: int, step_minutes: int) -> int:
     return int((end - start).total_seconds() // (60 * step_minutes))
 
 
-def list_rasters(folder: Path, pattern: str = "*.h5") -> list[Path]:
+def list_rasters(folder: Path, pattern: str = "*.hdf5") -> list[Path]:
     """VMM rasters under `folder`, sorted by name."""
     return sorted(Path(folder).rglob(pattern))
