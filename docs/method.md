@@ -1412,6 +1412,12 @@ data loader keeps up with the GPU, which T1 (#37) measures.
   normalisation.
 - **Frames.** IRENE uses 18 of the 24 frames of a window.
 
+### Inference on the whole domain (T8)
+
+To be measured (#86): GPU memory and time of one forecast of the whole Belgian
+CIRRUS crop by the pre-trained weights `it4lia/irene`, as a function of the
+ensemble size.
+
 ### Open point
 
 Where the IRENE code lives for DECADE (fork or pinned dependency). Here it is a
