@@ -1517,7 +1517,7 @@ the bridges must beat on the overlap days.
 
 Ready for the pan-European bridge: hourly radar rain over Belgium on the ERA5-Land grid of `fetch_cds.py`
 (0.1°), for all ODYSSEY and CIRRUS months (`notebooks/07-mr-level-correction.ipynb`, section 4;
-`results/h3_level/era5grid_*.npz`).
+`results/h3_level/era5grid_*.npz`). Each pixel takes the cell with the nearest centre (`opera_ds/bridge.py`, as S7).
 
 - **Rain rate:** Marshall–Palmer from 7 dBZ, capped at 55 dBZ, with no rain above 70 dBZ.
 - **Hours:** each frame stands for the step that ends at its label, so the hour ending at H sums 12 CIRRUS or
