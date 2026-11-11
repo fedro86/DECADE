@@ -1258,6 +1258,14 @@ checked on rain, and on the January features it should remove (review of #74).
   thresholds (research question 3). This is reported next to the
   before/after numbers.
 
+## Level correction (H3)
+
+Work in progress (#20). ODYSSEY has about half the rain volume of CIRRUS over
+Belgium on the 4 overlap days, a gap of 3.5–5 dB at all quantiles
+([data.md](data.md), *Known problems*). This section will compare three ways to
+remove that gap with the same criteria: a pan-European bridge, a national
+bridge, and plain seasonal quantile mapping.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
