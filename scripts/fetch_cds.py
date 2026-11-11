@@ -7,7 +7,11 @@
   European grid (1069 x 1069, 5.5 km), so the data are downloaded whole, cut to the smallest window of grid
   cells that covers `--area`, and the whole file is deleted. CERRA-Land is read from the ECMWF MARS archive,
   which runs one request per user and has a long shared queue, so one request covers all the missing months
-  of a year (about 1.9 GB downloaded per year).
+  of a year (about 1.9 GB downloaded per year), newest year first: H3 needs the years around the product
+  change of July 2024 first.
+
+Requests already waiting on the CDS (accepted or running) are picked up again instead of being sent twice, so a
+restarted run never has two requests in the queue for the same months.
 
 Files are netCDF, one per month, `<out>/<YYYY>/<dataset>_<YYYYMM>.nc`. Months already on disk are skipped, so
 an interrupted run resumes; failures are listed in `<out>/failed.txt`. The token is read from `COPERNICUS_CDS_API_KEY`, in the
@@ -89,18 +93,34 @@ def month_path(out: Path, dataset: str, y: int, m: int) -> Path:
 
 
 def requests_to_make(dataset: str, start: str, end: str, out: Path):
-    """(year, months) of each request: one month for ERA5-Land, all the missing months of a year for CERRA-Land."""
+    """(year, months) of each request: one month for ERA5-Land, all the missing months of a year for CERRA-Land,
+    newest year first."""
     todo = [(y, m) for y, m in months(start, end) if not month_path(out, dataset, y, m).exists()]
     if dataset == "era5-land":
         return [(y, [m]) for y, m in todo]
-    years = sorted({y for y, _ in todo})
+    years = sorted({y for y, _ in todo}, reverse=True)
     return [(y, [m for yy, m in todo if yy == y]) for y in years]
 
 
-def fetch(client, dataset: str, y: int, ms: list[int], out: Path, area) -> str:
+def waiting(client, dataset: str) -> dict[tuple[int, tuple[int, ...]], str]:
+    """Requests of `dataset` already accepted or running on the CDS, as {(year, months): request id}."""
+    found = {}
+    for rid in client.client.get_jobs(limit=100, status=["accepted", "running"]).request_ids:
+        remote = client.client.get_remote(rid)
+        if remote.collection_id == DATASETS[dataset]:
+            req = remote.request
+            year = req["year"][0] if isinstance(req["year"], list) else req["year"]
+            found[(int(year), tuple(int(m) for m in req["month"]))] = rid
+    return found
+
+
+def fetch(client, dataset: str, y: int, ms: list[int], out: Path, area, rid: str | None = None) -> str:
     (out / f"{y}").mkdir(parents=True, exist_ok=True)
     part = out / f"{y}" / f"{dataset}_{y}{ms[0]:02d}-{ms[-1]:02d}.part"
-    client.retrieve(DATASETS[dataset], request(dataset, y, ms, area), str(part))
+    if rid:
+        client.client.get_remote(rid).download(str(part))
+    else:
+        client.retrieve(DATASETS[dataset], request(dataset, y, ms, area), str(part))
     if dataset == "era5-land":
         path = month_path(out, dataset, y, ms[0])
         part.rename(path)
@@ -136,17 +156,24 @@ def main() -> None:
     a.out.mkdir(parents=True, exist_ok=True)
     failed = []
 
+    queued = waiting(client, a.dataset)
+
     def one(yms):
         y, ms = yms
         label = f"{y}-{ms[0]:02d}" + (f"..{ms[-1]:02d}" if len(ms) > 1 else "")
+        rid = queued.get((y, tuple(ms)))
+        if rid:
+            print(f"{label}: request {rid} already on the CDS, waiting for it", flush=True)
         try:
-            print(fetch(client, a.dataset, y, ms, a.out, a.area), flush=True)
+            print(fetch(client, a.dataset, y, ms, a.out, a.area, rid), flush=True)
         except Exception as exc:  # noqa: BLE001 - log every failure and go on with the other requests
             failed.append(f"{label} {exc}".replace("\n", " "))
             print(f"FAILED {label}: {exc}", flush=True)
 
+    todo = requests_to_make(a.dataset, a.start, a.end, a.out)
+    todo.sort(key=lambda yms: (yms[0], tuple(yms[1])) not in queued)  # requests already queued first
     with ThreadPoolExecutor(a.workers) as pool:
-        list(pool.map(one, requests_to_make(a.dataset, a.start, a.end, a.out)))
+        list(pool.map(one, todo))
     if failed:
         (a.out / "failed.txt").write_text("\n".join(sorted(failed)) + "\n", encoding="utf-8")
         raise SystemExit(f"{len(failed)} months failed, see {a.out / 'failed.txt'}")
