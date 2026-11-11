@@ -1357,6 +1357,20 @@ month between the products would carry the weather of 2024–2026 into the ODYSS
 difference. A bridge is needed to separate the two (#20, *Goal*). The plain mapping stays as the reference that
 the bridges must beat on the overlap days.
 
+### Radar rain on the ERA5-Land grid
+
+Ready for the pan-European bridge: hourly radar rain over Belgium on the ERA5-Land grid of `fetch_cds.py`
+(0.1°), for all ODYSSEY and CIRRUS months (`notebooks/07-mr-level-correction.ipynb`, section 4;
+`results/h3_level/era5grid_*.npz`).
+
+- **Rain rate:** Marshall–Palmer from 7 dBZ, capped at 55 dBZ, with no rain above 70 dBZ.
+- **Hours:** each frame stands for the step that ends at its label, so the hour ending at H sums 12 CIRRUS or
+  4 ODYSSEY frames, as the ERA5-Land hourly amounts end at their time stamp.
+- **Index, not ground rain:** with no cleaning, the Belgian mean of July 2023 is about 370 mm. The bridge
+  comparison therefore matches distributions, not amounts.
+
+![Monthly radar rain index and wet cell-hours over Belgium on the ERA5-Land grid, 2013–2026](figures/h3-level/monthly-radar-era5grid.png)
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
