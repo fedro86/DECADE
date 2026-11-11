@@ -1396,6 +1396,9 @@ errors; the training CRPS falls from 0.72 (step 10) to 0.13 (step 300) and the
 validation CRPS from 0.65 to 0.12. In validation the pairwise term holds
 B × 12 × 10 × 10 × 256 × 256 values, about 5 GB in fp32 at batch 16, which is
 why validation needs more memory than training and why bf16 does not lower it.
+The time per step starts when the batch is already loaded
+(`on_train_batch_start`), so it is GPU work only: T0 does not show whether the
+data loader keeps up with the GPU, which T1 (#37) measures.
 
 ### Notes for the data loader (T1)
 

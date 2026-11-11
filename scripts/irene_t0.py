@@ -54,6 +54,9 @@ def make_fake_store(out: Path, n_windows: int, seed: int = 0) -> tuple[Path, Pat
 
     zarr_path, csv_path = out / "fake_windows.zarr", out / "fake_windows.csv"
     if zarr_path.exists() and csv_path.exists():
+        found = len(pd.read_csv(csv_path))
+        if found != n_windows:
+            raise SystemExit(f"{out} already holds {found} fake windows, not {n_windows}: use a new --out")
         return zarr_path, csv_path
     rng = np.random.default_rng(seed)
     rr = np.empty((n_windows * T, H, W), np.float32)
@@ -69,7 +72,7 @@ def make_fake_store(out: Path, n_windows: int, seed: int = 0) -> tuple[Path, Pat
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--out", type=Path, default=Path("results/irene_t0"))
-    p.add_argument("--windows", type=int, default=400, help="fake windows (90%% train, 5%% val, 5%% test)")
+    p.add_argument("--windows", type=int, default=400, help="fake windows (90%% train, 5%% val, 5%% test); a store already in --out is reused only if it has this number")
     p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--steps", type=int, default=300, help="training steps")
     p.add_argument("--num-workers", type=int, default=4)

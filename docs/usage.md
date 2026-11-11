@@ -122,6 +122,9 @@ uv pip install --python .venv/Scripts/python.exe --torch-backend cu128 -r ../dep
 uv pip install --python .venv/Scripts/python.exe --no-deps -e .
 ```
 
+On Linux and on Leonardo the Python of that environment is `.venv/bin/python`
+instead of `.venv/Scripts/python.exe`, here and below.
+
 Then, from `DECADE`, with that Python:
 
 ```bash
@@ -129,7 +132,8 @@ Then, from `DECADE`, with that Python:
   --out results/irene_t0 --batch-size 16 --steps 300
 ```
 
-It writes 400 fake windows (about 600 MB) to `--out` once, trains with IRENE's
+It writes 400 fake windows (about 600 MB) to `--out` once (a later run with a
+different `--windows` stops with an error: use a new `--out`), trains with IRENE's
 `train.py`, and prints a line `T0 STATS` with time per step and GPU memory
 (also in `stats_bs<batch>.json`); TensorBoard logs and checkpoints go to
 `--out/logs`. `--precision bf16-mixed`, `--ensemble-size` and `--num-workers`
