@@ -1371,6 +1371,31 @@ Ready for the pan-European bridge: hourly radar rain over Belgium on the ERA5-La
 
 ![Monthly radar rain index and wet cell-hours over Belgium on the ERA5-Land grid, 2013–2026](figures/h3-level/monthly-radar-era5grid.png)
 
+### Bridge mapping on synthetic data
+
+`notebooks/07-mr-level-correction.ipynb`, section 5. Each ODYSSEY value goes to the bridge value with the
+same cumulative probability over the ODYSSEY years, then to the CIRRUS value with the same cumulative
+probability as that bridge value over the CIRRUS years. Dry stays dry: the wet frequency is set by the
+threshold pair, as in the probability matching method (Rosenfeld et al. 1993, section 5a), and not by adding
+rain at random as in frequency adaptation (Themeßl et al. 2012, section 2.2.2). This keeps the correction
+deterministic.
+
+The synthetic test uses one weather series per period for both the bridge and the product. ODYSSEY reads
+half as strong as CIRRUS and misses weak rain. Scores are taken above the level that ODYSSEY still detects.
+
+| weather of the CIRRUS years | share above that level: truth / plain / bridge | q50, q90, q99 over truth: plain | bridge |
+|---|---|---|---|
+| as the ODYSSEY years | 0.101 / 0.101 / 0.101 | 1.00, 1.01, 1.01 | 1.00, 1.00, 1.00 |
+| drier | 0.100 / 0.047 / 0.100 | 0.81, 0.73, 0.70 | 1.00, 1.00, 1.00 |
+| wetter | 0.101 / 0.101 / 0.101 | 1.74, 1.52, 1.44 | 1.00, 1.00, 1.00 |
+
+- The plain mapping is right only when the two periods have the same weather. With a drier or a wetter
+  CIRRUS period it is off by 30% to 74%.
+- The bridge mapping recovers the truth in all three cases, provided the product-to-bridge relation is the
+  same in both periods. That is the assumption the real bridges must satisfy.
+- Rain that ODYSSEY never detects cannot be restored without inventing it. Below that level the corrected
+  ODYSSEY stays drier than CIRRUS.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
