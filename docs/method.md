@@ -1616,6 +1616,103 @@ to [0, 60] as in IRENE, NaN outside coverage, and `alpha` for every frame.
 Motion is estimated on a crop larger than the window (`context_km` on each
 side). Windows with missing ODYSSEY frames are discarded.
 
+## IRENE on the workstation (T0)
+
+Test training of the IRENE code (ConvGRU-Ensemble, FBK) on the RTX 4090 with
+fake data shaped like the training windows (24 × 256 × 256 at 5 min, rain rate
+in mm/h, NaN outside coverage), before the stores exist (#34). Code read and run:
+`module2-irene-nowcasting` of
+[IT4LIA-FBK-Seminar](https://github.com/DSIP-FBK/IT4LIA-FBK-Seminar), commit
+`676ffe7` (23/9/2026), BSD 2-Clause licence, training entry point
+`convgru_ensemble/train.py`. The run is `scripts/irene_t0.py`, which calls that
+code unchanged.
+
+### Installation on native Windows
+
+IRENE runs on native Windows 11 (RTX 4090, driver 610.60), without WSL2. Three
+points differ from IRENE's own setup:
+
+- **PyTorch with CUDA.** `uv.lock` takes torch from PyPI, whose Windows wheels
+  have no CUDA. Install with `uv pip install --torch-backend cu128` (torch
+  2.11.0+cu128, CUDA 12.8 here) in a separate Python 3.13 environment
+  (`requires-python >= 3.13`; DECADE uses 3.12).
+- **pysteps** has no Windows wheel and needs a C compiler to build. Training
+  does not import it (only the module 2 notebooks do), so it is left out:
+  every other dependency of `pyproject.toml` is installed, then the package with
+  `--no-deps`.
+- **DataLoader.** `train.py` sets `multiprocessing_context="fork"`, which does
+  not exist on Windows: `spawn` with `persistent_workers=True` instead.
+
+Triton is not available on Windows, so `torch.compile` cannot be used there
+(`compile_model` is off by default in IRENE).
+
+**WSL2 is not needed for the workstation**: the test training runs natively,
+and WSL2 is not installed (installing it needs administrator rights). The runs
+that count are on Leonardo (Linux), where `fork`, pysteps and Triton work as in
+IRENE's setup.
+
+### Data, normalisation and loss (as in the code)
+
+- **Input.** A Zarr store with `RR` (t, x, y) in mm/h on the whole grid, and a
+  CSV of window corners (t, x, y); each sample is 24 × 256 × 256, of which a
+  random run of `steps = 18` frames is used: 6 past, 12 future (30 min → 60 min).
+  The split is chronological on the CSV rows: 90% train, 5% validation, 5% test.
+  Training samples get random 90° rotations and flips.
+- **Normalisation.** R → dBZ with Z = 200 R^1.6, clipped to [0, 60] dBZ (R
+  below about 0.036 mm/h gives 0 dBZ), then x/30 − 1, so that the input and the
+  output are in [−1, 1]. Predictions are clamped to [−1, 1].
+- **Missing data.** The mask is the set of pixels valid in every frame of the
+  sample; NaN are then set to −1 (0 dBZ). With `masked_loss` the loss is the
+  mean over the masked pixels only.
+- **Loss.** CRPS of the ensemble in normalised dBZ (not in mm/h):
+  mean |X_m − y| − ½ · mean |X_i − X_j|, where the second mean runs over all
+  M² pairs, the M pairs with i = j included. With `temporal_lambda = 0.01` the
+  CRPS is averaged over the 12 lead times and 0.01 · mean |X(t+1) − X(t)| is
+  added. Training uses M = 2 members; validation and test use M = 10. Members
+  differ by the random noise fed to the decoder.
+- **Model and optimiser.** ConvGRU encoder-decoder with 5 blocks, 64.2 million
+  parameters; Adam (lr 1e-4, fused), ReduceLROnPlateau on `val_loss`, batch 16.
+
+### Test training on fake data
+
+`scripts/irene_t0.py`: 400 fake windows (moving Gaussian cells, peaks 0.5–80
+mm/h, one window in four with a strip outside coverage), 4 `spawn` workers.
+GPU memory is the peak allocated by PyTorch during the training steps and during
+the validation steps (10 members); the 4090 has 24 GiB.
+
+| batch | precision | steps | time per step (median) | memory, training | memory, validation |
+|---|---|---|---|---|---|
+| 8 | fp32 | 100 | 0.22 s | 4.2 GiB | 5.9 GiB |
+| 16 | fp32 | 300 | 0.32 s | 7.4 GiB | 11.2 GiB |
+| 32 | fp32 | 100 | 0.57 s | 13.8 GiB | 13.8 GiB (batch 20) |
+| 16 | bf16-mixed | 100 | 0.27 s | 7.8 GiB | 11.2 GiB |
+
+300 steps at batch 16 take about 3.5 minutes with validation and test, with no
+errors; the training CRPS falls from 0.72 (step 10) to 0.13 (step 300) and the
+validation CRPS from 0.65 to 0.12. In validation the pairwise term holds
+B × 12 × 10 × 10 × 256 × 256 values, about 5 GB in fp32 at batch 16, which is
+why validation needs more memory than training and why bf16 does not lower it.
+The time per step starts when the batch is already loaded
+(`on_train_batch_start`), so it is GPU work only: T0 does not show whether the
+data loader keeps up with the GPU, which T1 (#37) measures.
+
+### Notes for the data loader (T1)
+
+- **Layout.** The DECADE store holds `RR` (n, T, H, W) per window (*Window
+  content*), not one grid (t, x, y) with a CSV of corners: the loader has to
+  read windows by index.
+- **float16.** The DECADE store keeps `RR` in float16 (maximum about 65,500).
+  IRENE computes 200 R^1.6 in the dtype it receives: in float16 it overflows
+  above about 37 mm/h, so everything from 48 to 60 dBZ becomes 60 dBZ (checked
+  on IRENE's `rainrate_to_reflectivity`). Convert to float32 before the
+  normalisation.
+- **Frames.** IRENE uses 18 of the 24 frames of a window.
+
+### Open point
+
+Where the IRENE code lives for DECADE (fork or pinned dependency). Here it is a
+clone of the FBK repository next to DECADE, with its own environment.
+
 ## Limitations
 
 - **Detail below 2 km is not created.** Recovering that variability would need

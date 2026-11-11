@@ -1,9 +1,11 @@
 """Pan-European bridge data (S7, #13) read over a time window and set on the OPERA grid as coarse cells.
 
-The files are the monthly netCDF of `scripts/fetch_cds.py` (docs/data.md, *Derived datasets*):
+The sources are the monthly netCDF of `scripts/fetch_cds.py` (docs/data.md, *Derived datasets*):
 
 - **ERA5-Land** `tp` (m) is accumulated from 00 UTC: the value at 00 UTC is the total of the previous day, and
-  hourly amounts are differences of consecutive hours (docs/data.md, *Inventory*).
+  hourly amounts are differences of consecutive hours (docs/data.md, *Inventory*). `era5land_to_zarr` turns
+  the files into one Zarr store of hourly amounts in mm, with `expver` for every hour (1 final, 5 preliminary),
+  and `era5land_sum` reads that store.
 - **CERRA-Land** `tp` (kg m-2, i.e. mm) is one analysis a day at 06 UTC: the value labelled D 06 UTC is the
   total from 06 UTC of D−1 to 06 UTC of D (CERRA-Land data user guide, in docs/data.md).
 
@@ -28,24 +30,94 @@ def _open(paths):
     return xr.open_mfdataset([str(p) for p in paths], combine="by_coords", engine="h5netcdf")
 
 
-def era5land_sum(paths, start: dt.datetime, end: dt.datetime):
-    """ERA5-Land total precipitation (mm) over the hours ending in (start, end], with (lat, lon) 1D in degrees.
-    `paths` must hold the hour before the first one summed."""
-    with _open(paths) as ds:
-        tp = ds["tp"].sel(valid_time=slice(np.datetime64(start), np.datetime64(end))).load()
-        lat, lon = ds["latitude"].values, ds["longitude"].values
-    t = tp["valid_time"].values.astype("datetime64[h]")
-    v = tp.values.astype(np.float64)
+def era5land_amounts(tp_m: np.ndarray, valid_time: np.ndarray, prev_m=None, prev_time=None) -> np.ndarray:
+    """Amount (mm) of each hour ending at `valid_time` from ERA5-Land `tp` (m, accumulated from 00 UTC): the value
+    itself at 01 UTC, otherwise the difference with the hour before. `prev_m` and `prev_time` are the last hour
+    before `valid_time[0]`; without them the first amount is NaN (unless it ends at 01 UTC)."""
+    t = valid_time.astype("datetime64[h]")
+    tt = t if prev_time is None else np.concatenate([[np.datetime64(prev_time, "h")], t])
+    if np.any(np.diff(tt) != np.timedelta64(1, "h")):
+        raise ValueError("ERA5-Land: hours are not consecutive")
+    v = tp_m.astype(np.float64)
+    before = np.concatenate([[np.full(v.shape[1:], np.nan) if prev_m is None else prev_m], v[:-1]])
     hour = (t - t.astype("datetime64[D]")).astype(int)
-    # amount of the hour ending at t: the value itself at 01 UTC, otherwise the difference with the hour before
-    amount = np.where((hour == 1)[:, None, None], v, v - np.concatenate([[np.full(v.shape[1:], np.nan)], v[:-1]]))
-    if hour[0] != 1:                       # the first hour has no predecessor in the slice: drop it
-        amount, t = amount[1:], t[1:]
-    keep = t > np.datetime64(start, "h")
+    return 1000.0 * np.where((hour == 1)[:, None, None], v, v - before)
+
+
+def era5land_to_zarr(files, out: Path, chunk_hours: int = 744) -> dict:
+    """Monthly ERA5-Land files (in time order, without gaps) to one Zarr store at `out`, written anew.
+
+    `tp` is the amount (mm) of the hour ending at `valid_time`, float32, lossless (zstd with bitshuffle), one chunk
+    of `chunk_hours` over the whole domain; the first hour is NaN. Small negative amounts left by the differences
+    are set to 0 and counted. `expver` (int8) is 1 for final and 5 for preliminary (ERA5T-based) hours. Returns
+    the store attributes."""
+    import shutil
+
+    import xarray as xr
+    import zarr
+    from zarr.codecs import BloscCodec
+
+    out = Path(out)
+    part = out.with_name(out.name + ".part")
+    shutil.rmtree(part, ignore_errors=True)
+    prev_m = prev_time = None
+    negative, lowest, preliminary = 0, 0.0, 0
+    for i, f in enumerate(files):
+        with xr.open_dataset(f, engine="h5netcdf") as ds:
+            tp, t = ds["tp"].values, ds["valid_time"].values
+            expver = np.array([int(x) for x in np.atleast_1d(ds["expver"].values)], np.int8)
+            expver = np.broadcast_to(expver, t.shape) if expver.size == 1 else expver
+            lat, lon = ds["latitude"].values, ds["longitude"].values
+        mm = era5land_amounts(tp, t, prev_m, prev_time)
+        neg = mm < 0
+        negative, lowest = negative + int(neg.sum()), min(lowest, float(np.nanmin(mm, initial=0.0)))
+        preliminary += int(np.sum(expver != 1))
+        mm[neg] = 0.0
+        month = xr.Dataset(
+            {"tp": (("valid_time", "latitude", "longitude"), mm.astype(np.float32),
+                    {"units": "mm", "long_name": "total precipitation in the hour ending at valid_time"}),
+             "expver": (("valid_time",), expver, {"long_name": "ERA5 experiment version: 1 final, 5 preliminary"})},
+            coords={"valid_time": t, "latitude": lat, "longitude": lon})
+        if i == 0:
+            enc = {"tp": {"chunks": (chunk_hours, lat.size, lon.size),
+                          "compressors": [BloscCodec(cname="zstd", clevel=5, shuffle="bitshuffle")]},
+                   "expver": {"chunks": (chunk_hours,)},
+                   "valid_time": {"units": "hours since 1970-01-01", "dtype": "int64"}}
+            month.to_zarr(part, mode="w", zarr_format=3, consolidated=False, encoding=enc)
+        else:
+            month.to_zarr(part, append_dim="valid_time", zarr_format=3, consolidated=False)
+        prev_m, prev_time = tp[-1], t[-1]
+    attrs = {
+        "title": "ERA5-Land hourly total precipitation over the Belgian working domain (DECADE, S9)",
+        "source": "ERA5-Land hourly, total_precipitation, Copernicus Climate Data Store (reanalysis-era5-land)",
+        "licence": "CC BY 4.0; contains modified Copernicus Climate Change Service information",
+        "tp_convention": "amount of the hour ending at valid_time, from the accumulation from 00 UTC; the first hour "
+                         "is NaN; negative differences set to 0",
+        "negative_amounts_set_to_0": negative, "lowest_negative_amount_mm": lowest,
+        "preliminary_hours": preliminary,
+        "history": f"opera_ds.bridge.era5land_to_zarr, {dt.date.today().isoformat()}",
+    }
+    zarr.open_group(part, mode="r+").attrs.update(attrs)
+    shutil.rmtree(out, ignore_errors=True)
+    part.rename(out)
+    return attrs
+
+
+def era5land_sum(store, start: dt.datetime, end: dt.datetime, allow_preliminary: bool = False):
+    """ERA5-Land total precipitation (mm) over the hours ending in (start, end], with (lat, lon) 1D in degrees,
+    from the store of `era5land_to_zarr`. Preliminary hours raise unless `allow_preliminary`."""
+    import xarray as xr
+
+    with xr.open_zarr(store, consolidated=False) as ds:
+        win = ds.sel(valid_time=slice(np.datetime64(start + dt.timedelta(hours=1)), np.datetime64(end)))
+        tp, expver = win["tp"].values, win["expver"].values
+        lat, lon = ds["latitude"].values, ds["longitude"].values
     expected = int((end - start).total_seconds() // 3600)
-    if keep.sum() != expected:
-        raise ValueError(f"ERA5-Land: {keep.sum()} hours in ({start}, {end}], expected {expected}")
-    return 1000.0 * amount[keep].sum(0), lat, lon
+    if len(expver) != expected:
+        raise ValueError(f"ERA5-Land: {len(expver)} hours in ({start}, {end}], expected {expected}")
+    if not allow_preliminary and np.any(expver != 1):
+        raise ValueError(f"ERA5-Land: ({start}, {end}] holds {int(np.sum(expver != 1))} preliminary hours")
+    return tp.astype(np.float64).sum(0), lat, lon
 
 
 def cerraland_sum(paths, start: dt.datetime, end: dt.datetime):

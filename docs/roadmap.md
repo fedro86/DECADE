@@ -103,6 +103,8 @@ left allows it.
 - [ ] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
   CERRA-Land download over the Belgian domain (F, 11/11–6/12; split from S7
   on 11/11/2026).
+- [x] [**S9**](https://github.com/fedro86/DECADE/issues/83) Convert ERA5-Land
+  to one Zarr store of hourly amounts (F, 12–13/11).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
   environment on the CINECA modules (F, 18–29/11, if the call is won).
 - [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
@@ -203,7 +205,7 @@ On the RTX 4090 alone (about 1/5 of a node, to be measured) phase 1 by the end
 of January is possible only with 1 seed and runs at about 40% of the planned
 size.
 
-- [ ] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
+- [x] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
   4090 with fake data (M, 3–22/11).
 - [ ] [**T2**](https://github.com/fedro86/DECADE/issues/35) Decide the loss and
   the time step of configuration B (F+M, 23/11–6/12).

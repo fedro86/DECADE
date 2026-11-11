@@ -95,13 +95,14 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `opera_ds/windows.py` | ML windows: `Window`, `make_window`, `WindowStore`, `dbz_to_rr` |
 | `opera_ds/plots.py` | validation figures |
 | `opera_ds/clean.py` | first-version cleaning (H2): `clean_composite` (> 70 dBZ, Gabella as a switch, static mask), `StaticCounts` (per-pixel counts on past composites and the mask rule), `StaticMask` (fill tables, radar of each masked pixel, switched with `how/nodes`), `static_fill` (EURADCLIM fill), `odyssey_period` |
-| `opera_ds/bridge.py` | bridge data (S7): `era5land_sum`, `cerraland_sum` (totals over a window), `cell_index` and `cell_mean` (OPERA pixels on the bridge cells), `pixel_lonlat`, `monthly_files` |
+| `opera_ds/bridge.py` | bridge data (S7, S9): `era5land_to_zarr` and `era5land_amounts` (ERA5-Land files to one store of hourly amounts), `era5land_sum`, `cerraland_sum` (totals over a window), `cell_index` and `cell_mean` (OPERA pixels on the bridge cells), `pixel_lonlat`, `monthly_files` |
 | `opera_ds/vmm.py` | VMM radar rasters (H3): `read_vmm` (−2 outside coverage → NaN, UTC label), `hourly_cell_sums` (hourly rain on the bridge cells), `steps_in_month` |
 | `opera_ds/homog.py` | homogeneity of a bridge (H3): `area_ratio` (product / bridge over the Belgian cells), `step` (log10 step of a monthly ratio at a date, with the spread before it) |
 | `scripts/vmm_hourly.py` | hourly VMM rain on the ERA5-Land cells over Belgium (H3) |
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
 | `site/index.html`, `site/fetch_data.sh` | project plan page; ticket status, owners, dates and dependencies are read from the issues by `fetch_data.sh` when `.github/workflows/pages.yml` publishes it, so only the plan text lives in the page |
-| `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py`, `scripts/fetch_cds.py` | download and masks; single-radar files for the radar positions of a day; ERA5-Land and CERRA-Land from the Copernicus Climate Data Store |
+| `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py`, `scripts/fetch_cds.py`, `scripts/bridge_to_zarr.py` | download and masks; single-radar files for the radar positions of a day; ERA5-Land and CERRA-Land from the Copernicus Climate Data Store, ERA5-Land as one Zarr store |
+| `scripts/irene_t0.py` | IRENE test training on fake windows (T0); runs with the IRENE environment, not DECADE's |
 
 Rules the code relies on:
 

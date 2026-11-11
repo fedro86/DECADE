@@ -29,10 +29,14 @@ uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
 
 # pan-European bridge data from the Copernicus Climate Data Store, one file per
 # month over Belgium + 350 km (token COPERNICUS_CDS_API_KEY in .env; accept the
-# dataset licence on the CDS website first); a rerun skips the months on disk
-# and waits for a request already queued instead of sending it again
+# dataset licence on the CDS website first); a rerun skips the months on disk,
+# except ERA5-Land months with preliminary hours, and waits for a request
+# already queued instead of sending it again
 uv run python scripts/fetch_cds.py --dataset era5-land --start 2012-01 --end 2026-10 --out data/era5land_bel
 uv run python scripts/fetch_cds.py --dataset cerra-land --start 2012-01 --end 2025-12 --out data/cerraland_bel
+
+# ERA5-Land as one Zarr store of hourly amounts in mm, written anew each time
+uv run python scripts/bridge_to_zarr.py --dataset era5-land --src data/era5land_bel --out data/era5land_bel.zarr
 
 # Belgium mask on the full CIRRUS 1 km grid (Natural Earth 1:10m)
 uv run python scripts/make_region_mask.py --ref "data/cirrus/OPERA@20240702T1205@0@DBZH.h5" \
@@ -126,6 +130,38 @@ uv run python scripts/vmm_hourly.py --vmm-dir data/vmm --out results/h3_level --
 - `--pattern` sets the file name pattern (default `*.h5`); `--chunk` the
   rasters per task.
 - A cell not fully covered in any raster of an hour is NaN for that hour.
+
+## IRENE test training on the workstation (T0)
+
+IRENE has its own environment (Python 3.13, torch with CUDA), next to DECADE;
+why each step is needed is in [method.md](method.md), *IRENE on the workstation
+(T0)*. On Windows, from the folder that holds `DECADE`:
+
+```bash
+git clone https://github.com/DSIP-FBK/IT4LIA-FBK-Seminar.git
+cd IT4LIA-FBK-Seminar/module2-irene-nowcasting
+uv venv --python 3.13 .venv
+uv run --no-project python -c "import tomllib; d = tomllib.load(open('pyproject.toml', 'rb')); print('\n'.join(x for x in d['project']['dependencies'] if not x.startswith('pysteps')))" > ../deps_no_pysteps.txt
+uv pip install --python .venv/Scripts/python.exe --torch-backend cu128 -r ../deps_no_pysteps.txt
+uv pip install --python .venv/Scripts/python.exe --no-deps -e .
+```
+
+On Linux and on Leonardo the Python of that environment is `.venv/bin/python`
+instead of `.venv/Scripts/python.exe`, here and below.
+
+Then, from `DECADE`, with that Python:
+
+```bash
+../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_t0.py \
+  --out results/irene_t0 --batch-size 16 --steps 300
+```
+
+It writes 400 fake windows (about 600 MB) to `--out` once (a later run with a
+different `--windows` stops with an error: use a new `--out`), trains with IRENE's
+`train.py`, and prints a line `T0 STATS` with time per step and GPU memory
+(also in `stats_bs<batch>.json`); TensorBoard logs and checkpoints go to
+`--out/logs`. `--precision bf16-mixed`, `--ensemble-size` and `--num-workers`
+change the run.
 
 ## Options shared by the sub-commands
 
@@ -235,6 +271,7 @@ measured in November 2026 for S0). "—" means not measured on that machine.
 | `fetch_cog_crop.py`, Belgium + 350 km, ODYSSEY | about 3 h for 12 years with 32 threads | 15 min and 3.0 GB for one year (2023) with 32 threads |
 | `fetch_cog_crop.py`, Belgium + 350 km, CIRRUS | — | 1.2 h and 25.5 GB (258 kB per frame) for one year (2025) with 32 threads |
 | `fetch_cds.py`, ERA5-Land, Belgium + 350 km | 6.6 h and 2.9 GB for 178 months with 4 requests at a time (queue on the CDS, not local work) | — |
+| `bridge_to_zarr.py`, ERA5-Land, 178 months | 4.5 min, 3.0 GB | — |
 | synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions | 3.9 min |
 
 With the IRENE parameters `sample` selects about 56,000 windows in 5 days, so
