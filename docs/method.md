@@ -1356,6 +1356,90 @@ What the literature says about the two pan-European candidates:
   earlier part is not documented (S7, #77).
 - **Neither paper evaluates hourly precipitation or the diurnal cycle.**
 
+### Homogeneity of the bridge
+
+A bridge links ODYSSEY and CIRRUS only if it has no break of its own near
+7/2024 (#20, *In scope*, decided 11/11/2026). A change over time counts as
+climate only with a published source. This section collects what the
+literature says; the test in the data waits for the ERA5-Land files of S7 and
+the project's VMM copy.
+
+**ERA5-Land.** Its precipitation is ERA5's, only interpolated
+([Muñoz-Sabater et al. 2021](sources/2021%20-%20Muñoz-Sabater%20-%20ERA5-Land%20a%20state-of-the-art%20global%20reanalysis%20dataset%20for%20land%20applications.md),
+section 2.3), so its homogeneity is ERA5's.
+
+- **Fixed system, changing inputs.** ERA5 keeps one model and assimilation
+  system (IFS Cy41r2) but ingests every available observation, so the amount
+  of data changes over time and "modulates the biases"; no rain gauge is
+  assimilated, and radar rain rates only over the United States
+  ([Soci et al. 2024](sources/2024%20-%20Soci%20-%20The%20ERA5%20global%20reanalysis%20from%201940%20to%202022.md),
+  section 1, p. 4015). The dates of each observation type are in Hersbach et
+  al. (2020, section 5), not yet read (to download).
+- **Production seams.** ERA5 is spliced from parallel production runs, and a
+  jump can occur at each joint. Joints in 2012–2026: 1/1/2015, 1/3/2019,
+  1/9/2021, 1/1/2022 and 23/10/2022; the last run is still going, so there is
+  none in 2023–2026
+  ([ECMWF documentation](sources/2026%20-%20ECMWF%20-%20ERA5%20data%20documentation%20and%20known%20issues.md),
+  *Production experiments*, read 11/11/2026). At the 2015 joint soil moisture
+  jumps; the effect on precipitation is not shown (Soci et al. 2024, p. 4028).
+- **Events near the switch.** The final ERA5 was rerun from 7/2024 for wrong
+  snow observations in the Alps; it differs from the preliminary version from
+  1/7 to 17/11/2024, mainly in snow and 2 m temperature, and ECMWF states that
+  ERA5-Land is not affected. Sea-surface temperature was frozen on
+  24–29/6/2024 and sea ice on 11–18/9/2024; no effect on precipitation is
+  documented (ECMWF documentation, *Known issues*). The last 2–3 months of a
+  download are preliminary data, so they are downloaded again before a fit.
+- **Slow drift.** Against homogenised gauge grids, ERA5 annual precipitation
+  drifts by +1.4 % (Italy) and +1.6 % (Alps) per 10 years over 1940–2010, and
+  rises again from 1995 to 2020; it is a drift, not a step
+  ([Lussana et al. 2024](sources/2024%20-%20Lussana%20-%20Evaluating%20long-term%20trends%20in%20annual%20precipitation%20A%20temporal%20consistency%20analysis%20of%20ERA5%20data%20in%20the%20Alps%20and%20Italy.md),
+  Tables 1–2, section 4). At that rate it would be about 2 % over 2012–2026
+  (computed here); comparing months close to 7/2024 limits it.
+
+**VMM.** The radar-only intensity `SRI_1km_cappi` is a composite of Helchteren
+(VMM, since 23/10/2016) and Jabbeke (RMI, since 2012), with Herwijnen (KNMI)
+in the 02/2022 service manual but not in a parliamentary answer of the same
+year ([radar network changes](sources/2026%20-%20RMI%20and%20VMM%20-%20Belgian%20radar%20network%20changes%202016–2026.md)).
+
+- **No documented change in 7/2024.** No public source gives a hardware,
+  calibration or processing change of these radars or of the VMM composite in
+  2023–2026, nor the Z–R relation or clutter filter of `SRI_1km_cappi` in any
+  year. Absence of records is not evidence of homogeneity: Helchteren is
+  serviced twice a year
+  ([Grosemans 2022](sources/2022%20-%20Grosemans%20-%20Overstromingen%20juli%202021%20Limburg%20-%20Netwerk%20pluviometers%20-%20Dossiers.md)).
+- **Jabbeke, September 2024.** VMM serves `*_BEJAB0924issue` series from
+  1/10/2024 ([data.md](data.md), VMM row), and KNMI changed the Jabbeke scans
+  it ingests on 9/9/2024
+  ([Overeem et al. 2025](sources/2025%20-%20Overeem%20-%20The%20Dutch%20real-time%20gauge-adjusted%20radar%20precipitation%20product.md),
+  section 7.2). Neither source says what changed. The date is two months after
+  the ODYSSEY → CIRRUS switch, so a VMM comparison is tested at both 7/2024 and
+  9/2024.
+
+**Climate around the switch.** At Uccle, 2024 was the wettest year since 1833
+(1,170.7 mm) and 2025 the driest since 1991 (620.6 mm), against a 1991–2020
+normal of 837.3 mm; every month from 10/2023 to 9/2024 was wetter than normal,
+and 2025 was drier than normal everywhere in Belgium
+([RMI overviews](sources/2026%20-%20RMI%20-%20Climatological%20overviews%20of%20Belgium%202012–2026.md),
+overviews 2024 and 2025). On the overlap days the rain was small: of the
+87.0 mm of 1–12/7/2024, 78.8 mm fell on 9 and 12 July (monthly overview
+2024-07). No published trend reaches 2024: at Uccle, 1981–2019, annual and
+summer totals have no significant trend, spring falls by about 9 mm per decade
+and the 1 h maximum rises by about 3 mm per decade
+([RMI 2020](sources/2020%20-%20RMI%20-%20Klimaatrapport%202020.%20Van%20klimaatinformatie%20tot%20klimaatdiensten.md),
+pp. 13–15).
+
+- **Consequence.** A drop of the absolute level from 2024 to 2025 is expected
+  from the weather. A step in the ratio between a radar product and the bridge
+  is not: the weather is in both. The same months are therefore compared on
+  both sides, and a wet ODYSSEY year (2021, 2023) is set against the wet 2024.
+
+**Test in the data (to run when the files are here).** ERA5-Land and VMM,
+monthly on the Belgian ERA5-Land cells (`opera_ds/bridge.py`), from 2023, as
+the ratio of the two sums; a break is looked for at 7/2024 and 9/2024, with the
+days of the ERA5 events above left out. The test statistic is still to be
+chosen from the homogenisation literature. The ERA5-Land / CERRA-Land
+comparison over 2012–2025 is in H3b (#82).
+
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
 `notebooks/07-mr-level-correction.ipynb`: distributions of reflectivity over Belgium (Natural Earth mask) per
