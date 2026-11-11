@@ -1414,9 +1414,32 @@ data loader keeps up with the GPU, which T1 (#37) measures.
 
 ### Inference on the whole domain (T8)
 
-To be measured (#86): GPU memory and time of one forecast of the whole Belgian
-CIRRUS crop by the pre-trained weights `it4lia/irene`, as a function of the
-ensemble size.
+GPU memory and time of one forecast of the whole Belgian CIRRUS crop by the
+pre-trained weights `it4lia/irene`, as a function of the ensemble size (#86).
+The weights have no layer of fixed size, so they apply to the whole grid
+padded to a multiple of 32, without tiles; the paper evaluates only
+256 × 256 patches (Camilletti et al. 2026, section 6). T0 measured training
+on patches only.
+
+- **Input.** Six consecutive CIRRUS frames of `data/cirrus_bel/`
+  (956 × 998 at 1 km, padded by `predict` to 960 × 1024), 5/7/2024
+  22:20–22:45 UTC, the time of 5/7/2024 with the largest wet share in the
+  crop (24.5% of the pixels at 0.1 mm/h or more in the last frame); rain
+  rate from Marshall–Palmer as in `opera_ds.clean.rain_rate`. Before 5/7/2024
+  06:05 CIRRUS has no frames at the quarter hours (*Overlap between products*
+  in [data.md](data.md)), so 1–4/7/2024 has no six consecutive frames.
+- **Runs.** IRENE's `predict` unchanged, fp32: forecasts of 12 and 24 steps
+  (60 and 120 min) with K = 1, 5, 10, 15, 20, 25 members, one warm-up then 5
+  timed forecasts per case; the same on the central 256 × 256 patch with
+  K = 10. `predict` runs without gradients and decodes the members one after
+  the other, keeping them all on the GPU until the end.
+- **Measured.** Wall time of `predict` (rain rate in, rain rate out, with the
+  copy of the members to the CPU) and of the model's forward pass alone;
+  peak memory allocated and reserved by PyTorch; peak GPU memory in use by
+  `nvidia-smi` (CUDA context and the desktop included), polled every 0.2 s,
+  so a peak shorter than that can be missed.
+
+Results: to be measured.
 
 ### Open point
 

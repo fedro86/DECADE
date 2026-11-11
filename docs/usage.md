@@ -143,6 +143,34 @@ different `--windows` stops with an error: use a new `--out`), trains with IRENE
 `--out/logs`. `--precision bf16-mixed`, `--ensemble-size` and `--num-workers`
 change the run.
 
+## IRENE inference cost on the whole domain (T8)
+
+`scripts/irene_inference_cost.py` measures GPU memory and time of one IRENE
+forecast of the whole Belgian CIRRUS crop with the pre-trained weights
+`it4lia/irene` (what is measured and why: [method.md](method.md), *Inference
+on the whole domain (T8)*). Two steps, from `DECADE`. First the input, with
+DECADE's environment: six consecutive CIRRUS frames ending at `--end` (UTC),
+as rain rate in mm/h:
+
+```bash
+uv run python scripts/irene_inference_cost.py --make-input --end 2024-07-05T22:45 --out results/irene_inference
+```
+
+It writes `cirrus_6frames.npy` (6 × 956 × 998, float32, about 23 MB) and
+`cirrus_6frames.json` (files and times). Then the measurement, with the Python
+of the IRENE environment (previous section), with no other job on the GPU:
+
+```bash
+../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_inference_cost.py   --input results/irene_inference/cirrus_6frames.npy --out results/irene_inference
+```
+
+The first run downloads the weights (`model.ckpt`, about 770 MB) into the
+HuggingFace cache; the revision used is recorded. It prints one line per case
+and writes `stats.json` and `irene_inference_cost.png` to `--out`. It stops if
+another Python job is on the GPU (`--force` to ignore). `--ensemble`, `--steps`
+(of 5 min), `--reps` and `--revision` change the run; `--random-weights` builds
+the model without the download, to check the script only.
+
 ## Options shared by the sub-commands
 
 - `--time-regex` must capture the timestamp in the file name; without it the
