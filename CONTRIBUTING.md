@@ -99,6 +99,7 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
 | `site/index.html`, `site/fetch_data.sh` | project plan page; ticket status, owners, dates and dependencies are read from the issues by `fetch_data.sh` when `.github/workflows/pages.yml` publishes it, so only the plan text lives in the page |
 | `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py`, `scripts/fetch_cds.py` | download and masks; single-radar files for the radar positions of a day; ERA5-Land and CERRA-Land from the Copernicus Climate Data Store |
+| `scripts/irene_t0.py` | IRENE test training on fake windows (T0); runs with the IRENE environment, not DECADE's |
 
 Rules the code relies on:
 
