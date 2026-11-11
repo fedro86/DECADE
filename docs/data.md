@@ -309,6 +309,27 @@ necessarily the radar's.
   any composite. The German radars of the table are missing from 26–27/7 to
   24–25/8/2016.
 
+### Radars in the CIRRUS composites (`how/nodes`)
+
+Share of the CIRRUS hours of each month whose `how/nodes` lists the radar, on
+one file per hour of `data/cirrus_bel/` (7/2024 → 11/2026, read 11/11/2026;
+`notebooks/07-mr-level-correction.ipynb`, section 7).
+`bezav` (Zaventem) is never listed. Months where a Benelux radar is missing
+from a fifth of the hours or more:
+
+| radar | months (share of hours listed) |
+|---|---|
+| `behel` (Helchteren) | 7/2024 (0.39), 12/2024 (0.80), 4/2025 (0.35), 6/2026 (0.77) |
+| `bejab` (Jabbeke) | 9/2024 (0.62), 10/2024 (0.69), 12/2025 (0.80) |
+| `bewid` (Wideumont) | 11/2024 (0.22), 12/2024 (0.43), 12/2025 (0.80) |
+
+- `bejab` missing in 9–10/2024 matches the `*_BEJAB0924issue` series of the
+  VMM service (VMM row of *Inventory of sources and licences*).
+- Among nearby radars, `frave` (Avesnois) is in 0.65 of the hours of 9/2025
+  and 0.82–0.84 of 1–2/2026; `deneu` (Neuheilenbach) in 0.50 of 2/2025; all
+  other months are at 0.82 or more for `frave`, `frabb`, `frtro`, `deess`,
+  `deneu`, `nldhl` and `nlhrw`.
+
 ## Known problems
 
 - **Outliers in ODYSSEY.** For example on 3/7/2024 12:00 a group of 4 pixels

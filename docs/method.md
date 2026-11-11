@@ -1505,7 +1505,10 @@ on the ODYSSEY times, July 2024 left out:
   to 15 dBZ.
 - The CIRRUS months fall inside the ODYSSEY spread, often at its low end; spring 2025 and July 2026 are dry.
 - July 2026 has echoes on 5% of the Belgian pixel-times, against 17–26% in the other summer months, while the
-  Belgian radars are listed in `how/nodes`. Not checked against gauges.
+  Belgian radars are listed in `how/nodes`. It is a dry month, not a data problem: 10.6 mm at Uccle against a
+  normal of 76.9 mm
+  ([RMI overviews](sources/2026%20-%20RMI%20-%20Climatological%20overviews%20of%20Belgium%202012–2026.md))
+  and 13.8 mm in ERA5-Land over the 186 Belgian cells (*Radar against ERA5-Land, month by month*).
 
 ![ODYSSEY and CIRRUS per month, 2018–2026](figures/h3-level/months-odyssey-cirrus.png)
 
@@ -1593,6 +1596,45 @@ stays dry, and July 2024 is left out. The fit is applied to ODYSSEY on the 382 p
 - With July 2025 alone it gets closer, but it is still lower than CIRRUS. The result depends on which CIRRUS
   year is in the fit, which is the year-to-year spread of *ODYSSEY and CIRRUS alone*.
 - This is the baseline the bridges must beat.
+
+### Radar against ERA5-Land, month by month
+
+`notebooks/07-mr-level-correction.ipynb`, section 7; first use of the
+ERA5-Land store of S9 (#83). The radar rain index of *Radar rain on the
+ERA5-Land grid* and ERA5-Land are summed over the same hours and cells each
+month: the 186 ERA5-Land cells full for both products, complete radar hours,
+final ERA5-Land hours only (to 8/2026). 163 months, 2/2013 → 8/2026.
+
+![Monthly ratio of the radar index to ERA5-Land and of their wet shares over Belgium, 2013–2026](figures/h3-level/radar-era5-monthly.png)
+
+| step (log10 of the monthly ratio, `opera_ds.homog.step`) | 12 months each side | 24 months each side |
+|---|---|---|
+| amounts, 7/2024 | +0.090 (×1.23), t-test p 0.006, Mann–Whitney p 0.007 | +0.030 (×1.07), p 0.34 and 0.12 |
+| amounts, 9/2024 | +0.049 (×1.12), p 0.16 and 0.11 | — |
+| wet share (≥ 0.1 mm per cell-hour), 7/2024 | +0.084 (×1.21), p 0.0002 and 0.0007 | +0.057 (×1.14), p 0.0007 and 0.001 |
+| amounts, 8/2018 (known OPERA change, check) | −0.197 (×0.64), p 0.002 and 0.004 | — |
+
+- **Against ERA5-Land the change is small in amounts and clear in frequency.**
+  CIRRUS has about 14–21% more wet cell-hours per ERA5-Land wet cell-hour
+  than ODYSSEY, with either window. The amount ratio rises by 23% with 12
+  months and 7% with 24, and only the first is significant. This is far less
+  than the factor of about 2 on the overlap days 1–5/7/2024, which were
+  almost dry at Uccle (*Homogeneity of the bridge*): the overlap days alone
+  overstate the gap in amounts.
+- **The ratio is not stable within each product.** ODYSSEY, with no cleaning,
+  has artefact periods (spring 2018 and May 2020, when its wet share reaches
+  3–4 times ERA5-Land's) and a slow decline from 4.1–4.3 in 2019–2022 to 3.5
+  in 2023. CIRRUS falls from 5.0 (median of 7–12/2024) to 4.0 (2025) and 2.5
+  (1–8/2026); 1–4/2026 are at 1.9–2.6, against 3.5–4.7 in the same months of
+  2025. The radar/ERA5-Land ratio also has a seasonal cycle, higher in summer.
+- **Not explained by radars missing from CIRRUS.** The Belgian, Dutch and
+  nearby French and German radars are in at least 77% of the CIRRUS hours of
+  every month of 2026 ([data.md](data.md), *Radars in the CIRRUS
+  composites*). Whether the 2026 drop is in CIRRUS or in ERA5-Land is open:
+  the VMM comparison (*Homogeneity of the bridge*) can tell them apart.
+- **Next.** Repeat on ODYSSEY cleaned as in H2, which #20 requires and which
+  removes the artefact months; then the VMM / ERA5-Land ratio at 7/2024 and
+  9/2024, and VMM / CIRRUS through 2026.
 
 ## Training windows
 
