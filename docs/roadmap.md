@@ -30,7 +30,7 @@ motivation is in the [README](../README.md).
 
 ### Constraints
 
-- **Only pan-European sources in the method** (OPERA, EURADCLIM, ERA5-Land), so
+- **Only pan-European sources in the method** (OPERA, EURADCLIM, ERA5-Land, CERRA-Land), so
   that it scales to the whole OPERA domain. National products only as validation,
   unless the level correction decides otherwise (*Open decisions*, bridge).
 - **Only real-time inputs in the operational chain** (decided 9/11/2026, review
@@ -96,8 +96,13 @@ left allows it.
   licence, access token, gauge adjustment and start date (F, 3–15/11).
 - [x] [**S5**](https://github.com/fedro86/DECADE/issues/12) Check the period of
   the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
-- [ ] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get EURADCLIM and
-  ERA5-Land over the Belgian domain (F, 3–22/11).
+- [x] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get pan-European
+  bridge data over the Belgian domain: ERA5-Land, and the CERRA-Land download
+  started newest year first; EURADCLIM 3.0 ends in 2023 and its download is
+  left to H4 (F, 3–22/11; decided 10/11/2026).
+- [ ] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
+  CERRA-Land download over the Belgian domain (F, 11/11–6/12; split from S7
+  on 11/11/2026).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
   environment on the CINECA modules (F, 18–29/11, if the call is won).
 - [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
@@ -124,6 +129,9 @@ left allows it.
   radar artefacts from ODYSSEY (M→F, 16–29/11).
 - [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Correct the ODYSSEY
   → CIRRUS level difference through a bridge dataset (M→F, 16/11–6/12).
+- [ ] [**H3b**](https://github.com/fedro86/DECADE/issues/82) Add CERRA-Land
+  as bridge and check ERA5-Land against it (M→F, 7–18/12, indicative: starts
+  when S8 ends).
 - [ ] [**H6**](https://github.com/fedro86/DECADE/issues/21) Decide the time
   shift used in production (F+M, 30/11–6/12).
 - [ ] [**H5**](https://github.com/fedro86/DECADE/issues/22) Validate archive v1
@@ -196,7 +204,7 @@ of January is possible only with 1 seed and runs at about 40% of the planned
 size.
 
 - [ ] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
-  4090 with fake data (F, 3–22/11).
+  4090 with fake data (M, 3–22/11).
 - [ ] [**T2**](https://github.com/fedro86/DECADE/issues/35) Decide the loss and
   the time step of configuration B (F+M, 23/11–6/12).
 - [ ] [**T7**](https://github.com/fedro86/DECADE/issues/36) Train on 4 GPUs with
@@ -277,10 +285,23 @@ size.
   CIRRUS has no equivalent, so a `QIND` mask could not run in the
   operational chain. The crops stay without quality bands.
 
+- **CERRA-Land moves to its own ticket** (11/11/2026). It is read from the
+  ECMWF MARS archive, where all CDS users share one queue and each user runs
+  one request at a time ([data.md](data.md), *Inventory of sources and
+  licences*), so its end date cannot be planned. S7 closes with ERA5-Land, H3
+  uses ERA5-Land only, and the CERRA-Land variant is a ticket of its own, H3b,
+  which starts when S8 ends.
+- **H3 checks the homogeneity of its bridge first** (11/11/2026). The bridge
+  separates the product change from wetter or drier years only if it has no
+  break of its own, and ERA5-Land precipitation can change with the
+  observations ERA5 assimilates. H3 checks it in the literature and against
+  VMM; H3b against CERRA-Land over 2012–2025. A change over time counts as
+  climate only with a published source.
+
 ## Open decisions
 
 - **Level-correction bridge (H3):** pan-European, national or none; decided at
-  G1. With similar results the pan-European bridge is preferred, because the
+  G1 with ERA5-Land, and confirmed or changed in H3b with CERRA-Land. With similar results the pan-European bridge is preferred, because the
   method must apply to the whole OPERA domain. If a national bridge is chosen,
   the decision states what would replace it in the other countries.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
@@ -296,9 +317,6 @@ size.
   before DECADE, not in the proposal: parked unless decided otherwise.
 
 ## Open questions (external)
-
-- **EURADCLIM after 2023:** is a version covering 2024–2025 available or
-  planned? To ask KNMI.
 
 - How much does IRENE degrade with fewer years of data? Asked to the authors,
   answer unknown.

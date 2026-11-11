@@ -1258,6 +1258,46 @@ checked on rain, and on the January features it should remove (review of #74).
   thresholds (research question 3). This is reported next to the
   before/after numbers.
 
+## Bridge data on the OPERA grid (S7)
+
+The pan-European bridge candidates for the level correction (H3) are coarser
+than OPERA: ERA5-Land about 9 km, CERRA-Land 5.5 km, against 2 km for ODYSSEY
+([data.md](data.md), *Inventory of sources and licences*). Code in
+`opera_ds/bridge.py`, first read in `notebooks/06-fc-bridge-data.ipynb`.
+
+- **Coarse cells, never pixels.** Each OPERA pixel takes the bridge cell with
+  the nearest centre, and OPERA is averaged over the pixels of each cell before
+  any comparison. The bridge is not interpolated to pixels, because it holds no
+  information at that scale. Over Belgium an ERA5-Land cell holds about 17
+  pixels at 2 km and a CERRA-Land cell about 7.
+- **Common window.** A CERRA-Land day runs from 06 UTC of the previous day to
+  06 UTC, so every comparison with it sums ERA5-Land (hourly) and OPERA on the
+  same 06–06 UTC days. ODYSSEY frames labelled 06:15 … 06:00 cover 06:05 →
+  06:05 ([data.md](data.md), *Time windows*), 5 min later than the bridge.
+
+### First read: July 2013
+
+ODYSSEY with the first-version cleaning (static mask counted on the same month,
+always in use), Marshall-Palmer from 7 dBZ capped at 55 dBZ; 2,969 of 2,976
+frames; Belgian cells of each grid.
+
+| bridge | cells | bridge median | ODYSSEY median on the same cells | ratio of medians | Spearman, cell by cell |
+|---|---:|---:|---:|---:|---:|
+| ERA5-Land | 446 | 45.3 mm | 152.4 mm | 3.36 | 0.54 |
+| CERRA-Land | 1,087 | 56.9 mm | 151.7 mm | 2.67 | −0.26 |
+
+![July 2013: ODYSSEY, ERA5-Land and CERRA-Land on the OPERA grid](figures/bridge/bridge-2013-07.png)
+
+- The ODYSSEY level is about three times the bridges. This agrees with the
+  sums of a maximum-reflectivity composite being an index rather than rain
+  (*Catalogue: first run on ODYSSEY 2023 and CIRRUS 2025*); it is one month,
+  before the H3 correction.
+- The bright ODYSSEY spots around the radars and in the south-east of Belgium
+  survive a static mask counted on one month, and they dominate the cell
+  means. Over Belgium ODYSSEY ranks the cells like ERA5-Land but not like
+  CERRA-Land; whether this comes from those spots or from CERRA-Land is not
+  checked.
+
 ## Level correction (H3)
 
 Work in progress (#20). ODYSSEY has about half the rain volume of CIRRUS over
