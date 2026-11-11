@@ -1438,10 +1438,14 @@ pp. 13–15).
   both sides, and a wet ODYSSEY year (2021, 2023) is set against the wet 2024.
 
 **Test in the data (to run when the files are here).** ERA5-Land and VMM,
-monthly on the Belgian ERA5-Land cells (`opera_ds/bridge.py`), from 2023, as
-the ratio of the two sums; a break is looked for at 7/2024 and 9/2024, with the
-days of the ERA5 events above left out. The test statistic is still to be
-chosen from the homogenisation literature. The ERA5-Land / CERRA-Land
+monthly on the Belgian ERA5-Land cells, from 2023, as the ratio of the two
+sums; a break is looked for at 7/2024 and 9/2024, with the days of the ERA5
+events above left out. VMM pixels (500 m) take the ERA5-Land cell with the
+nearest centre and are averaged over it (`opera_ds/bridge.py`,
+`opera_ds/vmm.py`); `opera_ds/homog.py` gives the monthly ratio and its step
+at a date, in log10, beside the month-to-month spread before it. The test
+statistic and its threshold are still to be chosen from the homogenisation
+literature. The ERA5-Land / CERRA-Land
 comparison over 2012–2025 is in H3b (#82).
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
