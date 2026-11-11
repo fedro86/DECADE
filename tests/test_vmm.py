@@ -8,7 +8,7 @@ import pytest
 
 from opera_ds.bridge import pixel_lonlat
 from opera_ds.homog import area_ratio, step
-from opera_ds.vmm import monthly_cell_sums, read_vmm, steps_in_month
+from opera_ds.vmm import hourly_cell_sums, read_vmm, steps_in_month
 
 PROJ = "+proj=aeqd +lat_0=51.1926 +lon_0=3.48366 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
 
@@ -45,30 +45,31 @@ def test_read_vmm_nodata_label_and_grid(tmp_path):
     assert lon[1, 2] < 3.48366 < lon[1, 3]
 
 
-def test_monthly_cell_sums_intensity_and_month_boundary(tmp_path):
+def test_hourly_cell_sums_intensity_and_hour_boundary(tmp_path):
     idx = np.zeros((4, 6), dtype=int)
     idx[:, 3:] = 1
     paths = []
-    # three 5 min steps of 12 mm/h at the end of June (the 00:00 label of 1 July closes a June step)
+    # 12 mm/h at 23:55, 00:00 and 00:05: the first two close the hour ending at 00:00, the third opens the next
     for i, label in enumerate([dt.datetime(2024, 6, 30, 23, 55), dt.datetime(2024, 7, 1, 0, 0),
                                dt.datetime(2024, 7, 1, 0, 5)]):
         p = tmp_path / f"{i}.h5"
         _write(p, label, np.full((4, 6), 12.0))
         paths.append(p)
-    out = monthly_cell_sums(paths, idx, 2, step_hours=5 / 60)
-    assert out[(2024, 6)][1] == 2 and out[(2024, 7)][1] == 1
-    np.testing.assert_allclose(out[(2024, 6)][0], [2.0, 2.0])
-    np.testing.assert_allclose(out[(2024, 7)][0], [1.0, 1.0])
+    out = hourly_cell_sums(paths, idx, 2, np.array([1]), step_hours=5 / 60)
+    assert list(out) == [dt.datetime(2024, 7, 1, 0), dt.datetime(2024, 7, 1, 1)]
+    assert out[dt.datetime(2024, 7, 1, 0)][1] == 2 and out[dt.datetime(2024, 7, 1, 1)][1] == 1
+    np.testing.assert_allclose(out[dt.datetime(2024, 7, 1, 0)][0], [2.0])
+    np.testing.assert_allclose(out[dt.datetime(2024, 7, 1, 1)][0], [1.0])
 
 
-def test_monthly_cell_sums_partial_cell_is_nan(tmp_path):
+def test_hourly_cell_sums_partial_cell_is_nan(tmp_path):
     idx = np.zeros((4, 6), dtype=int)
     idx[:, 3:] = 1
     data = np.full((4, 6), 3.0)
     data[0, 5] = -2.0                       # cell 1 not fully covered
     p = tmp_path / "a.h5"
-    _write(p, dt.datetime(2024, 7, 2), data)
-    sums, n = monthly_cell_sums([p], idx, 2, step_hours=None)[(2024, 7)]
+    _write(p, dt.datetime(2024, 7, 2, 10), data)
+    sums, n = hourly_cell_sums([p], idx, 2, np.array([0, 1]), step_hours=None)[dt.datetime(2024, 7, 2, 10)]
     assert n == 1 and sums[0] == 3.0 and np.isnan(sums[1])
 
 

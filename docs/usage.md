@@ -107,23 +107,25 @@ uv run python scripts/opera_ds_cli.py windows \
   `row0` and `col0` (n,) on the OPERA 1 km grid; its attributes describe grid,
   Z–R and configuration.
 
-## Monthly VMM rain on the ERA5-Land cells (H3)
+## Hourly VMM rain on the ERA5-Land cells (H3)
 
 For the homogeneity test of the bridge ([method.md](method.md), *Homogeneity
 of the bridge*): the VMM 5 min rasters (`data/vmm/`, any folder layout, one
 HDF5 file per step; [data.md](data.md), VMM row) averaged over the ERA5-Land
-0.1° cells and summed per month.
+0.1° cells and summed per hour on the Belgian cells.
 
 ```bash
-uv run python scripts/vmm_monthly.py --vmm-dir data/vmm --out results/h3_level --processes 16
+uv run python scripts/vmm_hourly.py --vmm-dir data/vmm --out results/h3_level --processes 16
 ```
 
-- Output `results/h3_level/vmm_monthly_era5grid.npz`: monthly sums per cell
-  (mm), rasters found and expected per month, the Belgian cells and the
+- Output `results/h3_level/vmm_hourly_era5grid.npz`: hourly sums per Belgian
+  cell (mm), rasters per hour (12 = complete), the Belgian cells and the
   ERA5-Land axes (0.1° over the default `--area` of `scripts/fetch_cds.py`).
+- A raster stands for the step ending at its label, so the hour ending at H
+  sums the labels H−55 min … H, as ERA5-Land hourly amounts.
 - `--pattern` sets the file name pattern (default `*.h5`); `--chunk` the
   rasters per task.
-- A cell not fully covered in any raster of a month is NaN for that month.
+- A cell not fully covered in any raster of an hour is NaN for that hour.
 
 ## Options shared by the sub-commands
 

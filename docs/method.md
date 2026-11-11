@@ -1442,7 +1442,8 @@ monthly on the Belgian ERA5-Land cells, from 2023, as the ratio of the two
 sums; a break is looked for at 7/2024 and 9/2024, with the days of the ERA5
 events above left out. VMM pixels (500 m) take the ERA5-Land cell with the
 nearest centre and are averaged over it (`opera_ds/bridge.py`,
-`opera_ds/vmm.py`); `opera_ds/homog.py` gives the monthly ratio and its step
+`opera_ds/vmm.py`, per hour); each month sums only the hours in which VMM has all 12
+rasters, on both sides; `opera_ds/homog.py` gives the monthly ratio and its step
 at a date, in log10, beside the month-to-month spread before it.
 
 - **Ratio in log, dates from the metadata.** Precipitation is homogenised

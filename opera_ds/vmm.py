@@ -1,4 +1,4 @@
-"""VMM radar rasters (Flanders Environment Agency) read as frames and summed per month on bridge cells (H3, #20).
+"""VMM radar rasters (Flanders Environment Agency) read as frames and summed per hour on bridge cells (H3, #20).
 
 The rasters are those of the VMM raster service (KiWIS, `format=hdf5`; docs/data.md, VMM row): one HDF5 file
 per time step with an ODIM-like layout,
@@ -41,29 +41,32 @@ def read_vmm(path) -> tuple[np.ndarray, dict, dt.datetime]:
     return data, where, label
 
 
-def monthly_cell_sums(paths, idx: np.ndarray, n_cells: int, step_hours: float | None, min_valid: float = 1.0):
-    """Monthly rain (mm) on the bridge cells from VMM rasters.
+def hourly_cell_sums(paths, idx: np.ndarray, n_cells: int, cells: np.ndarray, step_hours: float | None,
+                     min_valid: float = 1.0):
+    """Hourly rain (mm) on the bridge cells `cells` from VMM rasters.
 
-    Each raster is averaged over the pixels of each cell (`bridge.cell_mean`), then summed over the month of its
-    label. `step_hours` converts an intensity in mm/h into the amount of its step (5/60 for the 5 min
-    `SRI_1km_cappi`); `None` means the rasters already hold amounts (`PAC_*`). A raster labelled at 00:00 of the
-    first day belongs to the month before, as its step ends there.
+    Each raster is averaged over the pixels of each cell (`bridge.cell_mean`) and added to the hour that ends at
+    or after its label: a raster stands for the step that ends at its label, as the ERA5-Land hourly amounts end
+    at their time stamp, so the hour ending at H sums the labels H−55 min … H. `step_hours` converts an
+    intensity in mm/h into the amount of its step (5/60 for the 5 min `SRI_1km_cappi`); `None` means the
+    rasters already hold amounts (`PAC_*`).
 
-    Returns {(year, month): (sum per cell, number of rasters)}; the caller compares the count with the number
-    of steps in the month before using a month. A cell below `min_valid` coverage in any raster of the month
-    is NaN for that month.
+    Returns {hour end (datetime): (sum per cell of `cells`, number of rasters)}. A cell below `min_valid`
+    coverage in any raster of the hour is NaN for that hour; an hour is complete with 12 rasters at 5 min.
     """
     from opera_ds.bridge import cell_mean
 
-    sums: dict = defaultdict(lambda: np.zeros(n_cells))
+    sums: dict = {}
     counts: dict = defaultdict(int)
     for p in paths:
         values, _, label = read_vmm(p)
-        end_of_step = label - dt.timedelta(microseconds=1)
-        key = (end_of_step.year, end_of_step.month)
+        hour = label.replace(minute=0, second=0, microsecond=0)
+        if hour != label:
+            hour += dt.timedelta(hours=1)
         mean, _ = cell_mean(values, idx, n_cells, min_valid)
-        sums[key] = sums[key] + (mean * step_hours if step_hours is not None else mean)
-        counts[key] += 1
+        v = mean[cells] * step_hours if step_hours is not None else mean[cells]
+        sums[hour] = sums[hour] + v if hour in sums else v
+        counts[hour] += 1
     return {k: (sums[k], counts[k]) for k in sorted(sums)}
 
 
