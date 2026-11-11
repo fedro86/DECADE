@@ -96,3 +96,6 @@ def test_step_finds_a_known_step_and_respects_exclusions():
     assert out["n_before"] == 11 and out["n_after"] == 12
     assert out["step"] == pytest.approx(np.log10(1.5), abs=0.02)
     assert out["sd_before"] < 0.03
+    assert out["t_p"] < 1e-6 and out["mw_p"] < 1e-3
+    flat = step({k: 1.0 * 10 ** rng.normal(0, 0.01) for k in series}, (2024, 1), 12)
+    assert flat["t_p"] > 0.001

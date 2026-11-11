@@ -2,8 +2,11 @@
 
 The weather is in both series, so it cancels in their ratio; a step in the ratio at a date points to a change
 in one of the two products (docs/method.md, *Homogeneity of the bridge*). These functions only describe the
-step and the month-to-month spread around it; the test statistic and any threshold are still to be chosen from
-the homogenisation literature, so none is applied here.
+step and its test at a date known in advance from the metadata (7/2024, 9/2024): the regular two-sample t-test
+of the mean log ratio before against after (WMO 2020, *Guidelines on homogenization*, section 3.2.1, p. 33,
+and section 2.3.1, p. 14), with the Wilcoxon–Mann–Whitney test beside it for non-normal values (Ribeiro et al.
+2016, p. 12). Both assume independent months; consecutive monthly ratios may be autocorrelated, which makes the
+p-values too small (WMO 2020, p. 12). No threshold is applied here.
 """
 from __future__ import annotations
 
@@ -29,8 +32,12 @@ def step(series: dict, at: tuple[int, int], n: int, exclude=()) -> dict:
     `series` maps (year, month) to the ratio. The n months before `at` and the n months from `at` on are
     compared; months in `exclude` or with a non-finite or non-positive ratio are left out. Returns the mean of
     each side and their difference in log10 units (0.1 ≈ 26%), the number of months used on each side, and the
-    standard deviation of the months before, the spread a step is to be compared with.
+    standard deviation of the months before, the spread a step is to be compared with, and the p-values of the
+    two-sample t-test (`t_p`) and of the Wilcoxon–Mann–Whitney test (`mw_p`), two-sided. With n = 12 the
+    seasons are balanced on both sides; a longer n repeats some calendar months on one side only.
     """
+    from scipy.stats import mannwhitneyu, ttest_ind
+
     before, after = [], []
     for k, v in series.items():
         if k in exclude or not np.isfinite(v) or v <= 0:
@@ -49,4 +56,6 @@ def step(series: dict, at: tuple[int, int], n: int, exclude=()) -> dict:
         "n_before": len(before),
         "n_after": len(after),
         "sd_before": float(np.std(before, ddof=1)) if len(before) > 1 else np.nan,
+        "t_p": float(ttest_ind(after, before).pvalue) if len(before) > 1 and len(after) > 1 else np.nan,
+        "mw_p": float(mannwhitneyu(after, before).pvalue) if before and after else np.nan,
     }

@@ -1443,9 +1443,33 @@ sums; a break is looked for at 7/2024 and 9/2024, with the days of the ERA5
 events above left out. VMM pixels (500 m) take the ERA5-Land cell with the
 nearest centre and are averaged over it (`opera_ds/bridge.py`,
 `opera_ds/vmm.py`); `opera_ds/homog.py` gives the monthly ratio and its step
-at a date, in log10, beside the month-to-month spread before it. The test
-statistic and its threshold are still to be chosen from the homogenisation
-literature. The ERA5-Land / CERRA-Land
+at a date, in log10, beside the month-to-month spread before it.
+
+- **Ratio in log, dates from the metadata.** Precipitation is homogenised
+  through the ratio to a reference, treated as multiplicative
+  ([Venema et al. 2012](sources/2012%20-%20Venema%20-%20Benchmarking%20homogenization%20algorithms%20for%20monthly%20data.md),
+  section 4, p. 94); in log10 the step becomes additive
+  ([WMO 2020](sources/2020%20-%20WMO%20-%20Guidelines%20on%20homogenization.md),
+  section 5.1, p. 41). 7/2024 and 9/2024 come from the dated changes above,
+  so they are known in advance.
+- **Test at a known date.** The regular two-sample t-test of the mean before
+  against after, not SNHT or Pettitt, which search for an unknown date and
+  have larger critical values (WMO 2020, section 3.2.1, p. 33, and section
+  2.3.1, p. 14); the Wilcoxon–Mann–Whitney test beside it, for non-normal
+  values
+  ([Ribeiro et al. 2016](sources/2016%20-%20Ribeiro%20-%20Review%20and%20discussion%20of%20homogenisation%20methods%20for%20climate%20data.md),
+  p. 12). Both assume independent months; consecutive months may be
+  autocorrelated, which makes the p-values too small (WMO 2020, p. 12), so a
+  p-value near the threshold is not read as a break.
+- **Window.** 12 months on each side, so that every calendar month is on both
+  sides; 18 months (all of the VMM copy before 7/2024) as a check. With 12
+  months, a step of about 1.2 standard deviations of the monthly log ratio is
+  found with 80% probability at the 5% level; 0.96 with 18 (computed for
+  independent months; larger with autocorrelation).
+- **What a result means.** Real precipitation breaks in station networks are
+  of the order of 10% (Venema et al. 2012, p. 108), about 0.04 in log10. A
+  step smaller than the detectable one is not proof of homogeneity; it only
+  bounds the size of a break. The ERA5-Land / CERRA-Land
 comparison over 2012–2025 is in H3b (#82).
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
