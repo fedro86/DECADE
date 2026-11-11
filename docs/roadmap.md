@@ -103,7 +103,7 @@ left allows it.
 - [ ] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
   CERRA-Land download over the Belgian domain (F, 11/11–6/12; split from S7
   on 11/11/2026).
-- [ ] [**S9**](https://github.com/fedro86/DECADE/issues/83) Convert ERA5-Land
+- [x] [**S9**](https://github.com/fedro86/DECADE/issues/83) Convert ERA5-Land
   to one Zarr store of hourly amounts (F, 12–13/11).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
   environment on the CINECA modules (F, 18–29/11, if the call is won).
