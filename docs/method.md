@@ -1266,6 +1266,45 @@ Belgium on the 4 overlap days, a gap of 3.5–5 dB at all quantiles
 remove that gap with the same criteria: a pan-European bridge, a national
 bridge, and plain seasonal quantile mapping.
 
+### Bridge candidates: coverage and known biases
+
+A bridge must cover both sides of the change: ODYSSEY until 7/2024 and CIRRUS
+from 7/2024 (`data/cirrus_bel/` reaches 10/2026). It must also be independent of
+the OPERA processing, otherwise it carries the same jump. Periods and products
+are those of [data.md](data.md), *Inventory of sources and licences*, and of S7
+(#77) for the pan-European sources.
+
+| bridge | quantity and resolution | period | both sides of 7/2024 | independent of OPERA |
+|---|---|---|---|---|
+| ERA5-Land | hourly, 0.1° grid; the precipitation is ERA5's (about 31 km), linearly interpolated with no correction | 1950 → now | yes | yes |
+| CERRA-Land | daily, 06–06 UTC, 5.5 km; CERRA forecast corrected with daily gauges | 1984 → 12/2025 | yes, 18 months after the change | yes |
+| EMO-1 | daily and 6-hourly gauge interpolation, about 1.8 km | v3.0.0 to 2023; 2024 only in a preprint | not yet | yes |
+| EURADCLIM 3.0 (4 announced) | 1 h and 24 h, 2 km, OPERA adjusted with gauges | 2013–2023 (2024 announced) | no | no: built on the OPERA composites |
+| RADCLIM, project's copy (kriging with external drift) and MLCast version (mean-field bias) | 5 min, 1 km, radar merged with gauges | 1/2017 → 11/2023 | no | yes |
+| VMM | 5 min intensity, radar only, 1 km CAPPI; 15 min, 1 h and 24 h sums adjusted with VMM gauges | API: last six months only; project's copy: scattered in 2021–2022, almost continuous from 2023 | yes, from 2023 | partly: own compositing, but Jabbeke and Helchteren are also OPERA radars |
+
+What the literature says about the two pan-European candidates:
+
+- **ERA5-Land does not add resolution to precipitation.** The field is ERA5's,
+  interpolated from about 31 km to 9 km; only temperature, humidity and
+  pressure get a height correction
+  ([Muñoz-Sabater et al. 2021](sources/2021%20-%20Muñoz-Sabater%20-%20ERA5-Land%20a%20state-of-the-art%20global%20reanalysis%20dataset%20for%20land%20applications.md),
+  section 2). The paper does not evaluate precipitation.
+- **ERA5 and ERA5-Land rain too often and too little at the top.** Over Swiss
+  catchments, 1986–2020: about 45 wet days (≥ 1 mm) too many per year, the
+  wettest day of the year about 22% too low and daily variability about 20% too
+  low; CERRA-Land is close to the gauges on all three
+  ([Wood et al. 2025](sources/2025%20-%20Wood%20-%20Comparison%20of%20high-resolution%20climate%20reanalysis%20datasets%20for%20hydro-climatic%20impact%20studies.md),
+  Figs. 3 and 5, values read from the figures). This is why the wet frequency
+  has to be matched before the quantiles
+  ([Themeßl et al. 2012](sources/2012%20-%20Themeßl%20-%20Empirical-statistical%20downscaling%20and%20error%20correction%20of%20regional%20climate%20models%20and%20its%20impact%20on%20the%20climate%20change%20signal.md),
+  section 2.2.2).
+- **CERRA-Land depends on its gauge network.** A changing number of stations
+  can create spurious trends (Wood et al. 2025, section 7). The part after
+  6/2021 comes from a new production contract, and its homogeneity with the
+  earlier part is not documented (S7, #77).
+- **Neither paper evaluates hourly precipitation or the diurnal cycle.**
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
