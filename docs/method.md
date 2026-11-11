@@ -1373,8 +1373,12 @@ section 2.3), so its homogeneity is ERA5's.
   of data changes over time and "modulates the biases"; no rain gauge is
   assimilated, and radar rain rates only over the United States
   ([Soci et al. 2024](sources/2024%20-%20Soci%20-%20The%20ERA5%20global%20reanalysis%20from%201940%20to%202022.md),
-  section 1, p. 4015). The dates of each observation type are in Hersbach et
-  al. (2020, section 5), not yet read (to download).
+  section 1, p. 4015). Over Europe rain enters only through all-sky
+  microwave radiances, from at most three imagers at a time; AMSR2 starts in
+  2012 and GMI replaces TMI in 2015, and the record of dated inputs ends about
+  2019
+  ([Hersbach et al. 2020](sources/2020%20-%20Hersbach%20-%20The%20ERA5%20global%20reanalysis.md),
+  section 5, p. 2018, Table 4). No source dates the inputs of 2020–2026.
 - **Production seams.** ERA5 is spliced from parallel production runs, and a
   jump can occur at each joint. Joints in 2012–2026: 1/1/2015, 1/3/2019,
   1/9/2021, 1/1/2022 and 23/10/2022; the last run is still going, so there is
