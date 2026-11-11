@@ -129,6 +129,9 @@ left allows it.
   radar artefacts from ODYSSEY (M→F, 16–29/11).
 - [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Correct the ODYSSEY
   → CIRRUS level difference through a bridge dataset (M→F, 16/11–6/12).
+- [ ] [**H3b**](https://github.com/fedro86/DECADE/issues/82) Add CERRA-Land
+  as bridge and check ERA5-Land against it (M→F, 7–18/12, indicative: starts
+  when S8 ends).
 - [ ] [**H6**](https://github.com/fedro86/DECADE/issues/21) Decide the time
   shift used in production (F+M, 30/11–6/12).
 - [ ] [**H5**](https://github.com/fedro86/DECADE/issues/22) Validate archive v1
@@ -286,12 +289,19 @@ size.
   ECMWF MARS archive, where all CDS users share one queue and each user runs
   one request at a time ([data.md](data.md), *Inventory of sources and
   licences*), so its end date cannot be planned. S7 closes with ERA5-Land, H3
-  starts with it, and the CERRA-Land variant of H3 waits for S8.
+  uses ERA5-Land only, and the CERRA-Land variant is a ticket of its own, H3b,
+  which starts when S8 ends.
+- **H3 checks the homogeneity of its bridge first** (11/11/2026). The bridge
+  separates the product change from wetter or drier years only if it has no
+  break of its own, and ERA5-Land precipitation can change with the
+  observations ERA5 assimilates. H3 checks it in the literature and against
+  VMM; H3b against CERRA-Land over 2012–2025. A change over time counts as
+  climate only with a published source.
 
 ## Open decisions
 
 - **Level-correction bridge (H3):** pan-European, national or none; decided at
-  G1. With similar results the pan-European bridge is preferred, because the
+  G1 with ERA5-Land, and confirmed or changed in H3b with CERRA-Land. With similar results the pan-European bridge is preferred, because the
   method must apply to the whole OPERA domain. If a national bridge is chosen,
   the decision states what would replace it in the other countries.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
