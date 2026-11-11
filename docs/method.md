@@ -1396,6 +1396,27 @@ half as strong as CIRRUS and misses weak rain. Scores are taken above the level 
 - Rain that ODYSSEY never detects cannot be restored without inventing it. Below that level the corrected
   ODYSSEY stays drier than CIRRUS.
 
+### Evaluation criteria, the same for the three variants
+
+The two tests of #20, *In scope*, made concrete with measures the project already uses. Each variant is fitted
+without the overlap days.
+
+1. **Overlap days, 1–5/7/2024.** These are the 382 paired times over Belgium at 2 km: ODYSSEY at NT, corrected,
+   and CIRRUS at NT+5, `zmean` (*ODYSSEY and CIRRUS alone*). The measures are:
+   - the share of pixels at or above 10, 20 and 30 dBZ, the thresholds of *Validation against CIRRUS*;
+   - the difference CIRRUS − corrected ODYSSEY at the 25th, 50th, 75th, 90th and 99th percentiles of all
+     echoes and of echoes ≥ 10 dBZ.
+
+   The same measures are taken on the hourly sums on the bridge grid, in mm.
+2. **Continuity across 7/2024.** For each month, the ratio of the radar to the bridge is computed at the same
+   percentiles of the wet cell-hours on the bridge grid. The jump is the mean ratio of the 12 CIRRUS months after
+   7/2024 against the mean of the 12 ODYSSEY months before. It is compared with the spread of the same ratio
+   from year to year within ODYSSEY 8/2018–6/2024, the last period. Proposed yardstick, ours, to be agreed at
+   G1: a jump no larger than that spread.
+
+The plain mapping is scored the same way. On the second test it has no bridge, so there it is scored only
+on the overlap days.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
