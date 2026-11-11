@@ -1417,6 +1417,26 @@ without the overlap days.
 The plain mapping is scored the same way. On the second test it has no bridge, so there it is scored only
 on the overlap days.
 
+### Plain seasonal quantile mapping on the overlap days
+
+`notebooks/07-mr-level-correction.ipynb`, section 6. The fit maps ODYSSEY of the fitting months
+(8/2018–6/2024, all pixels, dry included) onto CIRRUS of the same calendar months (2 km, ODYSSEY times). Dry
+stays dry, and July 2024 is left out. The fit is applied to ODYSSEY on the 382 paired times:
+
+| | share ≥ 10 / 20 / 30 dBZ | CIRRUS minus row at q25 / q50 / q75 / q90 / q99 [dB] |
+|---|---|---|
+| CIRRUS (target) | 0.226 / 0.134 / 0.058 | 0 |
+| ODYSSEY, uncorrected | 0.156 / 0.084 / 0.036 | +2.0 / +4.0 / +3.5 / +2.5 / +5.0 |
+| plain mapping, July, CIRRUS 2025 and 2026 | 0.090 / 0.048 / 0.021 | +4.0 / +5.5 / +4.5 / +3.0 / +5.5 |
+| plain mapping, July, CIRRUS 2025 only | 0.174 / 0.097 / 0.044 | +0.5 / +2.0 / +1.5 / 0.0 / +3.0 |
+| plain mapping, June–August, all CIRRUS | 0.131 / 0.065 / 0.026 | +1.0 / +3.5 / +4.5 / +3.5 / +6.0 |
+
+- With all CIRRUS Julys, the plain mapping moves ODYSSEY **away** from CIRRUS. July 2026 is dry, so the
+  mapping lowers ODYSSEY.
+- With July 2025 alone it gets closer, but it is still lower than CIRRUS. The result depends on which CIRRUS
+  year is in the fit, which is the year-to-year spread of *ODYSSEY and CIRRUS alone*.
+- This is the baseline the bridges must beat.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
