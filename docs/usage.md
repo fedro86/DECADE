@@ -107,6 +107,24 @@ uv run python scripts/opera_ds_cli.py windows \
   `row0` and `col0` (n,) on the OPERA 1 km grid; its attributes describe grid,
   Z–R and configuration.
 
+## Monthly VMM rain on the ERA5-Land cells (H3)
+
+For the homogeneity test of the bridge ([method.md](method.md), *Homogeneity
+of the bridge*): the VMM 5 min rasters (`data/vmm/`, any folder layout, one
+HDF5 file per step; [data.md](data.md), VMM row) averaged over the ERA5-Land
+0.1° cells and summed per month.
+
+```bash
+uv run python scripts/vmm_monthly.py --vmm-dir data/vmm --out results/h3_level --processes 16
+```
+
+- Output `results/h3_level/vmm_monthly_era5grid.npz`: monthly sums per cell
+  (mm), rasters found and expected per month, the Belgian cells and the
+  ERA5-Land axes (0.1° over the default `--area` of `scripts/fetch_cds.py`).
+- `--pattern` sets the file name pattern (default `*.h5`); `--chunk` the
+  rasters per task.
+- A cell not fully covered in any raster of a month is NaN for that month.
+
 ## Options shared by the sub-commands
 
 - `--time-regex` must capture the timestamp in the file name; without it the
