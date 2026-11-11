@@ -14,7 +14,9 @@ Requests already waiting on the CDS (accepted or running) are picked up again in
 restarted run never has two requests in the queue for the same months.
 
 Files are netCDF, one per month, `<out>/<YYYY>/<dataset>_<YYYYMM>.nc`. Months already on disk are skipped, so
-an interrupted run resumes; failures are listed in `<out>/failed.txt`. The token is read from `COPERNICUS_CDS_API_KEY`, in the
+an interrupted run resumes, except ERA5-Land months that hold preliminary hours (`expver` other than 0001,
+replaced by the final data about two months later): those are fetched again. Failures are listed in
+`<out>/failed.txt`. `scripts/bridge_to_zarr.py` turns the ERA5-Land files into one Zarr store. The token is read from `COPERNICUS_CDS_API_KEY`, in the
 environment or in `.env` at the repository root; the dataset licence must be accepted on the CDS website.
 
 The default `--area` is the lon/lat box of the Belgian working crop (Belgium + 350 km; docs/data.md, *Derived
@@ -92,10 +94,22 @@ def month_path(out: Path, dataset: str, y: int, m: int) -> Path:
     return out / f"{y}" / f"{dataset}_{y}{m:02d}.nc"
 
 
+def preliminary(path: Path) -> bool:
+    """True if an ERA5-Land file holds hours that are not final (`expver` other than 0001)."""
+    import xarray as xr
+
+    with xr.open_dataset(path, engine="h5netcdf") as ds:
+        return "expver" in ds and bool(np.any(np.atleast_1d(ds["expver"].values).astype(int) != 1))
+
+
 def requests_to_make(dataset: str, start: str, end: str, out: Path):
     """(year, months) of each request: one month for ERA5-Land, all the missing months of a year for CERRA-Land,
-    newest year first."""
-    todo = [(y, m) for y, m in months(start, end) if not month_path(out, dataset, y, m).exists()]
+    newest year first. ERA5-Land months with preliminary hours count as missing."""
+    def missing(y, m):
+        path = month_path(out, dataset, y, m)
+        return not path.exists() or (dataset == "era5-land" and preliminary(path))
+
+    todo = [(y, m) for y, m in months(start, end) if missing(y, m)]
     if dataset == "era5-land":
         return [(y, [m]) for y, m in todo]
     years = sorted({y for y, _ in todo}, reverse=True)
@@ -123,7 +137,7 @@ def fetch(client, dataset: str, y: int, ms: list[int], out: Path, area, rid: str
         client.retrieve(DATASETS[dataset], request(dataset, y, ms, area), str(part))
     if dataset == "era5-land":
         path = month_path(out, dataset, y, ms[0])
-        part.rename(path)
+        part.replace(path)                 # replaces a month with preliminary hours
         return f"{path.name} {path.stat().st_size / 1e6:.1f} MB"
     win = cut_to_area(part, area)
     done = []
