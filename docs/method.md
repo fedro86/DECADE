@@ -1474,36 +1474,44 @@ at a date, in log10, beside the month-to-month spread before it.
 
 The ERA5-Land / CERRA-Land comparison over 2012–2025 is in H3b (#82).
 
-**Result (11/11/2026): no break in the bridge at 7/2024 or 9/2024.**
-`notebooks/07-mr-level-correction.ipynb`, section 8. VMM on 466 Belgian
-ERA5-Land cells, 1/2023 → 8/2026 (44 months; 31,835 of 32,742 hours with all
-12 rasters), against final ERA5-Land on the same hours.
+**Result (11/11/2026, corrected 12/11/2026): no break in the bridge at 7/2024
+or 9/2024.** `notebooks/07-mr-level-correction.ipynb`, section 8. VMM on 466
+Belgian ERA5-Land cells, 1/2023 → 8/2026 (44 months; 31,835 of 32,742 hours
+with all 12 rasters), against final ERA5-Land on the same hours and cells.
+A VMM cell not fully covered in an hour is NaN (`scripts/vmm_hourly.py`):
+2–21% of the cell-hours per month, 21% in 7/2024. Those cell-hours are left
+out on both sides of every ratio; the first version of 11/11 left them out of
+VMM only, which lowered VMM in the months with many gaps (7/2024: 0.70
+instead of 0.88). The conclusions did not change; the numbers below are the
+corrected ones.
 
 ![Monthly ratios of VMM to ERA5-Land, and of the radar index to both, over Belgium, 2023–2026](figures/h3-level/vmm-era5-monthly.png)
 
 | ratio (log10 step, `opera_ds.homog.step`) | 7/2024, 12 months | 7/2024, 18 months | 9/2024, 12 months |
 |---|---|---|---|
-| VMM / ERA5-Land | −0.009 (×0.98), t-test p 0.79, Mann–Whitney p 0.89 | +0.001 (×1.00), p 0.97 and 0.94 | −0.004 (×0.99), p 0.91 and 0.93 |
-| radar index / VMM | +0.096 (×1.25), p 0.015 and 0.035 | +0.082 (×1.21), p 0.005 and 0.012 | +0.055 (×1.13), p 0.19 and 0.19 |
-| radar index / ERA5-Land, same hours and cells | +0.095 (×1.25), p 0.005 and 0.005 | +0.091 (×1.23), p 0.001 and 0.001 | +0.055 (×1.13), p 0.13 and 0.08 |
+| VMM / ERA5-Land | +0.022 (×1.05), t-test p 0.50, Mann–Whitney p 0.31 | +0.019 (×1.04), p 0.50 and 0.46 | +0.013 (×1.03), p 0.69 and 0.54 |
+| radar index / VMM | +0.060 (×1.15), p 0.11 and 0.14 | +0.062 (×1.15), p 0.024 and 0.028 | +0.034 (×1.08), p 0.38 and 0.51 |
+| radar index / ERA5-Land, same hours and cells | +0.091 (×1.23), p 0.012 and 0.019 | +0.088 (×1.22), p 0.002 and 0.003 | +0.048 (×1.12), p 0.20 and 0.19 |
 
 - **The two bridges agree across the switch.** VMM / ERA5-Land has no step at
   7/2024 or 9/2024; its monthly spread is 0.06–0.08 in log10, so a break of
-  about 0.075 (about 19%) would have been found with 80% probability
+  about 0.07 (about 18%) would have been found with 80% probability
   (1.2 standard deviations with 12 months, 0.96 with 18; *Window* above). A change common to both is unlikely: they share no input
   (ERA5 assimilates no European radar or gauge rain; *ERA5-Land* above). The
   Jabbeke problem of 9/2024 does not show in the VMM monthly totals.
-- **ODYSSEY → CIRRUS against either bridge: about +21–25% in amounts.** The
-  radar step is the same against VMM and against ERA5-Land, and significant
-  with 12 and 18 months. It is much smaller than the factor of about 2 of the
-  overlap days, which were almost dry (*Climate around the switch*).
+- **ODYSSEY → CIRRUS: about +15% in amounts against VMM, +22–23% against
+  ERA5-Land** (raw ODYSSEY; cleaned: below). The difference between the two
+  is the small, not significant VMM / ERA5-Land step. The step against
+  ERA5-Land is significant with 12 and 18 months, against VMM with 18. Both
+  are much smaller than the factor of about 2 of the overlap days, which were
+  almost dry (*Climate around the switch*).
 - **CIRRUS drops again in 2026.** From 1/2026 the radar index falls against
   both bridges while VMM / ERA5-Land does not: with 8 months each side the step
-  at 1/2026 is −0.223 (×0.60) against VMM and −0.159 (×0.69) against ERA5-Land,
-  and +0.063 (×1.16, p 0.34) for VMM / ERA5-Land. 1/2026 was read from the data,
+  at 1/2026 is −0.204 (×0.63) against VMM and −0.163 (×0.69) against ERA5-Land,
+  and +0.044 (×1.11, p 0.48) for VMM / ERA5-Land. 1/2026 was read from the data,
   not from metadata, so these p-values (below 0.03) are optimistic (WMO 2020,
   section 2.3.1, p. 14); no radar is missing from CIRRUS in 2026 (*Radars in
-  the CIRRUS composites*, data.md). The cause is not known.
+  the CIRRUS composites*, data.md). The cause is not known (#88).
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
@@ -1693,8 +1701,8 @@ hours and steps as in the two sections above.
 | amounts / ERA5-Land at 7/2024, 24 months | +0.030 (×1.07), p 0.34 | +0.078 (×1.20), p 0.020 |
 | wet share / ERA5-Land at 7/2024, 12 months | +0.084 (×1.21), p < 0.001 | +0.112 (×1.29), p < 0.001 |
 | wet share / ERA5-Land at 7/2024, 24 months | +0.057 (×1.14), p 0.001 | +0.092 (×1.24), p < 0.001 |
-| amounts / VMM at 7/2024, 12 and 18 months, same hours | +0.096 and +0.082 (×1.25, ×1.21) | +0.140 and +0.130 (×1.38, ×1.35) |
-| amounts / ERA5-Land at 7/2024, 12 and 18 months, same hours as VMM | +0.095 and +0.091 (×1.25, ×1.23) | +0.139 and +0.139 (×1.38, ×1.38) |
+| amounts / VMM at 7/2024, 12 and 18 months, same hours | +0.060 and +0.062 (×1.15, ×1.15) | +0.104 and +0.111 (×1.27, ×1.29) |
+| amounts / ERA5-Land at 7/2024, 12 and 18 months, same hours as VMM | +0.091 and +0.088 (×1.23, ×1.22) | +0.135 and +0.137 (×1.36, ×1.37) |
 | amounts / ERA5-Land at 8/2018, 12 months | −0.197 (×0.64), p 0.002 | −0.132 (×0.74), p 0.022 |
 | amounts / ERA5-Land at 12/2015, 12 months | +0.071 (×1.18), p 0.37 | +0.093 (×1.24), p 0.18 |
 
@@ -1705,9 +1713,10 @@ reading (notebook).
   ERA5-Land before 2019 and by 7–17% from 2019 (25% in 2020, with the May
   2020 artefact). In 2023 the ratio falls by 9%, close to the 8.4% of the
   Belgian annual sum that H2 removes in 2023 (*First version on ODYSSEY 2023*).
-- **So the ODYSSEY → CIRRUS gap grows: about +35–38% in amounts** with 12 or
-  18 months, the same against VMM and against ERA5-Land, and **+24–29% in the
-  wet share**. With 24 months the amount step is now significant (+20%).
+- **So the ODYSSEY → CIRRUS gap grows: about +36–37% in amounts against
+  ERA5-Land and +27–29% against VMM** with 12 or 18 months, and **+24–29% in
+  the wet share** against ERA5-Land. With 24 months the amount step against
+  ERA5-Land is now significant (+20%).
 - **The cleaned ratio is more even across years**: yearly medians 2.8–3.9
   over 2013–2024, against 3.5–5.6 raw; 3.1–3.7 in 2019–2023.
 - **Artefact months shrink but stay.** The wet share relative to ERA5-Land

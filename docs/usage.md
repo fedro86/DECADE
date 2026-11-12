@@ -152,8 +152,9 @@ uv run python scripts/odyssey_clean_era5grid.py --first 2013-04 --last 2024-06 -
   layout of the `era5grid_odyssey_<YYYY-MM>.npz` of notebook 07.
 - One line per month when it is written; months already written are
   skipped. 30 min for 135 months with 16 processes on the workstation.
-- Months outside 4/2013–6/2024 stop with an error: the static mask has no
-  period for them.
+- `--last 2024-07` adds the overlap days, 1–5/7/2024, with the mask of the
+  last period. Months outside 4/2013–7/2024 stop with an error: the static
+  mask has no period for them.
 
 ## IRENE test training on the workstation (T0)
 

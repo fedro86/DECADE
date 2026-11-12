@@ -16,6 +16,8 @@ cleaned, so the raw sums can be checked against the notebook's files.
 
   uv run python scripts/odyssey_clean_era5grid.py --first 2013-04 --last 2024-06 --processes 16
 
+Use --last 2024-07 to add the overlap days, 1-5/7/2024, with the mask of the last period.
+
 Writes results/h3_level/era5grid_odyssey_clean_<YYYY-MM>.npz and prints one line per month when it is done.
 Months already written are skipped.
 """
@@ -38,7 +40,8 @@ H2 = RESULTS_DIR / "h2_artefacts"
 OUT = RESULTS_DIR / "h3_level"
 LAT_N, LON_W, STEP, NLAT, NLON = 55.0, -3.9, 0.1, 95, 158
 STEP_H = 0.25
-PERIODS = (("2013-04", "2015-11"), ("2015-12", "2018-07"), ("2018-08", "2024-06"))
+# periods of the static mask; the mask of 8/2018-6/2024 also serves the last ODYSSEY days, 1-5/7/2024 (overlap)
+PERIODS = (("2013-04", "2015-11"), ("2015-12", "2018-07"), ("2018-08", "2024-07"))
 
 
 def belgian_window():
