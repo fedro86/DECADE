@@ -1476,8 +1476,10 @@ The ERA5-Land / CERRA-Land comparison over 2012–2025 is in H3b (#82).
 
 **Result (11/11/2026, corrected 12/11/2026): no break in the bridge at 7/2024
 or 9/2024.** `notebooks/07-mr-level-correction.ipynb`, section 8. VMM on 466
-Belgian ERA5-Land cells, 1/2023 → 8/2026 (44 months; 31,835 of 32,742 hours
-with all 12 rasters), against final ERA5-Land on the same hours and cells.
+Belgian ERA5-Land cells, 17/5/2022 → 8/2026 (50 months with at least half of
+their hours complete, 7/2022 → 8/2026; 36,195 of 37,865 hours with all 12
+rasters; 2022 added on 12/11/2026), against final ERA5-Land on the same hours
+and cells.
 A VMM cell not fully covered in an hour is NaN (`scripts/vmm_hourly.py`):
 2–21% of the cell-hours per month, 21% in 7/2024. Those cell-hours are left
 out on both sides of every ratio; the first version of 11/11 left them out of
@@ -1485,18 +1487,20 @@ VMM only, which lowered VMM in the months with many gaps (7/2024: 0.70
 instead of 0.88). The conclusions did not change; the numbers below are the
 corrected ones.
 
-![Monthly ratios of VMM to ERA5-Land, and of the radar index to both, over Belgium, 2023–2026](figures/h3-level/vmm-era5-monthly.png)
+![Monthly ratios of VMM to ERA5-Land, and of the radar index to both, over Belgium, 2022–2026](figures/h3-level/vmm-era5-monthly.png)
 
-| ratio (log10 step, `opera_ds.homog.step`) | 7/2024, 12 months | 7/2024, 18 months | 9/2024, 12 months |
-|---|---|---|---|
-| VMM / ERA5-Land | +0.022 (×1.05), t-test p 0.50, Mann–Whitney p 0.31 | +0.019 (×1.04), p 0.50 and 0.46 | +0.013 (×1.03), p 0.69 and 0.54 |
-| radar index / VMM | +0.060 (×1.15), p 0.11 and 0.14 | +0.062 (×1.15), p 0.024 and 0.028 | +0.034 (×1.08), p 0.38 and 0.51 |
-| radar index / ERA5-Land, same hours and cells | +0.091 (×1.23), p 0.012 and 0.019 | +0.088 (×1.22), p 0.002 and 0.003 | +0.048 (×1.12), p 0.20 and 0.19 |
+| ratio (log10 step, `opera_ds.homog.step`) | 7/2024, 12 months | 7/2024, 18 months | 7/2024, 24 months | 9/2024, 12 months |
+|---|---|---|---|---|
+| VMM / ERA5-Land | +0.022 (×1.05), t-test p 0.50, Mann–Whitney p 0.31 | +0.018 (×1.04), p 0.51 and 0.46 | +0.011 (×1.03), p 0.70 and 0.63 | +0.013 (×1.03), p 0.69 and 0.54 |
+| radar index / VMM | +0.060 (×1.15), p 0.11 and 0.14 | +0.062 (×1.15), p 0.024 and 0.028 | +0.006 (×1.01), p 0.83 and 0.59 | +0.034 (×1.08), p 0.38 and 0.51 |
+| radar index / ERA5-Land, same hours and cells | +0.091 (×1.23), p 0.012 and 0.019 | +0.088 (×1.22), p 0.002 and 0.003 | +0.027 (×1.07), p 0.40 and 0.18 | +0.048 (×1.12), p 0.20 and 0.19 |
 
 - **The two bridges agree across the switch.** VMM / ERA5-Land has no step at
   7/2024 or 9/2024; its monthly spread is 0.06–0.08 in log10, so a break of
   about 0.07 (about 18%) would have been found with 80% probability
-  (1.2 standard deviations with 12 months, 0.96 with 18; *Window* above). A change common to both is unlikely: they share no input
+  (1.2 standard deviations with 12 months, 0.96 with 18; *Window* above).
+  With 24 months each side, possible since 2022 was added, the step is
+  +0.011 (p 0.70). A change common to both is unlikely: they share no input
   (ERA5 assimilates no European radar or gauge rain; *ERA5-Land* above). The
   Jabbeke problem of 9/2024 does not show in the VMM monthly totals.
 - **ODYSSEY → CIRRUS: about +15% in amounts against VMM, +22–23% against
@@ -1805,8 +1809,9 @@ decided yet, so the dBZ measures of test 1 are not computed here.
   hours there, so an hour with at least 8 of 12 frames is scaled by
   12 / frames (94 hours, 1/7 08:00 → 5/7 05:00).
 - **Fit.** ODYSSEY 8/2018–6/2024, its last period (*Radars over time*), for
-  ERA5-Land and the plain mapping; 1/2023–6/2024 for VMM, where our copy
-  starts. CIRRUS 7/2024–12/2025, and 7/2024–8/2026 as a check because of the
+  ERA5-Land and the plain mapping; 2022–6/2024 for VMM, where our copy
+  starts (from 17/5/2022, months of 2022 at 44–100%; 2021 has 1.9% of its
+  files and was not downloaded). CIRRUS 7/2024–12/2025, and 7/2024–8/2026 as a check because of the
   2026 drop (#88). The overlap days are out of every fit.
 - **Mapping.** Empirical quantile mapping (QUANT of Gudmundsson et al. 2012,
   section 2.3.1), pooled over the cells, with a 31-day window around each day of the
@@ -1827,8 +1832,8 @@ percentiles of the wet cell-hours, ≥ 0.1 mm):
 | ODYSSEY cleaned, uncorrected | 0.221 | 1.33 | 1.52 | 1.60 | 1.46 | 1.54 | 2.29 |
 | ERA5-Land, CIRRUS to 12/2025 | 0.245 | 1.18 | 1.14 | 1.13 | 1.14 | 1.45 | 1.68 |
 | ERA5-Land, CIRRUS to 8/2026 | 0.250 | 1.21 | 1.14 | 1.09 | 1.06 | 1.29 | 1.55 |
-| VMM, CIRRUS to 12/2025 | 0.299 | 1.23 | 1.34 | 1.47 | 1.41 | 1.55 | 1.62 |
-| VMM, CIRRUS to 8/2026 | 0.291 | 1.25 | 1.30 | 1.43 | 1.39 | 1.51 | 1.63 |
+| VMM, CIRRUS to 12/2025 | 0.292 | 1.21 | 1.25 | 1.38 | 1.37 | 1.54 | 1.60 |
+| VMM, CIRRUS to 8/2026 | 0.284 | 1.21 | 1.20 | 1.33 | 1.34 | 1.50 | 1.61 |
 | plain, CIRRUS to 12/2025 | 0.197 | 1.23 | 1.47 | 1.50 | 1.33 | 1.63 | 2.47 |
 | plain, CIRRUS to 8/2026 | 0.146 | 1.62 | 1.80 | 1.87 | 1.58 | 1.78 | 3.93 |
 
@@ -1843,8 +1848,8 @@ the jump is larger):
 | ODYSSEY cleaned, uncorrected | −0.005/0.020 | −0.013/0.029 | +0.011/0.032 | +0.033/0.041 | +0.074/0.038 * | +0.132/0.028 * |
 | ERA5-Land, CIRRUS to 12/2025 | −0.004/0.022 | +0.003/0.029 | +0.013/0.032 | +0.010/0.039 | +0.009/0.045 | +0.026/0.030 |
 | ERA5-Land, CIRRUS to 8/2026 | +0.013/0.023 | +0.015/0.033 | +0.031/0.034 | +0.048/0.040 * | +0.066/0.047 * | +0.079/0.035 * |
-| VMM, CIRRUS to 12/2025 | −0.030/0.023 * | −0.026/0.029 | −0.015/0.030 | +0.001/0.036 | +0.046/0.034 * | +0.041/0.030 * |
-| VMM, CIRRUS to 8/2026 | −0.005/0.021 | +0.000/0.031 | +0.028/0.033 | +0.053/0.041 * | +0.086/0.044 * | +0.091/0.029 * |
+| VMM, CIRRUS to 12/2025 | −0.033/0.021 * | −0.031/0.030 * | −0.017/0.030 | −0.003/0.036 | +0.046/0.032 * | +0.039/0.031 * |
+| VMM, CIRRUS to 8/2026 | −0.003/0.020 | −0.004/0.032 | +0.026/0.032 | +0.050/0.041 * | +0.086/0.041 * | +0.089/0.030 * |
 | plain, CIRRUS to 12/2025 | −0.000/0.022 | +0.019/0.032 | +0.053/0.040 * | +0.065/0.046 * | +0.080/0.041 * | +0.183/0.042 * |
 | plain, CIRRUS to 8/2026 | +0.011/0.021 | +0.032/0.032 * | +0.066/0.038 * | +0.080/0.047 * | +0.105/0.043 * | +0.191/0.038 * |
 
@@ -1853,8 +1858,8 @@ the jump is larger):
 | ODYSSEY cleaned, uncorrected | +0.000 | −0.013 | −0.021 | −0.021 | −0.009 | +0.104 |
 | ERA5-Land, CIRRUS to 12/2025 | +0.002 | +0.004 | −0.016 | −0.040 | −0.073 | −0.001 |
 | ERA5-Land, CIRRUS to 8/2026 | +0.018 | +0.016 | +0.001 | −0.005 | −0.017 | +0.051 |
-| VMM, CIRRUS to 12/2025 | −0.022 | −0.023 | −0.045 | −0.051 | −0.039 | +0.013 |
-| VMM, CIRRUS to 8/2026 | +0.003 | +0.004 | −0.004 | +0.002 | +0.002 | +0.063 |
+| VMM, CIRRUS to 12/2025 | −0.026 | −0.029 | −0.048 | −0.055 | −0.039 | +0.010 |
+| VMM, CIRRUS to 8/2026 | +0.004 | −0.001 | −0.005 | −0.001 | +0.001 | +0.061 |
 | plain, CIRRUS to 12/2025 | +0.009 | +0.021 | +0.022 | +0.013 | +0.001 | +0.156 |
 | plain, CIRRUS to 8/2026 | +0.020 | +0.035 | +0.035 | +0.029 | +0.023 | +0.163 |
 
@@ -1864,8 +1869,9 @@ the jump is larger):
   plain seasonal quantile mapping*).
 - **Both bridges about halve the gap on the overlap days**, but none
   reaches CIRRUS: the mean stays 1.55–1.68 times lower. ERA5-Land brings
-  the percentiles closest (1.06–1.21 up to q90); VMM the wet share (0.29–0.30
-  against 0.34). The overlap days are 94 hours of one almost dry spell
+  the percentiles closest (1.06–1.21 up to q90); VMM the wet share (0.28–0.29
+  against 0.34). With 2022 in the VMM fit its percentiles come closer (1.20–1.38
+  against 1.23–1.47) and the conclusions do not change. The overlap days are 94 hours of one almost dry spell
   (*Climate around the switch*), so this test weighs little.
 - **ERA5-Land with CIRRUS to 12/2025 is the only variant with every jump
   within the yardstick against ERA5-Land.** That test is partly in-sample,

@@ -420,7 +420,10 @@ whole files, also with `extent` as long as the extent is inside the crop.
   on 11/11/2026 as four zips, one per year, and extracted with their
   `manifest_*.json` beside them. 1/1/2023 → 11/11/2026: 101,049 files in 2023
   (96.1% of the 5 min steps), 104,328 in 2024 (99.0%), 103,126 in 2025
-  (98.1%), 81,923 in 2026; 66.9 GB. Read by `opera_ds.vmm.read_vmm`; same
+  (98.1%), 81,923 in 2026; 66.9 GB. 2022 added on 12/11/2026 (one zip, 11.0 GB):
+  60,227 files from 17/5/2022 05:55, 44% of the steps of May, 80–100% of
+  June–December; the download page lists 1.9% of the expected files for
+  4/6–31/12/2021 (1,178), which were not downloaded. Read by `opera_ds.vmm.read_vmm`; same
   layout, grid and nodata as the rasters of the VMM service.
 - `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
   with `fetch_cds.py` (window of 204 × 224 cells of the CERRA grid, about
