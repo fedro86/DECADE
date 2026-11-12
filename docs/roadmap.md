@@ -201,14 +201,32 @@ chain of about 7 jobs of 24 hours), to be replaced by the cost measured in T3.
 | 2 | C with k = 2 and k = 4, old/recent control | 1 | 3 | about 505 node-hours |
 | 3 | C with k = 1, 2, 4, 8, old/recent control | 3 | 15 (12 more than phase 2) | about 2025 node-hours, Leonardo only |
 
-On the RTX 4090 alone (about 1/5 of a node, to be measured) phase 1 by the end
-of January is possible only with 1 seed and runs at about 40% of the planned
-size.
+On the RTX 4090 alone (T9, measured on fake windows with the batch already
+loaded, so a lower bound): IRENE's default setting (CRPS on 2 members, batch
+16, fp32) takes 0.32 s per step, 8.8 h per 10⁵ steps; the paper's (afCRPS on
+10 members, effective batch 16 by accumulating 4 batches of 4, since 10
+members do not fit at batch 8) takes 3.3 s per step, 92 h per 10⁵ steps.
+Between 21/12/2026 and 31/1/2027 (1,008 GPU hours) phase 1 fits, per run:
+
+| setting | 3 runs (1 seed) | 9 runs (3 seeds) |
+|---|---|---|
+| CRPS, 2 members, batch 16 | up to about 3.8 × 10⁶ steps | up to about 1.3 × 10⁶ steps |
+| afCRPS, 10 members, effective batch 16 | up to about 3.7 × 10⁵ steps | up to about 1.2 × 10⁵ steps |
+| afCRPS, 10 members, effective batch 32 | up to about 1.8 × 10⁵ steps | up to about 6 × 10⁴ steps |
+
+The steps to convergence are not known (T3); the paper gives only the warm-up
+of its GAN discriminator, 4 × 10⁵ steps at batch 16 (Camilletti et al. 2026,
+section 4.2): with the paper's setting the 4090 reaches it in about 15 days
+per run, so for two runs by the end of January, not for the three of phase 1.
+Validation, the data loader and checkpoints add to these times; the share of a
+node stays to T3.
 
 - [x] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
   4090 with fake data (M, 3–22/11).
 - [x] [**T8**](https://github.com/fedro86/DECADE/issues/86) Measure IRENE
   inference memory and time on the whole domain (M, 13–20/11).
+- [x] [**T9**](https://github.com/fedro86/DECADE/issues/90) Measure IRENE
+  training cost on the 4090 as the fallback plan (M, 13–20/11).
 - [ ] [**T2**](https://github.com/fedro86/DECADE/issues/35) Decide the loss and
   the time step of configuration B (F+M, 23/11–6/12).
 - [ ] [**T7**](https://github.com/fedro86/DECADE/issues/36) Train on 4 GPUs with
