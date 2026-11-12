@@ -1541,10 +1541,22 @@ date was read from the data.
   HDF5 crops are identical ([data.md](data.md), *Derived datasets on the
   project machine*). A change of format would also have touched the whole
   crop, not two radars.
-- **So the likely cause is in the Helchteren and Wideumont data of CIRRUS in
-  2026** (for example the calibration, the scan strategy or the quality
-  control of those radars in the real-time chain). Not checked: the
-  single-radar data of 2026 and any OPERA or RMI/VMM notice for 2026.
+- **A candidate date: 18/11/2025.** OPERA put CIRRUS 1.5.0 into production
+  on 18/11/2025 (release 2025b): the search distance for contributing radar
+  pixels now varies with the distance from the radar, and the satellite
+  filter was updated (OPERA 2025b release notes). The `how/comment` of our
+  crops changes on that day, between 09:15 and 09:25 UTC. Over 12 weeks on
+  each side (weeks with at least 3 mm of ERA5-Land), CIRRUS / ERA5-Land falls
+  by −0.308 (×0.49, p < 0.001) at 18/11/2025, against −0.124 (×0.75, p 0.08)
+  at the same date of 2024; CIRRUS / VMM falls by −0.230 in both years, so
+  against VMM the step is the season, not the release.
+- **So the likely cause is in CIRRUS, near Helchteren and Wideumont, with
+  CIRRUS 1.5.0 as the best candidate** (it changes how far each radar's
+  pixels reach, and the drop is near two radars). Not proven: against VMM
+  the release step does not stand out from the season, and the notes do not
+  give the new search distances. No RMI, VMM or OPERA notice about these two
+  radars in 2025–2026 was found (searched 12/11/2026). The next check would
+  be a question to OPERA support.
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
