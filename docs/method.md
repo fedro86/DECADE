@@ -1423,9 +1423,9 @@ on patches only.
 
 - **Input.** Six consecutive CIRRUS frames of `data/cirrus_bel/`
   (956 × 998 at 1 km, padded by `predict` to 960 × 1024), 5/7/2024
-  22:20–22:45 UTC: of the frames of that day read (one in two), the one with
-  the largest wet share in the crop ends there (24.5% of the pixels at
-  0.1 mm/h or more); rain
+  22:20–22:45 UTC. Every second frame of 5/7/2024 from 06:05 was read, and
+  22:40 has the largest wet share in the crop (24.5% of the pixels at 0.1 mm/h
+  or more); the six frames end at 22:45 so that they include it; rain
   rate from Marshall–Palmer as in `opera_ds.clean.rain_rate`. Before 5/7/2024
   06:05 CIRRUS has no frames at the quarter hours (*Overlap between products*
   in [data.md](data.md)), so 1–4/7/2024 has no six consecutive frames.

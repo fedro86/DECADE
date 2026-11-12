@@ -262,7 +262,7 @@ def run(args) -> None:
         "cuda": torch.version.cuda, "cudnn_benchmark": torch.backends.cudnn.benchmark,
         "float32_matmul_precision": torch.get_float32_matmul_precision(), "precision": "fp32",
         "irene_code": f"{irene_dir} @ {irene_commit}", "weights": weights,
-        "input": str(args.input), "input_meta": json.loads(meta_path.read_text()) if meta_path.exists() else None,
+        "input": str(args.input), "input_meta": json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else None,
         "reps": args.reps, "rows": [],
     }
     for steps in args.steps:
