@@ -1513,6 +1513,39 @@ corrected ones.
   section 2.3.1, p. 14); no radar is missing from CIRRUS in 2026 (*Radars in
   the CIRRUS composites*, data.md). The cause is not known (#88).
 
+**CIRRUS in 2026: what changes and where** (#88; notebook, section 11,
+12/11/2026). On the 186 common cells, with 8 months on each side of 1/2026:
+
+| ratio, step at 1/2026 (log10) | wet share (cell-hours ≥ 0.1 mm) | mean of the wet cell-hours | total |
+|---|---|---|---|
+| CIRRUS / ERA5-Land | −0.103 (×0.79), p 0.049 | −0.053 (×0.89), p 0.37 | −0.155 (×0.70), p 0.021 |
+| CIRRUS / VMM | −0.075 (×0.84), p 0.09 | −0.134 (×0.73), p 0.001 | −0.204 (×0.63), p < 0.001 |
+| VMM / ERA5-Land (control) | −0.039 (×0.91), p 0.53 | +0.083 (×1.21), p 0.21 | +0.041 (×1.10), p 0.52 |
+
+p: two-sample t-test (Mann–Whitney in the notebook), optimistic since the
+date was read from the data.
+
+![Change of the ratios per cell from 5–12/2025 to 1–8/2026, with the radars](figures/h3-level/cirrus-2026-change-by-cell.png)
+
+- **Against ERA5-Land, CIRRUS mostly sees fewer wet hours** (−21%); its wet
+  hours are weaker by 11%, not significant.
+- **The drop is local.** Per cell, CIRRUS / ERA5-Land falls by a median of
+  −0.21 within 50 km of Helchteren and −0.18 near Wideumont, against −0.02
+  near Jabbeke and −0.05 near Zaventem. VMM / ERA5-Land, the control, does
+  not fall anywhere (2% of the cells below −0.1), but rises near Helchteren
+  (median +0.23, up to +0.36), so near Helchteren the two radar products
+  move in opposite directions; near Wideumont it does not move (−0.01). One period of 8 months against another also carries
+  weather: the control spreads from −0.04 to +0.21 (10th to 90th
+  percentile of the cells).
+- **Not the source of our crops.** On 12 rainy times the GeoTIFF and the
+  HDF5 crops are identical ([data.md](data.md), *Derived datasets on the
+  project machine*). A change of format would also have touched the whole
+  crop, not two radars.
+- **So the likely cause is in the Helchteren and Wideumont data of CIRRUS in
+  2026** (for example the calibration, the scan strategy or the quality
+  control of those radars in the real-time chain). Not checked: the
+  single-radar data of 2026 and any OPERA or RMI/VMM notice for 2026.
+
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
 `notebooks/07-mr-level-correction.ipynb`: distributions of reflectivity over Belgium (Natural Earth mask) per

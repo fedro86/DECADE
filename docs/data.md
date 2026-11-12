@@ -371,7 +371,12 @@ whole files, also with `extent` as long as the extent is inside the crop.
 | `data/cirrus_bel/` | CIRRUS `DBZH` 7/2024–10/2026 | rows 2106–3062, cols 1056–2054 at 1 km | 238,863 frames, 58 GB (about 380 kB/frame), on 27/10/2026 |
 
 - `cirrus_bel` comes from the GeoTIFFs up to 12/2025 and from whole HDF5 files
-  in 2026 (crops verified identical to the GeoTIFF ones on two times in 2025).
+  in 2026 (crops verified identical to the GeoTIFF ones on two times in 2025,
+  and on 12 rainy times on 12/11/2026: 6 of 2025 cropped again from the whole
+  HDF5, 6 of 19/5 and 26/10/2026 cropped again from the GeoTIFF; same
+  coverage, same undetect, the same dBZ in every pixel).
+  `how/crop_source` says "GeoTIFF ORD" in both cases, so it does not tell the
+  source (#88).
   Coverage 97.7%: 14 days missing (7–17/10/2024, 13–15/5/2025). To extend it,
   rerun `fetch_cog_crop.py` with a later end date.
 - **The crops hold reflectivity only.** Quality fields would require redoing
