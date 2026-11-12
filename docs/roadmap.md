@@ -207,7 +207,7 @@ size.
 
 - [x] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
   4090 with fake data (M, 3–22/11).
-- [ ] [**T8**](https://github.com/fedro86/DECADE/issues/86) Measure IRENE
+- [x] [**T8**](https://github.com/fedro86/DECADE/issues/86) Measure IRENE
   inference memory and time on the whole domain (M, 13–20/11).
 - [ ] [**T2**](https://github.com/fedro86/DECADE/issues/35) Decide the loss and
   the time step of configuration B (F+M, 23/11–6/12).
