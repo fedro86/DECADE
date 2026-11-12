@@ -1808,6 +1808,11 @@ the jump is larger):
 - **The CIRRUS period changes the result** (#88): with 2026 in the fit the
   target is lower, and ERA5-Land fails the yardstick at q90, q99 and the
   total.
+- **The artefact month May 2020 does not matter here.** Left out of the
+  ODYSSEY fit, the overlap days are unchanged (the 31-day windows of early
+  July do not reach May) and every jump of test 2 moves by less than 0.005
+  (notebook, check after section 10). It matters for the cleaning (H2, the
+  rolling mask) and for H4, not for the fit.
 - **First reading, not a choice.** ERA5-Land ≥ VMM, both far ahead of the
   plain mapping, which #20 prefers when results are similar because it is
   pan-European. Open for G1: how a mapping on the bridge grid is applied to
