@@ -1419,7 +1419,9 @@ in validation (10 members). Table and conditions in [usage.md](usage.md),
   card; with afCRPS 24.7 GiB. There is no out-of-memory error: the run goes
   on (1.6 and 2.1 s per step, per sample as fast as at batch 4 with CRPS and
   30% slower with afCRPS), which fits the Windows driver falling back to
-  shared system memory (not checked in the driver settings). The fallback
+  shared system memory (not checked in the driver settings; how to turn the
+  fallback off: [usage.md](usage.md), *IRENE test training on the workstation
+  (T0)*). The fallback
   can cost far more: at batch 16 (CRPS) fewer than 10 steps ran in 15
   minutes, so more than 90 s per step (run stopped); batch 32, and afCRPS at
   batch 16, were not run, since they need even more memory. The pairwise term

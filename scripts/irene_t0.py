@@ -23,7 +23,8 @@ out of GPU memory writes `"oom": true` instead of the measurements; on Windows t
 system memory and slow down, which `"exceeds_gpu_memory": true` flags (peak above the memory of the GPU). `--table <dir>` prints the stats files of a folder
 as a table, with hours per 10^5 optimiser steps:
 
-  <IRENE>/.venv/Scripts/python.exe scripts/irene_t0.py --out results/irene_t9 --ensemble-size 10 --loss-class afcrps       --batch-size 16 --steps 110 --no-checkpoints
+  <IRENE>/.venv/Scripts/python.exe scripts/irene_t0.py --out results/irene_t9 --ensemble-size 10 --loss-class afcrps \\
+      --batch-size 16 --steps 110 --no-checkpoints
   <IRENE>/.venv/Scripts/python.exe scripts/irene_t0.py --table results/irene_t9
 """
 from __future__ import annotations

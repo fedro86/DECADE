@@ -217,8 +217,9 @@ Between 21/12/2026 and 31/1/2027 (1,008 GPU hours) phase 1 fits, per run:
 The steps to convergence are not known (T3); the paper gives only the warm-up
 of its GAN discriminator, 4 × 10⁵ steps at batch 16 (Camilletti et al. 2026,
 section 4.2): with the paper's setting the 4090 reaches it in about 15 days
-per run, so for two runs by the end of January, not for the three of phase 1. Validation, the data loader and checkpoints add to
-these times; the share of a node stays to T3.
+per run, so for two runs by the end of January, not for the three of phase 1.
+Validation, the data loader and checkpoints add to these times; the share of a
+node stays to T3.
 
 - [x] [**T0**](https://github.com/fedro86/DECADE/issues/34) Run IRENE on the
   4090 with fake data (M, 3–22/11).

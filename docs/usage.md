@@ -129,6 +129,14 @@ uv pip install --python .venv/Scripts/python.exe --no-deps -e .
 On Linux and on Leonardo the Python of that environment is `.venv/bin/python`
 instead of `.venv/Scripts/python.exe`, here and below.
 
+On Windows the NVIDIA driver can spill GPU memory into shared system memory
+instead of failing: in T9 runs beyond the 24 GiB of the card went on at a
+fraction of the speed. Before long runs, set NVIDIA Control Panel → *Manage 3D
+settings* → *CUDA - Sysmem Fallback Policy* → *Prefer No Sysmem Fallback*, so
+that a training that outgrows the card stops with an out-of-memory error, as
+on Linux ([Cognex documentation](https://docs.cognex.com/deep-learning_400/web/EN/deep-learning/Content/Topics/optimization/gpu-disable-shared.htm));
+not yet set or checked on the workstation.
+
 Then, from `DECADE`, with that Python:
 
 ```bash
