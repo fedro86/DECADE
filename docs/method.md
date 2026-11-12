@@ -1557,6 +1557,26 @@ date was read from the data.
   give the new search distances. No RMI, VMM or OPERA notice about these two
   radars in 2025–2026 was found (searched 12/11/2026). The next check would
   be a question to OPERA support.
+- **What the radars deliver changed too** (listing of the ORD bucket,
+  12/11/2026): Wideumont stops delivering the DBZH volume of its Doppler
+  scan (`0.5_1.2_…@DBZH`) between 10 and 11/12/2025; Helchteren adds the
+  velocities (`VRADH`) between 6 and 7/1/2026; Jabbeke, where CIRRUS does
+  not fall, changes nothing. Release 2026b (2/11/2026) names Belgian
+  delivery changes, the Doppler-filtered DBZH among them (OPERA 2026b
+  release notes). Weekly CIRRUS / ERA5-Land near each radar, relative to
+  the Jabbeke area, shows no step at those two dates (Wideumont −0.03,
+  Helchteren −0.05, not significant), but a step near Helchteren at
+  18/11/2025 (−0.27, p 0.008), whose seasonal control at 18/11/2024 is
+  similar in size but not significant (−0.22, p 0.26).
+- **Single radar against CIRRUS** (lowest elevation and column maximum,
+  5–50 km from the radar, 10–15 rainy hours before and after 18/11/2025,
+  73 MB of volumes). The excess of CIRRUS over the radar in mean wet dBZ
+  falls by 3.3 dB near Helchteren (+5.9 → +2.6 dB, p < 0.001) and 3.7 dB
+  near Wideumont (+7.7 → +4.0, p 0.003), but also by 2.4 dB near Jabbeke
+  (+5.0 → +2.6, p 0.03), where CIRRUS / ERA5-Land does not fall. So that
+  part is seasonal or common to the whole composite and does not explain
+  the local drop; the wet-share ratios do not change significantly. The
+  cause near Helchteren and Wideumont stays open.
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
