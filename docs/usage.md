@@ -143,6 +143,34 @@ different `--windows` stops with an error: use a new `--out`), trains with IRENE
 `--out/logs`. `--precision bf16-mixed`, `--ensemble-size` and `--num-workers`
 change the run.
 
+## IRENE inference cost on the whole domain (T8)
+
+`scripts/irene_inference_cost.py` measures GPU memory and time of one IRENE
+forecast of the whole Belgian CIRRUS crop with the pre-trained weights
+`it4lia/irene` (what is measured and why: [method.md](method.md), *Inference
+on the whole domain (T8)*). Two steps, from `DECADE`. First the input, with
+DECADE's environment: six consecutive CIRRUS frames ending at `--end` (UTC),
+as rain rate in mm/h:
+
+```bash
+uv run python scripts/irene_inference_cost.py --make-input --end 2024-07-05T22:45 --out results/irene_inference
+```
+
+It writes `cirrus_6frames.npy` (6 × 956 × 998, float32, about 23 MB) and
+`cirrus_6frames.json` (files and times). Then the measurement, with the Python
+of the IRENE environment (previous section), with no other job on the GPU:
+
+```bash
+../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_inference_cost.py   --input results/irene_inference/cirrus_6frames.npy --out results/irene_inference
+```
+
+The first run downloads the weights (`model.ckpt`, about 770 MB) into the
+HuggingFace cache; the revision used is recorded. It prints one line per case
+and writes `stats.json` and `irene_inference_cost.png` to `--out`. It stops if
+another Python job is on the GPU (`--force` to ignore). `--ensemble`, `--steps`
+(of 5 min), `--reps` and `--revision` change the run; `--random-weights` builds
+the model without the download, to check the script only.
+
 ## Options shared by the sub-commands
 
 - `--time-regex` must capture the timestamp in the file name; without it the
@@ -256,6 +284,33 @@ measured in November 2026 for S0). "—" means not measured on that machine.
 
 With the IRENE parameters `sample` selects about 56,000 windows in 5 days, so
 about 50 million over 12 years.
+
+### One IRENE forecast of the whole domain (T8)
+
+`scripts/irene_inference_cost.py` on the workstation, 12/11/2026: RTX 4090
+(24 GiB, driver 610.60), torch 2.11.0+cu128, fp32, weights `it4lia/irene` at
+revision `6a37e54`, IRENE code `676ffe7`, no other job on the GPU (checked with `nvidia-smi` before
+the run). Input: 6
+CIRRUS frames of 956 × 998 km (5/7/2024 22:20–22:45), padded to 960 × 1024.
+Time: median of 5 forecasts after a warm-up, from rain rate in to rain rate
+out. Memory: peak allocated and reserved by PyTorch, and peak in use by
+`nvidia-smi` (CUDA context and the desktop included, 0.9 GiB before the
+run). What the numbers mean: [method.md](method.md), *Inference on the whole
+domain (T8)*.
+
+| members K | time, 60 min | time, 120 min | allocated, 60 / 120 min | reserved, 60 / 120 min | `nvidia-smi`, 60 / 120 min |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 0.27 s | 0.43 s | 0.63 / 0.72 GiB | 0.69 / 0.98 GiB | 1.96 / 2.24 GiB |
+| 5 | 0.95 s | 1.78 s | 0.86 / 1.34 GiB | 1.23 / 1.92 GiB | 2.52 / 3.18 GiB |
+| 10 | 1.81 s | 3.65 s | 1.29 / 2.22 GiB | 1.78 / 2.96 GiB | 3.08 / 4.23 GiB |
+| 15 | 2.86 s | 5.38 s | 1.74 / 3.10 GiB | 2.17 / 4.06 GiB | 3.45 / 5.33 GiB |
+| 20 | 3.77 s | 7.17 s | 2.17 / 3.97 GiB | 2.71 / 5.09 GiB | 3.99 / 6.36 GiB |
+| 25 | 4.59 s | 9.12 s | 2.61 / 4.85 GiB | 3.26 / 6.20 GiB | 4.54 / 7.47 GiB |
+| 10, one 256 × 256 patch | 0.25 s | 0.53 s | 0.42 / 0.46 GiB | 0.56 / 0.56 GiB | 1.83 / 1.83 GiB |
+
+No case ran out of memory.
+
+![IRENE forecast of the whole domain: time and peak GPU memory against the ensemble size](figures/irene/inference-cost.png)
 
 Each window currently rereads and decompresses its 9–11 whole ODYSSEY files:
 see [roadmap.md](roadmap.md) for the planned grouping by time.
