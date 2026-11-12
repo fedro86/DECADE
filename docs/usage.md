@@ -111,6 +111,51 @@ uv run python scripts/opera_ds_cli.py windows \
   `row0` and `col0` (n,) on the OPERA 1 km grid; its attributes describe grid,
   Z–R and configuration.
 
+## Hourly VMM rain on the ERA5-Land cells (H3)
+
+For the homogeneity test of the bridge ([method.md](method.md), *Homogeneity
+of the bridge*): the VMM 5 min rasters (`data/vmm/`, any folder layout, one
+HDF5 file per step; [data.md](data.md), VMM row) averaged over the ERA5-Land
+0.1° cells and summed per hour on the Belgian cells.
+
+```bash
+uv run python scripts/vmm_hourly.py --vmm-dir data/vmm --out results/h3_level --processes 16
+```
+
+- Output `results/h3_level/vmm_hourly_era5grid.npz`: hourly sums per Belgian
+  cell (mm), rasters per hour (12 = complete), the Belgian cells and the
+  ERA5-Land axes (0.1° over the default `--area` of `scripts/fetch_cds.py`).
+- A raster stands for the step ending at its label, so the hour ending at H
+  sums the labels H−55 min … H, as ERA5-Land hourly amounts.
+- `--pattern` sets the file name pattern (default `*.hdf5`, as in the
+  project's copy, e.g. `vmm/2026/01/VMM202601010000.hdf5`); `--chunk` the
+  rasters per task.
+- A cell not fully covered in any raster of an hour is NaN for that hour.
+
+## Hourly ODYSSEY rain on the ERA5-Land cells, cleaned as in H2 (H3)
+
+For the level correction on cleaned ODYSSEY ([method.md](method.md), *ODYSSEY
+cleaned as in H2, against ERA5-Land and VMM*): the ODYSSEY crops of
+`data/odyssey_bel/` cleaned with `opera_ds.clean.clean_composite` and summed
+per hour on the Belgian ERA5-Land cells, raw and cleaned side by side. It
+needs the H2 outputs of `notebooks/05-mr-artefacts.ipynb` in
+`results/h2_artefacts/`: `static_mask_proposal_P1–P3.npy`, `nodes_odyssey.csv`
+and `db_rowcol_odyssey_crop.json`.
+
+```bash
+uv run python scripts/odyssey_clean_era5grid.py --first 2013-04 --last 2024-06 --processes 16
+```
+
+- Output `results/h3_level/era5grid_odyssey_clean_<YYYY-MM>.npz`, one per
+  month: `rain_raw` and `rain_clean` (mean mm per cell and hour), frames per
+  hour (4 = complete), covered pixels, the cells and the hour ends; the
+  layout of the `era5grid_odyssey_<YYYY-MM>.npz` of notebook 07.
+- One line per month when it is written; months already written are
+  skipped. 30 min for 135 months with 16 processes on the workstation.
+- `--last 2024-07` adds the overlap days, 1–5/7/2024, with the mask of the
+  last period. Months outside 4/2013–7/2024 stop with an error: the static
+  mask has no period for them.
+
 ## IRENE test training on the workstation (T0)
 
 IRENE has its own environment (Python 3.13, torch with CUDA), next to DECADE;

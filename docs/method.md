@@ -1298,6 +1298,614 @@ frames; Belgian cells of each grid.
   CERRA-Land; whether this comes from those spots or from CERRA-Land is not
   checked.
 
+## Level correction (H3)
+
+Work in progress (#20). ODYSSEY has about half the rain volume of CIRRUS over
+Belgium on the 4 overlap days, a gap of 3.5–5 dB at all quantiles
+([data.md](data.md), *Known problems*). This section will compare three ways to
+remove that gap with the same criteria: a pan-European bridge, a national
+bridge, and plain seasonal quantile mapping.
+
+### Bridge candidates: coverage and known biases
+
+A bridge must cover both sides of the change: ODYSSEY until 7/2024 and CIRRUS
+from 7/2024 (`data/cirrus_bel/` reaches 10/2026). It must also be independent of
+the OPERA processing, otherwise it carries the same jump. Periods and products
+are those of [data.md](data.md), *Inventory of sources and licences*, and of S7
+(#77) for the pan-European sources.
+
+| bridge | quantity and resolution | period | both sides of 7/2024 | independent of OPERA |
+|---|---|---|---|---|
+| ERA5-Land | hourly, 0.1° grid; the precipitation is ERA5's (about 31 km), linearly interpolated with no correction | 1950 → now | yes | yes |
+| CERRA-Land | daily, 06–06 UTC, 5.5 km; CERRA forecast corrected with daily gauges | 1984 → 12/2025 | yes, 18 months after the change | yes |
+| EMO-1 | daily and 6-hourly gauge interpolation, about 1.8 km | v3.0.0 to 2023; 2024 only in a preprint | not yet | yes |
+| EURADCLIM 3.0 (4 announced) | 1 h and 24 h, 2 km, OPERA adjusted with gauges | 2013–2023 (2024 announced) | no | no: built on the OPERA composites |
+| RADCLIM, project's copy (kriging with external drift) and MLCast version (mean-field bias) | 5 min, 1 km, radar merged with gauges | 1/2017 → 11/2023 | no | yes |
+| VMM | 5 min intensity, radar only, 1 km CAPPI; 15 min, 1 h and 24 h sums adjusted with VMM gauges | API: last six months only; project's copy: scattered in 2021–2022, almost continuous from 2023 | yes, from 2023 | partly: own compositing, but Jabbeke and Helchteren are also OPERA radars |
+
+What the literature says about the two pan-European candidates:
+
+- **ERA5-Land does not add resolution to precipitation.** The field is ERA5's,
+  interpolated from about 31 km to 9 km; only temperature, humidity and
+  pressure get a height correction
+  ([Muñoz-Sabater et al. 2021](sources/2021%20-%20Muñoz-Sabater%20-%20ERA5-Land%20a%20state-of-the-art%20global%20reanalysis%20dataset%20for%20land%20applications.md),
+  section 2). The paper does not evaluate precipitation.
+- **ERA5 and ERA5-Land rain too often and too little at the top.** Over Swiss
+  catchments, 1986–2020: about 45 wet days (≥ 1 mm) too many per year, the
+  wettest day of the year about 22% too low and daily variability about 20% too
+  low; CERRA-Land is close to the gauges on all three
+  ([Wood et al. 2025](sources/2025%20-%20Wood%20-%20Comparison%20of%20high-resolution%20climate%20reanalysis%20datasets%20for%20hydro-climatic%20impact%20studies.md),
+  Figs. 3 and 5, values read from the figures). Against 5,637 gauges in
+  2001–2020, ERA5 is wetter than the gauges by 0.14–0.26 mm/day, mostly from
+  rain on days that are dry at the gauge. In the extratropics its mean annual
+  maximum is 36.5 mm/day against 52.3 at the gauges, and in Europe its skill
+  is highest in winter and drops in summer
+  ([Lavers et al. 2022](sources/2022%20-%20Lavers%20-%20An%20evaluation%20of%20ERA5%20precipitation%20for%20climate%20monitoring.md),
+  section 3, Figs. 2, 6–8). This is why the wet frequency has to be matched
+  before the quantiles
+  ([Themeßl et al. 2012](sources/2012%20-%20Themeßl%20-%20Empirical-statistical%20downscaling%20and%20error%20correction%20of%20regional%20climate%20models%20and%20its%20impact%20on%20the%20climate%20change%20signal.md),
+  section 2.2.2). For radar, the same order is the probability matching
+  method: first the reflectivity whose exceedance frequency equals the
+  reference wet fraction, then the distributions above it, matched rank by
+  rank and with no time pairing
+  ([Rosenfeld et al. 1993](sources/1993%20-%20Rosenfeld%20-%20General%20probability-matched%20relations%20between%20radar%20reflectivity%20and%20rain%20rate.md),
+  section 5a, Eqs. 4–5).
+- **CERRA-Land depends on its gauge network.** A changing number of stations
+  can create spurious trends (Wood et al. 2025, section 7). The part after
+  6/2021 comes from a new production contract, and its homogeneity with the
+  earlier part is not documented (S7, #77).
+- **Neither paper evaluates hourly precipitation or the diurnal cycle.**
+
+### Homogeneity of the bridge
+
+A bridge links ODYSSEY and CIRRUS only if it has no break of its own near
+7/2024 (#20, *In scope*, decided 11/11/2026). A change over time counts as
+climate only with a published source. This section collects what the
+literature says; the test in the data waits for the ERA5-Land files of S7 and
+the project's VMM copy.
+
+**ERA5-Land.** Its precipitation is ERA5's, only interpolated
+([Muñoz-Sabater et al. 2021](sources/2021%20-%20Muñoz-Sabater%20-%20ERA5-Land%20a%20state-of-the-art%20global%20reanalysis%20dataset%20for%20land%20applications.md),
+section 2.3), so its homogeneity is ERA5's.
+
+- **Fixed system, changing inputs.** ERA5 keeps one model and assimilation
+  system (IFS Cy41r2) but ingests every available observation, so the amount
+  of data changes over time and "modulates the biases"; no rain gauge is
+  assimilated, and radar rain rates only over the United States
+  ([Soci et al. 2024](sources/2024%20-%20Soci%20-%20The%20ERA5%20global%20reanalysis%20from%201940%20to%202022.md),
+  section 1, p. 4015). Over Europe rain enters only through all-sky
+  microwave radiances, from at most three imagers at a time; AMSR2 starts in
+  2012 and GMI replaces TMI in 2015, and the record of dated inputs ends about
+  2019
+  ([Hersbach et al. 2020](sources/2020%20-%20Hersbach%20-%20The%20ERA5%20global%20reanalysis.md),
+  section 5, p. 2018, Table 4). No source dates the inputs of 2020–2026.
+- **Production seams.** ERA5 is spliced from parallel production runs, and a
+  jump can occur at each joint. Joints in 2012–2026: 1/1/2015, 1/3/2019,
+  1/9/2021, 1/1/2022 and 23/10/2022; the last run is still going, so there is
+  none in 2023–2026
+  ([ECMWF documentation](sources/2026%20-%20ECMWF%20-%20ERA5%20data%20documentation%20and%20known%20issues.md),
+  *Production experiments*, read 11/11/2026). At the 2015 joint soil moisture
+  jumps; the effect on precipitation is not shown (Soci et al. 2024, p. 4028).
+- **Events near the switch.** The final ERA5 was rerun from 7/2024 for wrong
+  snow observations in the Alps; it differs from the preliminary version from
+  1/7 to 17/11/2024, mainly in snow and 2 m temperature, and ECMWF states that
+  ERA5-Land is not affected. Sea-surface temperature was frozen on
+  24–29/6/2024 and sea ice on 11–18/9/2024; no effect on precipitation is
+  documented (ECMWF documentation, *Known issues*). The last 2–3 months of a
+  download are preliminary data, so they are downloaded again before a fit.
+- **Slow drift.** Against homogenised gauge grids, ERA5 annual precipitation
+  drifts by +1.4 % (Italy) and +1.6 % (Alps) per 10 years over 1940–2010, and
+  rises again from 1995 to 2020; it is a drift, not a step
+  ([Lussana et al. 2024](sources/2024%20-%20Lussana%20-%20Evaluating%20long-term%20trends%20in%20annual%20precipitation%20A%20temporal%20consistency%20analysis%20of%20ERA5%20data%20in%20the%20Alps%20and%20Italy.md),
+  Tables 1–2, section 4). At that rate it would be about 2 % over 2012–2026
+  (computed here); comparing months close to 7/2024 limits it.
+
+**VMM.** The radar-only intensity `SRI_1km_cappi` is a composite of Helchteren
+(VMM, since 23/10/2016) and Jabbeke (RMI, since 2012), with Herwijnen (KNMI)
+in the 02/2022 service manual but not in a parliamentary answer of the same
+year ([radar network changes](sources/2026%20-%20RMI%20and%20VMM%20-%20Belgian%20radar%20network%20changes%202016–2026.md)).
+
+- **No documented change in 7/2024.** No public source gives a hardware,
+  calibration or processing change of these radars or of the VMM composite in
+  2023–2026, nor the Z–R relation or clutter filter of `SRI_1km_cappi` in any
+  year. Absence of records is not evidence of homogeneity: Helchteren is
+  serviced twice a year
+  ([Grosemans 2022](sources/2022%20-%20Grosemans%20-%20Overstromingen%20juli%202021%20Limburg%20-%20Netwerk%20pluviometers%20-%20Dossiers.md)).
+- **Jabbeke, September 2024.** VMM serves `*_BEJAB0924issue` series from
+  1/10/2024 ([data.md](data.md), VMM row), and KNMI changed the Jabbeke scans
+  it ingests on 9/9/2024
+  ([Overeem et al. 2025](sources/2025%20-%20Overeem%20-%20The%20Dutch%20real-time%20gauge-adjusted%20radar%20precipitation%20product.md),
+  section 7.2). Neither source says what changed. The date is two months after
+  the ODYSSEY → CIRRUS switch, so a VMM comparison is tested at both 7/2024 and
+  9/2024.
+
+**Climate around the switch.** At Uccle, 2024 was the wettest year since 1833
+(1,170.7 mm) and 2025 the driest since 1991 (620.6 mm), against a 1991–2020
+normal of 837.3 mm; every month from 10/2023 to 9/2024 was wetter than normal,
+and 2025 was drier than normal everywhere in Belgium
+([RMI overviews](sources/2026%20-%20RMI%20-%20Climatological%20overviews%20of%20Belgium%202012–2026.md),
+overviews 2024 and 2025). On the overlap days the rain was small: of the
+87.0 mm of 1–12/7/2024, 78.8 mm fell on 9 and 12 July (monthly overview
+2024-07). No published trend reaches 2024: at Uccle, 1981–2019, annual and
+summer totals have no significant trend, spring falls by about 9 mm per decade
+and the 1 h maximum rises by about 3 mm per decade
+([RMI 2020](sources/2020%20-%20RMI%20-%20Klimaatrapport%202020.%20Van%20klimaatinformatie%20tot%20klimaatdiensten.md),
+pp. 13–15).
+
+- **Consequence.** A drop of the absolute level from 2024 to 2025 is expected
+  from the weather. A step in the ratio between a radar product and the bridge
+  is not: the weather is in both. The same months are therefore compared on
+  both sides, and a wet ODYSSEY year (2021, 2023) is set against the wet 2024.
+
+**Test in the data.** ERA5-Land and VMM,
+monthly on the Belgian ERA5-Land cells, from 2023, as the ratio of the two
+sums; a break is looked for at 7/2024 and 9/2024, with the days of the ERA5
+events above left out. VMM pixels (500 m) take the ERA5-Land cell with the
+nearest centre and are averaged over it (`opera_ds/bridge.py`,
+`opera_ds/vmm.py`, per hour); each month sums only the hours in which VMM has all 12
+rasters, on both sides; `opera_ds/homog.py` gives the monthly ratio and its step
+at a date, in log10, beside the month-to-month spread before it.
+
+- **Ratio in log, dates from the metadata.** Precipitation is homogenised
+  through the ratio to a reference, treated as multiplicative
+  ([Venema et al. 2012](sources/2012%20-%20Venema%20-%20Benchmarking%20homogenization%20algorithms%20for%20monthly%20data.md),
+  section 4, p. 94); in log10 the step becomes additive
+  ([WMO 2020](sources/2020%20-%20WMO%20-%20Guidelines%20on%20homogenization.md),
+  section 5.1, p. 41). 7/2024 and 9/2024 come from the dated changes above,
+  so they are known in advance.
+- **Test at a known date.** The regular two-sample t-test of the mean before
+  against after, not SNHT or Pettitt, which search for an unknown date and
+  have larger critical values (WMO 2020, section 3.2.1, p. 33, and section
+  2.3.1, p. 14); the Wilcoxon–Mann–Whitney test beside it, for non-normal
+  values
+  ([Ribeiro et al. 2016](sources/2016%20-%20Ribeiro%20-%20Review%20and%20discussion%20of%20homogenisation%20methods%20for%20climate%20data.md),
+  p. 12). Both assume independent months; consecutive months may be
+  autocorrelated, which makes the p-values too small (WMO 2020, p. 12), so a
+  p-value near the threshold is not read as a break.
+- **Window.** 12 months on each side, so that every calendar month is on both
+  sides; 18 months (all of the VMM copy before 7/2024) as a check. With 12
+  months, a step of about 1.2 standard deviations of the monthly log ratio is
+  found with 80% probability at the 5% level; 0.96 with 18 (computed for
+  independent months; larger with autocorrelation).
+- **What a result means.** Real precipitation breaks in station networks are
+  of the order of 10% (Venema et al. 2012, p. 108), about 0.04 in log10. A
+  step smaller than the detectable one is not proof of homogeneity; it only
+  bounds the size of a break.
+
+The ERA5-Land / CERRA-Land comparison over 2012–2025 is in H3b (#82).
+
+**Result (11/11/2026, corrected 12/11/2026): no break in the bridge at 7/2024
+or 9/2024.** `notebooks/07-mr-level-correction.ipynb`, section 8. VMM on 466
+Belgian ERA5-Land cells, 17/5/2022 → 8/2026 (50 months with at least half of
+their hours complete, 7/2022 → 8/2026; 36,195 of 37,865 hours with all 12
+rasters; 2022 added on 12/11/2026), against final ERA5-Land on the same hours
+and cells.
+A VMM cell not fully covered in an hour is NaN (`scripts/vmm_hourly.py`):
+2–21% of the cell-hours per month, 21% in 7/2024. Those cell-hours are left
+out on both sides of every ratio; the first version of 11/11 left them out of
+VMM only, which lowered VMM in the months with many gaps (7/2024: 0.70
+instead of 0.88). The conclusions did not change; the numbers below are the
+corrected ones.
+
+![Monthly ratios of VMM to ERA5-Land, and of the radar index to both, over Belgium, 2022–2026](figures/h3-level/vmm-era5-monthly.png)
+
+| ratio (log10 step, `opera_ds.homog.step`) | 7/2024, 12 months | 7/2024, 18 months | 7/2024, 24 months | 9/2024, 12 months |
+|---|---|---|---|---|
+| VMM / ERA5-Land | +0.022 (×1.05), t-test p 0.50, Mann–Whitney p 0.31 | +0.018 (×1.04), p 0.51 and 0.46 | +0.011 (×1.03), p 0.70 and 0.63 | +0.013 (×1.03), p 0.69 and 0.54 |
+| radar index / VMM | +0.060 (×1.15), p 0.11 and 0.14 | +0.062 (×1.15), p 0.024 and 0.028 | +0.006 (×1.01), p 0.83 and 0.59 | +0.034 (×1.08), p 0.38 and 0.51 |
+| radar index / ERA5-Land, same hours and cells | +0.091 (×1.23), p 0.012 and 0.019 | +0.088 (×1.22), p 0.002 and 0.003 | +0.027 (×1.07), p 0.40 and 0.18 | +0.048 (×1.12), p 0.20 and 0.19 |
+
+- **The two bridges agree across the switch.** VMM / ERA5-Land has no step at
+  7/2024 or 9/2024; its monthly spread is 0.06–0.08 in log10, so a break of
+  about 0.07 (about 18%) would have been found with 80% probability
+  (1.2 standard deviations with 12 months, 0.96 with 18; *Window* above).
+  With 24 months each side, possible since 2022 was added, the step is
+  +0.011 (p 0.70). A change common to both is unlikely: they share no input
+  (ERA5 assimilates no European radar or gauge rain; *ERA5-Land* above). The
+  Jabbeke problem of 9/2024 does not show in the VMM monthly totals.
+- **ODYSSEY → CIRRUS: about +15% in amounts against VMM, +22–23% against
+  ERA5-Land** (raw ODYSSEY; cleaned: below). The difference between the two
+  is the small, not significant VMM / ERA5-Land step. The step against
+  ERA5-Land is significant with 12 and 18 months, against VMM with 18. Both
+  are much smaller than the factor of about 2 of the overlap days, which were
+  almost dry (*Climate around the switch*).
+- **CIRRUS drops again in 2026.** From 1/2026 the radar index falls against
+  both bridges while VMM / ERA5-Land does not: with 8 months each side the step
+  at 1/2026 is −0.204 (×0.63) against VMM and −0.163 (×0.69) against ERA5-Land,
+  and +0.044 (×1.11, p 0.48) for VMM / ERA5-Land. 1/2026 was read from the data,
+  not from metadata, so these p-values (below 0.03) are optimistic (WMO 2020,
+  section 2.3.1, p. 14); no radar is missing from CIRRUS in 2026 (*Radars in
+  the CIRRUS composites*, data.md). The cause is not known (#88).
+
+**CIRRUS in 2026: what changes and where** (#88; notebook, section 11,
+12/11/2026). On the 186 common cells, with 8 months on each side of 1/2026:
+
+| ratio, step at 1/2026 (log10) | wet share (cell-hours ≥ 0.1 mm) | mean of the wet cell-hours | total |
+|---|---|---|---|
+| CIRRUS / ERA5-Land | −0.103 (×0.79), p 0.049 | −0.053 (×0.89), p 0.37 | −0.155 (×0.70), p 0.021 |
+| CIRRUS / VMM | −0.075 (×0.84), p 0.09 | −0.134 (×0.73), p 0.001 | −0.204 (×0.63), p < 0.001 |
+| VMM / ERA5-Land (control) | −0.039 (×0.91), p 0.53 | +0.083 (×1.21), p 0.21 | +0.041 (×1.10), p 0.52 |
+
+p: two-sample t-test (Mann–Whitney in the notebook), optimistic since the
+date was read from the data.
+
+![Change of the ratios per cell from 5–12/2025 to 1–8/2026, with the radars](figures/h3-level/cirrus-2026-change-by-cell.png)
+
+- **Against ERA5-Land, CIRRUS mostly sees fewer wet hours** (−21%); its wet
+  hours are weaker by 11%, not significant.
+- **The drop is local.** Per cell, CIRRUS / ERA5-Land falls by a median of
+  −0.21 within 50 km of Helchteren and −0.18 near Wideumont, against −0.02
+  near Jabbeke and −0.05 near Zaventem. VMM / ERA5-Land, the control, does
+  not fall anywhere (2% of the cells below −0.1), but rises near Helchteren
+  (median +0.23, up to +0.36), so near Helchteren the two radar products
+  move in opposite directions; near Wideumont it does not move (−0.01). One period of 8 months against another also carries
+  weather: the control spreads from −0.04 to +0.21 (10th to 90th
+  percentile of the cells).
+- **Not the source of our crops.** On 12 rainy times the GeoTIFF and the
+  HDF5 crops are identical ([data.md](data.md), *Derived datasets on the
+  project machine*). A change of format would also have touched the whole
+  crop, not two radars.
+- **A candidate date: 18/11/2025.** OPERA put CIRRUS 1.5.0 into production
+  on 18/11/2025 (release 2025b): the search distance for contributing radar
+  pixels now varies with the distance from the radar, and the satellite
+  filter was updated (OPERA 2025b release notes). The `how/comment` of our
+  crops changes on that day, between 09:15 and 09:25 UTC. Over 12 weeks on
+  each side (weeks with at least 3 mm of ERA5-Land), CIRRUS / ERA5-Land falls
+  by −0.308 (×0.49, p < 0.001) at 18/11/2025, against −0.124 (×0.75, p 0.08)
+  at the same date of 2024; CIRRUS / VMM falls by −0.230 in both years, so
+  against VMM the step is the season, not the release.
+- **So the likely cause is in CIRRUS, near Helchteren and Wideumont, with
+  CIRRUS 1.5.0 as the best candidate** (it changes how far each radar's
+  pixels reach, and the drop is near two radars). Not proven: against VMM
+  the release step does not stand out from the season, and the notes do not
+  give the new search distances. No RMI, VMM or OPERA notice about these two
+  radars in 2025–2026 was found (searched 12/11/2026). The next check would
+  be a question to OPERA support.
+- **What the radars deliver changed too** (listing of the ORD bucket,
+  12/11/2026): Wideumont stops delivering the DBZH volume of its Doppler
+  scan (`0.5_1.2_…@DBZH`) from 1/1/2026 (none of its files are in the
+  bucket on 11–15/12/2025; on 31/12/2025 it delivers 5,472 files, on
+  1/1/2026 864; 1/1/2026 is also when the bucket turns from archive to real
+  time, but Jabbeke keeps that volume); Helchteren adds the velocities
+  (`VRADH`) between 6 and 7/1/2026; Jabbeke, where CIRRUS does not fall,
+  changes nothing. Release 2026b (2/11/2026) names Belgian delivery
+  changes, the Doppler-filtered DBZH among them (OPERA 2026b release
+  notes). Weekly CIRRUS / ERA5-Land near each radar, relative to the
+  Jabbeke area, shows no step at those dates (Wideumont at 1/1/2026 +0.05,
+  Helchteren at 7/1/2026 −0.05, not significant), but a step near Helchteren at
+  18/11/2025 (−0.27, p 0.008), whose seasonal control at 18/11/2024 is
+  similar in size but not significant (−0.22, p 0.26).
+- **Single radar against CIRRUS** (lowest elevation and column maximum,
+  5–50 km from the radar, 10–15 rainy hours before and after 18/11/2025,
+  73 MB of volumes). The excess of CIRRUS over the radar in mean wet dBZ
+  falls by 3.3 dB near Helchteren (+5.9 → +2.6 dB, p < 0.001) and 3.7 dB
+  near Wideumont (+7.7 → +4.0, p 0.003), but also by 2.4 dB near Jabbeke
+  (+5.0 → +2.6, p 0.03), where CIRRUS / ERA5-Land does not fall. So that
+  part is seasonal or common to the whole composite and does not explain
+  the local drop; the wet-share ratios do not change significantly. The
+  cause near Helchteren and Wideumont stays open.
+
+### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
+
+`notebooks/07-mr-level-correction.ipynb`: distributions of reflectivity over Belgium (Natural Earth mask) per
+month and hour of day, ODYSSEY at 2 km and CIRRUS degraded to 2 km by `zmean` (H1), with no cleaning other than
+the split at 70 dBZ (#20 starts with the cap only).
+
+**Overlap days.** On the 382 paired times of 1–5/7/2024 (ODYSSEY at NT, CIRRUS at NT+5, cells covered by
+both):
+
+| | share of pixels with echoes ≥ 10 dBZ | q10 | q25 | q50 | q75 | q90 | q99 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ODYSSEY, all echoes [dBZ] | 15.6% | −3.75 | 2.75 | 10.75 | 21.75 | 31.25 | 41.75 |
+| CIRRUS 2 km, all echoes [dBZ] | 22.6% | −2.75 | 4.75 | 14.75 | 25.25 | 33.75 | 46.75 |
+| CIRRUS − ODYSSEY, all echoes [dB] | | 1.0 | 2.0 | 4.0 | 3.5 | 2.5 | 5.0 |
+| CIRRUS − ODYSSEY, echoes ≥ 10 dBZ [dB] | | 0.5 | 1.5 | 1.0 | 1.0 | 1.5 | 5.5 |
+
+- Most of the gap is in **how often** ODYSSEY has an echo, not in how strong: among echoes of at least 10 dBZ
+  the shift is 0.5–1.5 dB up to the 90th percentile, close to the 1.30 dB median offset of the `zmean`
+  degradation over Belgium (*Degraded CIRRUS as a stand-in for ODYSSEY*). It is 5.5 dB only at the 99th
+  percentile.
+- `data.md`, *Known problems*, gives "3.5–5 dB at all quantiles" for the same days. On all echoes the shift
+  here is 1–5 dB, and on echoes of at least 10 dBZ it is smaller. The two numbers do not come from the same
+  selection of pixels; which one #20 should start from is open.
+
+**Calendar months.** ODYSSEY 8/2018–6/2024 (its last period, *Radars over time*) against CIRRUS 8/2024–11/2026
+on the ODYSSEY times, July 2024 left out:
+
+- Each month changes much more from year to year than the products differ on the overlap days. In June, the
+  ODYSSEY share of pixels with echoes ≥ 10 dBZ goes from 7.5% (2023) to 25% (2020), and its median echo from 7
+  to 15 dBZ.
+- The CIRRUS months fall inside the ODYSSEY spread, often at its low end; spring 2025 and July 2026 are dry.
+- July 2026 has echoes on 5% of the Belgian pixel-times, against 17–26% in the other summer months, while the
+  Belgian radars are listed in `how/nodes`. It is a dry month, not a data problem: 10.6 mm at Uccle against a
+  normal of 76.9 mm
+  ([RMI overviews](sources/2026%20-%20RMI%20-%20Climatological%20overviews%20of%20Belgium%202012–2026.md))
+  and 13.8 mm in ERA5-Land over the 186 Belgian cells (*Radar against ERA5-Land, month by month*).
+
+![ODYSSEY and CIRRUS per month, 2018–2026](figures/h3-level/months-odyssey-cirrus.png)
+
+**Consequence for the plain seasonal quantile mapping.** With two years of CIRRUS, a mapping fitted month by
+month between the products would carry the weather of 2024–2026 into the ODYSSEY years instead of the product
+difference. A bridge is needed to separate the two (#20, *Goal*). The plain mapping stays as the reference that
+the bridges must beat on the overlap days.
+
+### Radar rain on the ERA5-Land grid
+
+Ready for the pan-European bridge: hourly radar rain over Belgium on the ERA5-Land grid of `fetch_cds.py`
+(0.1°), for all ODYSSEY and CIRRUS months (`notebooks/07-mr-level-correction.ipynb`, section 4;
+`results/h3_level/era5grid_*.npz`). Each pixel takes the cell with the nearest centre (`opera_ds/bridge.py`, as S7).
+
+- **Rain rate:** Marshall–Palmer from 7 dBZ, capped at 55 dBZ, with no rain above 70 dBZ.
+- **Hours:** each frame stands for the step that ends at its label, so the hour ending at H sums 12 CIRRUS or
+  4 ODYSSEY frames, as the ERA5-Land hourly amounts end at their time stamp.
+- **Index, not ground rain:** with no cleaning, the Belgian mean of July 2023 is about 370 mm. The bridge
+  comparison therefore matches distributions, not amounts.
+
+![Monthly radar rain index and wet cell-hours over Belgium on the ERA5-Land grid, 2013–2026](figures/h3-level/monthly-radar-era5grid.png)
+
+### Bridge mapping on synthetic data
+
+`notebooks/07-mr-level-correction.ipynb`, section 5. Each ODYSSEY value goes to the bridge value with the
+same cumulative probability over the ODYSSEY years, then to the CIRRUS value with the same cumulative
+probability as that bridge value over the CIRRUS years. Dry stays dry: the wet frequency is set by the
+threshold pair, as in the probability matching method (Rosenfeld et al. 1993, section 5a), and not by adding
+rain at random as in frequency adaptation (Themeßl et al. 2012, section 2.2.2). This keeps the correction
+deterministic.
+
+The synthetic test uses one weather series per period for both the bridge and the product. ODYSSEY reads
+half as strong as CIRRUS and misses weak rain. Scores are taken above the level that ODYSSEY still detects.
+
+| weather of the CIRRUS years | share above that level: truth / plain / bridge | q50, q90, q99 over truth: plain | bridge |
+|---|---|---|---|
+| as the ODYSSEY years | 0.101 / 0.101 / 0.101 | 1.00, 1.01, 1.01 | 1.00, 1.00, 1.00 |
+| drier | 0.100 / 0.047 / 0.100 | 0.81, 0.73, 0.70 | 1.00, 1.00, 1.00 |
+| wetter | 0.101 / 0.101 / 0.101 | 1.74, 1.52, 1.44 | 1.00, 1.00, 1.00 |
+
+- The plain mapping is right only when the two periods have the same weather. With a drier or a wetter
+  CIRRUS period it is off by 30% to 74%.
+- The bridge mapping recovers the truth in all three cases, provided the product-to-bridge relation is the
+  same in both periods. That is the assumption the real bridges must satisfy.
+- Rain that ODYSSEY never detects cannot be restored without inventing it. Below that level the corrected
+  ODYSSEY stays drier than CIRRUS.
+
+### Evaluation criteria, the same for the three variants
+
+The two tests of #20, *In scope*, made concrete with measures the project already uses. Each variant is fitted
+without the overlap days.
+
+1. **Overlap days, 1–5/7/2024.** These are the 382 paired times over Belgium at 2 km: ODYSSEY at NT, corrected,
+   and CIRRUS at NT+5, `zmean` (*ODYSSEY and CIRRUS alone*). The measures are:
+   - the share of pixels at or above 10, 20 and 30 dBZ, the thresholds of *Validation against CIRRUS*;
+   - the difference CIRRUS − corrected ODYSSEY at the 25th, 50th, 75th, 90th and 99th percentiles of all
+     echoes and of echoes ≥ 10 dBZ.
+
+   The same measures are taken on the hourly sums on the bridge grid, in mm.
+2. **Continuity across 7/2024.** For each month, the ratio of the radar to the bridge is computed at the same
+   percentiles of the wet cell-hours on the bridge grid. The jump is the mean ratio of the 12 CIRRUS months after
+   7/2024 against the mean of the 12 ODYSSEY months before. It is compared with the spread of the same ratio
+   from year to year within ODYSSEY 8/2018–6/2024, the last period. Proposed yardstick, ours, to be agreed at
+   G1: a jump no larger than that spread.
+
+The plain mapping is scored the same way. On the second test it has no bridge, so there it is scored only
+on the overlap days.
+
+### Plain seasonal quantile mapping on the overlap days
+
+`notebooks/07-mr-level-correction.ipynb`, section 6. The fit maps ODYSSEY of the fitting months
+(8/2018–6/2024, all pixels, dry included) onto CIRRUS of the same calendar months (2 km, ODYSSEY times). Dry
+stays dry, and July 2024 is left out. The fit is applied to ODYSSEY on the 382 paired times:
+
+| | share ≥ 10 / 20 / 30 dBZ | CIRRUS minus row at q25 / q50 / q75 / q90 / q99 [dB] |
+|---|---|---|
+| CIRRUS (target) | 0.226 / 0.134 / 0.058 | 0 |
+| ODYSSEY, uncorrected | 0.156 / 0.084 / 0.036 | +2.0 / +4.0 / +3.5 / +2.5 / +5.0 |
+| plain mapping, July, CIRRUS 2025 and 2026 | 0.090 / 0.048 / 0.021 | +4.0 / +5.5 / +4.5 / +3.0 / +5.5 |
+| plain mapping, July, CIRRUS 2025 only | 0.174 / 0.097 / 0.044 | +0.5 / +2.0 / +1.5 / 0.0 / +3.0 |
+| plain mapping, June–August, all CIRRUS | 0.131 / 0.065 / 0.026 | +1.0 / +3.5 / +4.5 / +3.5 / +6.0 |
+
+- With all CIRRUS Julys, the plain mapping moves ODYSSEY **away** from CIRRUS. July 2026 is dry, so the
+  mapping lowers ODYSSEY.
+- With July 2025 alone it gets closer, but it is still lower than CIRRUS. The result depends on which CIRRUS
+  year is in the fit, which is the year-to-year spread of *ODYSSEY and CIRRUS alone*.
+- This is the baseline the bridges must beat.
+
+### Radar against ERA5-Land, month by month
+
+`notebooks/07-mr-level-correction.ipynb`, section 7; first use of the
+ERA5-Land store of S9 (#83). The radar rain index of *Radar rain on the
+ERA5-Land grid* and ERA5-Land are summed over the same hours and cells each
+month: the 186 ERA5-Land cells full for both products, complete radar hours,
+final ERA5-Land hours only (to 8/2026). 163 months, 2/2013 → 8/2026.
+
+![Monthly ratio of the radar index to ERA5-Land and of their wet shares over Belgium, 2013–2026](figures/h3-level/radar-era5-monthly.png)
+
+| step (log10 of the monthly ratio, `opera_ds.homog.step`) | 12 months each side | 24 months each side |
+|---|---|---|
+| amounts, 7/2024 | +0.090 (×1.23), t-test p 0.006, Mann–Whitney p 0.007 | +0.030 (×1.07), p 0.34 and 0.12 |
+| amounts, 9/2024 | +0.049 (×1.12), p 0.16 and 0.11 | — |
+| wet share (≥ 0.1 mm per cell-hour), 7/2024 | +0.084 (×1.21), p 0.0002 and 0.0007 | +0.057 (×1.14), p 0.0007 and 0.001 |
+| amounts, 8/2018 (known OPERA change, check) | −0.197 (×0.64), p 0.002 and 0.004 | — |
+
+- **Against ERA5-Land the change is small in amounts and clear in frequency.**
+  CIRRUS has about 14–21% more wet cell-hours per ERA5-Land wet cell-hour
+  than ODYSSEY, with either window. The amount ratio rises by 23% with 12
+  months and 7% with 24, and only the first is significant. This is far less
+  than the factor of about 2 on the overlap days 1–5/7/2024, which were
+  almost dry at Uccle (*Homogeneity of the bridge*): the overlap days alone
+  overstate the gap in amounts.
+- **The ratio is not stable within each product.** ODYSSEY, with no cleaning,
+  has artefact periods (spring 2018 and May 2020, when its wet share reaches
+  3–4 times ERA5-Land's) and a slow decline from 4.1–4.3 in 2019–2022 to 3.5
+  in 2023. CIRRUS falls from 5.0 (median of 7–12/2024) to 4.0 (2025) and 2.5
+  (1–8/2026); 1–4/2026 are at 1.9–2.6, against 3.5–4.7 in the same months of
+  2025. The radar/ERA5-Land ratio also has a seasonal cycle, higher in summer.
+- **Not explained by radars missing from CIRRUS.** The Belgian, Dutch and
+  nearby French and German radars are in at least 77% of the CIRRUS hours of
+  every month of 2026 ([data.md](data.md), *Radars in the CIRRUS
+  composites*). Against VMM the drop is also there
+  and VMM / ERA5-Land is stable, so it is in CIRRUS (*Homogeneity of the
+  bridge*, result).
+- **Next.** Repeat on ODYSSEY cleaned as in H2, which #20 requires: below.
+
+### ODYSSEY cleaned as in H2, against ERA5-Land and VMM
+
+`notebooks/07-mr-level-correction.ipynb`, section 9 (12/11/2026). #20 asks
+for ODYSSEY cleaned as in H2; CIRRUS stays as it is. `scripts/odyssey_clean_era5grid.py`
+redoes the hourly sums of *Radar rain on the ERA5-Land grid* on the ODYSSEY
+crops cleaned with `opera_ds.clean.clean_composite`, 4/2013 → 6/2024 (135
+months, no unreadable file; 30 min with 16 processes):
+
+- values above 70 dBZ removed, then Gabella on the whole crop;
+- the static mask of the period (4/2013–11/2015, 12/2015–7/2018,
+  8/2018–6/2024), the H2 rule on the monthly catalogue
+  (`static_mask_proposal_P1–P3`, checked equal to the rule), each masked
+  pixel switched with its radar within 20 km and the radars listed that day,
+  filled as in EURADCLIM (*Static mask: rules in the literature*).
+
+The same run keeps the raw sums, which match section 4 to 2e-5 mm. Cells,
+hours and steps as in the two sections above.
+
+![Radar / ERA5-Land per month, ODYSSEY raw and cleaned, and CIRRUS, over Belgium](figures/h3-level/radar-era5-monthly-clean.png)
+
+| step in log10 (`opera_ds.homog.step`) | raw | cleaned |
+|---|---|---|
+| amounts / ERA5-Land at 7/2024, 12 months | +0.090 (×1.23), p 0.006 | +0.132 (×1.36), p < 0.001 |
+| amounts / ERA5-Land at 7/2024, 24 months | +0.030 (×1.07), p 0.34 | +0.078 (×1.20), p 0.020 |
+| wet share / ERA5-Land at 7/2024, 12 months | +0.084 (×1.21), p < 0.001 | +0.112 (×1.29), p < 0.001 |
+| wet share / ERA5-Land at 7/2024, 24 months | +0.057 (×1.14), p 0.001 | +0.092 (×1.24), p < 0.001 |
+| amounts / VMM at 7/2024, 12 and 18 months, same hours | +0.060 and +0.062 (×1.15, ×1.15) | +0.104 and +0.111 (×1.27, ×1.29) |
+| amounts / ERA5-Land at 7/2024, 12 and 18 months, same hours as VMM | +0.091 and +0.088 (×1.23, ×1.22) | +0.135 and +0.137 (×1.36, ×1.37) |
+| amounts / ERA5-Land at 8/2018, 12 months | −0.197 (×0.64), p 0.002 | −0.132 (×0.74), p 0.022 |
+| amounts / ERA5-Land at 12/2015, 12 months | +0.071 (×1.18), p 0.37 | +0.093 (×1.24), p 0.18 |
+
+p: two-sample t-test; the Wilcoxon–Mann–Whitney p-values give the same
+reading (notebook).
+
+- **The cleaning lowers ODYSSEY** by 21–33% of the yearly median ratio to
+  ERA5-Land before 2019 and by 7–17% from 2019 (25% in 2020, with the May
+  2020 artefact). In 2023 the ratio falls by 9%, close to the 8.4% of the
+  Belgian annual sum that H2 removes in 2023 (*First version on ODYSSEY 2023*).
+- **So the ODYSSEY → CIRRUS gap grows: about +36–37% in amounts against
+  ERA5-Land and +27–29% against VMM** with 12 or 18 months, and **+24–29% in
+  the wet share** against ERA5-Land. With 24 months the amount step against
+  ERA5-Land is now significant (+20%).
+- **The cleaned ratio is more even across years**: yearly medians 2.8–3.9
+  over 2013–2024, against 3.5–5.6 raw; 3.1–3.7 in 2019–2023.
+- **Artefact months shrink but stay.** The wet share relative to ERA5-Land
+  peaks at 2.7 in spring 2018 (3.9 raw) and 2.4 in May 2020 (4.1 raw). The
+  break at 8/2018 is still found, smaller (−0.132 against −0.197).
+
+### The three variants on the ERA5-Land grid (first comparison)
+
+`notebooks/07-mr-level-correction.ipynb`, section 10 (12/11/2026). The
+criteria of *Evaluation criteria* on the hourly sums of the 186 common
+ERA5-Land cells (mm per cell and hour), where the bridges live. How a mapping
+fitted on this grid is applied to the 2 km / 15 min ODYSSEY pixels is not
+decided yet, so the dBZ measures of test 1 are not computed here.
+
+- **Data.** ODYSSEY cleaned as in H2 (above), CIRRUS as it is, final
+  ERA5-Land, VMM with its uncovered cell-hours left out. Complete radar
+  hours, except on the overlap days: CIRRUS has no frames at the quarter
+  hours there, so an hour with at least 8 of 12 frames is scaled by
+  12 / frames (94 hours, 1/7 08:00 → 5/7 05:00).
+- **Fit.** ODYSSEY 8/2018–6/2024, its last period (*Radars over time*), for
+  ERA5-Land and the plain mapping; 2022–6/2024 for VMM, where our copy
+  starts (from 17/5/2022, months of 2022 at 44–100%; 2021 has 1.9% of its
+  files and was not downloaded). CIRRUS 7/2024–12/2025, and 7/2024–8/2026 as a check because of the
+  2026 drop (#88). The overlap days are out of every fit.
+- **Mapping.** Empirical quantile mapping (QUANT of Gudmundsson et al. 2012,
+  section 2.3.1), pooled over the cells, with a 31-day window around each day of the
+  year pooled over the fit years (Themeßl et al. 2012, section 2.2.1).
+  Bridge variants as in section 5 of the notebook:
+  ODYSSEY → bridge at the same probability in the ODYSSEY years, bridge →
+  CIRRUS at the same probability in the CIRRUS years; plain: ODYSSEY →
+  CIRRUS. Dry stays dry, so the wet frequency can only be lowered. A value
+  above the fit range gets the largest target value, not the constant
+  correction of QUANT (section 2.3.1); to be aligned if this variant is kept.
+
+**Test 1, overlap days** (hourly sums, mm; ratio CIRRUS / row at the
+percentiles of the wet cell-hours, ≥ 0.1 mm):
+
+| | wet share | q25 | q50 | q75 | q90 | q99 | mean |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CIRRUS (target) | 0.338 | 1 | 1 | 1 | 1 | 1 | 1 |
+| ODYSSEY cleaned, uncorrected | 0.221 | 1.33 | 1.52 | 1.60 | 1.46 | 1.54 | 2.29 |
+| ERA5-Land, CIRRUS to 12/2025 | 0.245 | 1.18 | 1.14 | 1.13 | 1.14 | 1.45 | 1.68 |
+| ERA5-Land, CIRRUS to 8/2026 | 0.250 | 1.21 | 1.14 | 1.09 | 1.06 | 1.29 | 1.55 |
+| VMM, CIRRUS to 12/2025 | 0.292 | 1.21 | 1.25 | 1.38 | 1.37 | 1.54 | 1.60 |
+| VMM, CIRRUS to 8/2026 | 0.284 | 1.21 | 1.20 | 1.33 | 1.34 | 1.50 | 1.61 |
+| plain, CIRRUS to 12/2025 | 0.197 | 1.23 | 1.47 | 1.50 | 1.33 | 1.63 | 2.47 |
+| plain, CIRRUS to 8/2026 | 0.146 | 1.62 | 1.80 | 1.87 | 1.58 | 1.78 | 3.93 |
+
+**Test 2, continuity across 7/2024** (log10 jump of radar / bridge, 12
+CIRRUS months 7/2024–6/2025 against 12 corrected ODYSSEY months
+7/2023–6/2024; against ERA5-Land with, after the slash, the standard
+deviation of the yearly means of corrected ODYSSEY in 2019–2023, and * where
+the jump is larger):
+
+| against ERA5-Land | q25 | q50 | q75 | q90 | q99 | total |
+|---|---|---|---|---|---|---|
+| ODYSSEY cleaned, uncorrected | −0.005/0.020 | −0.013/0.029 | +0.011/0.032 | +0.033/0.041 | +0.074/0.038 * | +0.132/0.028 * |
+| ERA5-Land, CIRRUS to 12/2025 | −0.004/0.022 | +0.003/0.029 | +0.013/0.032 | +0.010/0.039 | +0.009/0.045 | +0.026/0.030 |
+| ERA5-Land, CIRRUS to 8/2026 | +0.013/0.023 | +0.015/0.033 | +0.031/0.034 | +0.048/0.040 * | +0.066/0.047 * | +0.079/0.035 * |
+| VMM, CIRRUS to 12/2025 | −0.033/0.021 * | −0.031/0.030 * | −0.017/0.030 | −0.003/0.036 | +0.046/0.032 * | +0.039/0.031 * |
+| VMM, CIRRUS to 8/2026 | −0.003/0.020 | −0.004/0.032 | +0.026/0.032 | +0.050/0.041 * | +0.086/0.041 * | +0.089/0.030 * |
+| plain, CIRRUS to 12/2025 | −0.000/0.022 | +0.019/0.032 | +0.053/0.040 * | +0.065/0.046 * | +0.080/0.041 * | +0.183/0.042 * |
+| plain, CIRRUS to 8/2026 | +0.011/0.021 | +0.032/0.032 * | +0.066/0.038 * | +0.080/0.047 * | +0.105/0.043 * | +0.191/0.038 * |
+
+| against VMM (from 7/2023; no yardstick) | q25 | q50 | q75 | q90 | q99 | total |
+|---|---:|---:|---:|---:|---:|---:|
+| ODYSSEY cleaned, uncorrected | +0.000 | −0.013 | −0.021 | −0.021 | −0.009 | +0.104 |
+| ERA5-Land, CIRRUS to 12/2025 | +0.002 | +0.004 | −0.016 | −0.040 | −0.073 | −0.001 |
+| ERA5-Land, CIRRUS to 8/2026 | +0.018 | +0.016 | +0.001 | −0.005 | −0.017 | +0.051 |
+| VMM, CIRRUS to 12/2025 | −0.026 | −0.029 | −0.048 | −0.055 | −0.039 | +0.010 |
+| VMM, CIRRUS to 8/2026 | +0.004 | −0.001 | −0.005 | −0.001 | +0.001 | +0.061 |
+| plain, CIRRUS to 12/2025 | +0.009 | +0.021 | +0.022 | +0.013 | +0.001 | +0.156 |
+| plain, CIRRUS to 8/2026 | +0.020 | +0.035 | +0.035 | +0.029 | +0.023 | +0.163 |
+
+- **The plain mapping is worse than no correction.** On the overlap days it
+  lowers the wet share and the mean; across 7/2024 it leaves the largest
+  jumps. It copies the weather of the CIRRUS years (*Consequence for the
+  plain seasonal quantile mapping*).
+- **Both bridges about halve the gap on the overlap days**, but none
+  reaches CIRRUS: the mean stays 1.55–1.68 times lower. ERA5-Land brings
+  the percentiles closest (1.06–1.21 up to q90); VMM the wet share (0.28–0.29
+  against 0.34). With 2022 in the VMM fit its percentiles come closer (1.20–1.38
+  against 1.23–1.47) and the conclusions do not change. The overlap days are 94 hours of one almost dry spell
+  (*Climate around the switch*), so this test weighs little.
+- **ERA5-Land with CIRRUS to 12/2025 is the only variant with every jump
+  within the yardstick against ERA5-Land.** That test is partly in-sample,
+  since the fit is on ERA5-Land and CIRRUS 7/2024–6/2025. Against VMM, an
+  independent check, its total jump is −0.001 and its percentile jumps are
+  within ±0.04 up to q90; q99 is −0.073, so its corrected ODYSSEY is higher
+  than CIRRUS at the top end, relative to VMM.
+- **The CIRRUS period changes the result** (#88): with 2026 in the fit the
+  target is lower, and ERA5-Land fails the yardstick at q90, q99 and the
+  total.
+- **The artefact month May 2020 does not matter here.** Left out of the
+  ODYSSEY fit, the overlap days are unchanged (the 31-day windows of early
+  July do not reach May) and every jump of test 2 moves by less than 0.005
+  (notebook, check after section 10). It matters for the cleaning (H2, the
+  rolling mask) and for H4, not for the fit.
+- **First reading, not a choice.** ERA5-Land ≥ VMM, both far ahead of the
+  plain mapping, which #20 prefers when results are similar because it is
+  pan-European. Open for G1: how a mapping on the bridge grid is applied to
+  the ODYSSEY pixels; the CIRRUS period, after #88; the yardstick, ours (a
+  jump within the year-to-year spread).
+- **From the bridge grid to the pixels: what the literature says.** Fitting on
+  the bridge grid compares like with like. Applying the same deterministic
+  mapping to 2 km / 15 min pixel values, as if they were cell-hour sums, is
+  quantile mapping across a scale gap, which Maraun (2013, sections 1 and 3)
+  shows is not feasible for precipitation: area extremes overestimated by
+  about 30%, drizzle overcorrected, trends changed. The remedies he names
+  (section 4) are to correct only the level (the mean) or to add a
+  stochastic step; Volosciuk et al. (2017) correct at the grid scale and
+  handle the finer scale with a separate stochastic model. For DECADE the
+  small-scale structure is already in the radar, so a level correction per
+  cell and hour (the ratio of corrected to raw cell-hour sum, applied to the
+  pixels inside) would keep it; neither paper tests this on radar data, so
+  the choice is for G1.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km

@@ -309,6 +309,27 @@ necessarily the radar's.
   any composite. The German radars of the table are missing from 26–27/7 to
   24–25/8/2016.
 
+### Radars in the CIRRUS composites (`how/nodes`)
+
+Share of the CIRRUS hours of each month whose `how/nodes` lists the radar, on
+one file per hour of `data/cirrus_bel/` (7/2024 → 11/2026, read 11/11/2026;
+`notebooks/07-mr-level-correction.ipynb`, section 7).
+`bezav` (Zaventem) is never listed. Months where a Benelux radar is missing
+from a fifth of the hours or more:
+
+| radar | months (share of hours listed) |
+|---|---|
+| `behel` (Helchteren) | 7/2024 (0.39), 12/2024 (0.80), 4/2025 (0.35), 6/2026 (0.77) |
+| `bejab` (Jabbeke) | 9/2024 (0.62), 10/2024 (0.69), 12/2025 (0.80) |
+| `bewid` (Wideumont) | 11/2024 (0.22), 12/2024 (0.43), 12/2025 (0.80) |
+
+- `bejab` missing in 9–10/2024 matches the `*_BEJAB0924issue` series of the
+  VMM service (VMM row of *Inventory of sources and licences*).
+- Among nearby radars, `frave` (Avesnois) is in 0.65 of the hours of 9/2025
+  and 0.82–0.84 of 1–2/2026; `deneu` (Neuheilenbach) in 0.50 of 2/2025; all
+  other months are at 0.82 or more for `frave`, `frabb`, `frtro`, `deess`,
+  `deneu`, `nldhl` and `nlhrw`.
+
 ## Known problems
 
 - **Outliers in ODYSSEY.** For example on 3/7/2024 12:00 a group of 4 pixels
@@ -352,11 +373,20 @@ whole files, also with `extent` as long as the extent is inside the crop.
 | `data/cirrus_bel/` | CIRRUS `DBZH` 7/2024–10/2026 | rows 2106–3062, cols 1056–2054 at 1 km | 238,863 frames, 58 GB (about 380 kB/frame), on 27/10/2026 |
 
 - `cirrus_bel` comes from the GeoTIFFs up to 12/2025 and from whole HDF5 files
-  in 2026 (crops verified identical to the GeoTIFF ones on two times in 2025).
+  in 2026 (crops verified identical to the GeoTIFF ones on two times in 2025,
+  and on 12 rainy times on 12/11/2026: 6 of 2025 cropped again from the whole
+  HDF5, 6 of 19/5 and 26/10/2026 cropped again from the GeoTIFF; same
+  coverage, same undetect, the same dBZ in every pixel).
+  `how/crop_source` says "GeoTIFF ORD" in both cases, so it does not tell the
+  source (#88).
   Coverage 97.7%: 14 days missing (7–17/10/2024, 13–15/5/2025). To extend it,
   rerun `fetch_cog_crop.py` with a later end date.
 - **The crops hold reflectivity only.** Quality fields would require redoing
   them, with the same network traffic.
+- `data/opera_pvol/issue88/`: 110 single-radar `DBZH` volumes of Helchteren,
+  Wideumont and Jabbeke (lowest-elevation scan set), rainy hours of
+  9/2025–1/2026, 75 MB, downloaded from the ORD bucket on 12/11/2026 by
+  `notebooks/07-mr-level-correction.ipynb`, section 11 (#88).
 - `data/mask_BEL_1km.npy`: Belgium mask on the full CIRRUS grid (Natural Earth
   1:10m), made with `make_region_mask.py`.
 - `data/radclim/`: RADCLIM zips from the project's internal copy, unpacked in place
@@ -383,7 +413,18 @@ whole files, also with `extent` as long as the extent is inside the crop.
   store attributes). 3.0 GB; lossless Zarr is no smaller than the netCDF files,
   and rounding to 0.01 mm would save about 40% (tested on 2013) but was not
   applied. On July 2013 the store gives the same window sums as the files
-  within 0.0003 mm.
+  within 0.0003 mm. On Marìca's workstation it comes from the zip shared by
+  Federico (11/11/2026, SHA-256 checked) and is extracted into `data/`.
+- `data/vmm/vmm/YYYY/MM/VMMYYYYmmddHHMM.hdf5`: the project's copy of the VMM
+  5 min intensity (VMM row of *Inventory of sources and licences*), downloaded
+  on 11/11/2026 as four zips, one per year, and extracted with their
+  `manifest_*.json` beside them. 1/1/2023 → 11/11/2026: 101,049 files in 2023
+  (96.1% of the 5 min steps), 104,328 in 2024 (99.0%), 103,126 in 2025
+  (98.1%), 81,923 in 2026; 66.9 GB. 2022 added on 12/11/2026 (one zip, 11.0 GB):
+  60,227 files from 17/5/2022 05:55, 44% of the steps of May, 80–100% of
+  June–December; the download page lists 1.9% of the expected files for
+  4/6–31/12/2021 (1,178), which were not downloaded. Read by `opera_ds.vmm.read_vmm`; same
+  layout, grid and nodata as the rasters of the VMM service.
 - `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
   with `fetch_cds.py` (window of 204 × 224 cells of the CERRA grid, about
   4 MB a month); download in progress, newest year first (23 months on
@@ -412,7 +453,7 @@ own documentation.
 | Met Office C-band rain radar 1 km composite (in the [MLCast catalogue](https://github.com/mlcast-community/mlcast-datasets), `uk_metoffice_5min`) | rain rate, 1 km, 2175 × 1725, British National Grid (EPSG:27700), 5 min, mm/h | 5/7/2005 → 31/12/2025, 100,404 missing time steps | Open Government Licence v3.0 | covers south-east England, the west of the Belgian domain, and **both sides of July 2024**: a candidate national bridge or reference for H3 (#20) |
 | RADKLIM (DWD, in the [MLCast catalogue](https://github.com/mlcast-community/mlcast-datasets), `radklim_5_minutes`, `radklim_hourly`) | radar precipitation climatology of Germany, 1 km, 1100 × 900, 5 min and 1 h ([10.5676/DWD/RADKLIM_YW_V2017.002](https://doi.org/10.5676/DWD/RADKLIM_YW_V2017.002)) | 2001–2023 | CC BY 4.0 | covers western Germany, the east of the Belgian domain; no time in common with CIRRUS |
 | RMI open data (`opendata.meteo.be`, WMS `radar:belgian_rainfall_composite`) | Belgian composite, 5 min | last ~13 hours only | CC BY 4.0 for RMI open data services (radar layer not checked) | |
-| VMM raster service (KiWIS, `https://hydro.vmm.be/grid/kiwis/KiWIS`, `datasource=10`) | composite of Helchteren (VMM), Jabbeke (RMI) and Herwijnen (KNMI), CAPPI at 1 km height, 5 min: rain intensity `SRI_1km_cappi` (`ts_id` 911010, mm/h; radar only, no gauge-adjusted variant of the intensity is listed; this is what the project uses); 15 min, 1 h and 24 h accumulations adjusted with VMM gauges (`PAC_15m_1km_cappi_adj`, `PAC_1h_1km_cappi_adj`, `PAC_24h_1km_cappi_adj`). Since 1/10/2024 the service also lists `*_BEJAB0924issue` versions of the intensity and of the accumulations, whose name points to a problem of the Jabbeke radar in September 2024 (not checked) | **the API serves about the last six months only** (on 6/11/2026 a raster for 1/5/2026 was returned, none for 1/6/2025), although the series list declares `SRI_1km_cappi` from 9/9/2017 and the 1 h and 24 h accumulations from 6/6/2018; older data come only from the project's copy, which has scattered data in 2021 and 2022 and is almost continuous from 2023 | [Modellicentie voor gratis hergebruik v1.0](https://data.vlaanderen.be/id/licentie/modellicentie-gratis-hergebruik/v1.0) (free reuse with attribution), as in the VMM catalogue record [Meetreeksen – neerslag](https://www.vlaanderen.be/datavindplaats/catalogus/meetreeksen-neerslag) (high-value dataset, keywords including radar data; checked on 6/11/2026) | rasters with `request=getRasterTimeseriesValues`, `ts_id` and `format=hdf5`, without a token; the list of series and their declared period with `request=getTimeseriesList&station_name=Vlaanderen_VMM` (read on 6/11/2026). [Service documentation](https://waterinfo.vlaanderen.be/download/9f5ee0c9-dafa-46de-958b-7cac46eb8c23?dl=0), version 02/2022 |
+| VMM raster service (KiWIS, `https://hydro.vmm.be/grid/kiwis/KiWIS`, `datasource=10`) | composite of Helchteren (VMM), Jabbeke (RMI) and Herwijnen (KNMI), CAPPI at 1 km height, 5 min: rain intensity `SRI_1km_cappi` (`ts_id` 911010, mm/h; radar only, no gauge-adjusted variant of the intensity is listed; this is what the project uses); 15 min, 1 h and 24 h accumulations adjusted with VMM gauges (`PAC_15m_1km_cappi_adj`, `PAC_1h_1km_cappi_adj`, `PAC_24h_1km_cappi_adj`). Since 1/10/2024 the service also lists `*_BEJAB0924issue` versions of the intensity and of the accumulations, whose name points to a problem of the Jabbeke radar in September 2024 (not checked) | **the API serves about the last six months only** (on 6/11/2026 a raster for 1/5/2026 was returned, none for 1/6/2025), although the series list declares `SRI_1km_cappi` from 9/9/2017 and the 1 h and 24 h accumulations from 6/6/2018; older data come only from the project's copy, which has scattered data in 2021 and 2022 and is almost continuous from 2023. **The project's copy** (download page, read 11/11/2026): the same `H5rad` HDF5 rasters of the intensity (mm/h, −2 outside coverage), from 4/6/2021 10:00 UTC; over 1/1/2023 → 11/11/2026, 390,423 of 406,270 5 min files (96%), 66.8 GB as stored, 1,126 gaps. No HDF5 after 6/10/2026 09:40 UTC (the service stopped serving it; GeoTIFF only). Largest gaps before that: 30/9–5/10/2023 (1,579 steps), 15–18/8/2025 (898), 8–11/12/2023 (784), 11–13/9/2026 (481); the longest in 2024 is 11.7 h on 2/4/2024 | [Modellicentie voor gratis hergebruik v1.0](https://data.vlaanderen.be/id/licentie/modellicentie-gratis-hergebruik/v1.0) (free reuse with attribution), as in the VMM catalogue record [Meetreeksen – neerslag](https://www.vlaanderen.be/datavindplaats/catalogus/meetreeksen-neerslag) (high-value dataset, keywords including radar data; checked on 6/11/2026) | rasters with `request=getRasterTimeseriesValues`, `ts_id` and `format=hdf5`, without a token; the list of series and their declared period with `request=getTimeseriesList&station_name=Vlaanderen_VMM` (read on 6/11/2026). [Service documentation](https://waterinfo.vlaanderen.be/download/9f5ee0c9-dafa-46de-958b-7cac46eb8c23?dl=0), version 02/2022 |
 | [CLAAS-3](https://doi.org/10.5676/EUM_SAF_CM/CLAAS/V003) (EUMETSAT CM SAF) | cloud properties from MSG SEVIRI, level 2 every 15 min on the full SEVIRI disk (3712 × 3712, about 3 km at nadir), NetCDF-4, in three files per slot: cloud mask (`cma`), cloud top (CTX) and cloud physical properties (CPP, with an extended cloud phase: liquid, supercooled, opaque ice, cirrus, overlap, overshooting). **No cloud type** like the NWC SAF one of CLAAS-2, which EURADCLIM used ([user manual 3.1](https://www.cmsaf.eu/SharedDocs/Literatur/document/2022/saf_cm_knmi_pum_sev_cld_3_1_final_pdf.pdf?__blob=publicationFile), section 7.1.3) | 2004/01 → 2020/12 as climate data record, then extended to the present as an interim record (10-day latency); CLAAS-2.1, with the cloud type, ends on 31/12/2017 | CC BY 4.0 | candidate for the satellite mask of H2. Ordered through the CM SAF web interface, free, registration required; the order site offers reprojection and a sub-domain cut. The climate data record is 78.3 TiB in all; no size per file is documented (pages read on 9/11/2026) |
 | [ERA5-Land](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land) (Copernicus Climate Data Store) | reanalysis, hourly precipitation among other variables, 0.1° (about 9 km). Total precipitation `tp` (m) is accumulated from 00 UTC: the value at 00 UTC is the total of the previous day, and hourly amounts are differences of consecutive hours (checked on 1/7/2024: the domain mean grows through the day and drops at 01 UTC) | 1950 → now (to 4/11/2026 on 10/11/2026, CDS catalogue) | CC BY 4.0 | candidate pan-European bridge for the level correction, for levels and seasonal frequencies only ([roadmap.md](roadmap.md), H3); independent of OPERA. Downloaded with `scripts/fetch_cds.py` (*Derived datasets*); the CDS token goes in `.env` (`COPERNICUS_CDS_API_KEY`), and the dataset licence must be accepted once on the CDS website by the account |
 | [CERRA-Land](https://cds.climate.copernicus.eu/datasets/reanalysis-cerra-land) (Copernicus Climate Data Store) | regional land reanalysis for Europe, 5.5 km, Lambert conformal grid of 1069 × 1069. Total precipitation only as a daily analysis: the 24 h from 06 UTC of the previous day to 06 UTC of the stated day, by optimal interpolation of CERRA forecast precipitation and daily rain gauges ([data user guide](https://confluence.ecmwf.int/spaces/CKB/pages/278548151/CERRA-Land+surface+reanalysis+Data+User+Guide)); surface observations from ECA&D, MARS and national databases ([EMS2026-139](https://meetingorganizer.copernicus.org/EMS2026/EMS2026-139.html)) | 1/9/1984 → 31/12/2025 (CDS catalogue, 10/11/2026), extended twice a year (June and December). The original production ended in June 2021; the continuation to near real time comes from a new C3S contract, and whether it is homogeneous with the earlier part is not documented (EMS2026-139) | CC BY 4.0 | candidate pan-European bridge, daily only, in H3b after S8; independent of OPERA. Known issue: 1/5/2021–31/7/2025 were packed with 12 instead of 24 bits per value (mostly snow variables; effect on precipitation not checked; 24-bit data announced for July 2026; data user guide, *Known issues*). The CDS cannot cut this grid, so `scripts/fetch_cds.py` downloads it whole (netCDF, about 160 MB a month) and keeps the window of cells that covers the domain. It is read from the ECMWF MARS archive, which runs one request per user and had 1181–1371 requests queued for 65 slots on 11/11/2026 (request status page of the CDS), so the script asks for a whole year at a time, newest year first, and picks up a request already queued instead of sending it again |
