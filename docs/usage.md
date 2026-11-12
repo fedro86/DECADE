@@ -161,7 +161,8 @@ It writes `cirrus_6frames.npy` (6 × 956 × 998, float32, about 23 MB) and
 of the IRENE environment (previous section), with no other job on the GPU:
 
 ```bash
-../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_inference_cost.py   --input results/irene_inference/cirrus_6frames.npy --out results/irene_inference
+../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_inference_cost.py \
+  --input results/irene_inference/cirrus_6frames.npy --out results/irene_inference
 ```
 
 The first run downloads the weights (`model.ckpt`, about 770 MB) into the
@@ -289,9 +290,9 @@ about 50 million over 12 years.
 
 `scripts/irene_inference_cost.py` on the workstation, 12/11/2026: RTX 4090
 (24 GiB, driver 610.60), torch 2.11.0+cu128, fp32, weights `it4lia/irene` at
-revision `6a37e54`, IRENE code `676ffe7`, no other job on the GPU (checked with `nvidia-smi` before
-the run). Input: 6
-CIRRUS frames of 956 × 998 km (5/7/2024 22:20–22:45), padded to 960 × 1024.
+revision `6a37e54`, IRENE code `676ffe7`, no other job on the GPU (checked
+with `nvidia-smi` before the run). Input: 6 CIRRUS frames of 956 × 998 km
+(5/7/2024 22:20–22:45), padded to 960 × 1024.
 Time: median of 5 forecasts after a warm-up, from rain rate in to rain rate
 out. Memory: peak allocated and reserved by PyTorch, and peak in use by
 `nvidia-smi` (CUDA context and the desktop included, 0.9 GiB before the

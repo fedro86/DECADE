@@ -341,7 +341,9 @@ necessarily the radar's.
 ## Derived datasets on the project machine
 
 Crops of Belgium + 350 km, aligned to 2 km, made with `fetch_cog_crop.py`. They
-are not in git; ask for a copy. They are read with `read_odim_composite` like
+are not in git; ask for a copy. The row and column ranges below are half-open
+(the last index is excluded): 478 × 499 pixels for ODYSSEY, 956 × 998 for
+CIRRUS. They are read with `read_odim_composite` like
 whole files, also with `extent` as long as the extent is inside the crop.
 
 | folder | content | crop | size |
