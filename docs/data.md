@@ -386,9 +386,18 @@ whole files, also with `extent` as long as the extent is inside the crop.
   within 0.0003 mm.
 - `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
   with `fetch_cds.py` (S7, completed in S8): one netCDF file a month, 168 in
-  all, `tp` in kg m⁻² (= mm), float32, on a window of 204 × 224 cells of the CERRA grid,
-  with 2D `latitude` and `longitude`; each day is labelled at 06 UTC, the end
-  of its 24 h. 0.7 GB, about 4 MB a month.
+  all, `tp` in kg m⁻² (= mm), float32, on a window of 204 × 224 cells of the
+  CERRA grid, with 2D `latitude` and `longitude`; each day is labelled at
+  06 UTC, the end of its 24 h. 0.7 GB, about 4 MB a month. Every file has
+  `expver` "prod", and no value is missing or negative.
+- `data/cerraland_bel.zarr`: the same data as one Zarr store (S10), made with
+  `bridge_to_zarr.py` and read by `opera_ds.bridge.cerraland_sum`. `tp` in mm,
+  float32 as downloaded, lossless (zstd with bitshuffle), chunks of 366 days
+  over the whole window, dimensions (`valid_time`, `y`, `x`) with 2D
+  `latitude` and `longitude` (longitude in −180…180); 5114 days, 1/1/2012
+  06 UTC → 31/12/2025 06 UTC. Writing checks consecutive days at 06 UTC, one
+  grid and `expver` "prod" in every file. 0.52 GB; every value is identical to
+  the files.
 
 ## Inventory of sources and licences
 
