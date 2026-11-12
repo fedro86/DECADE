@@ -1723,6 +1723,97 @@ reading (notebook).
   peaks at 2.7 in spring 2018 (3.9 raw) and 2.4 in May 2020 (4.1 raw). The
   break at 8/2018 is still found, smaller (−0.132 against −0.197).
 
+### The three variants on the ERA5-Land grid (first comparison)
+
+`notebooks/07-mr-level-correction.ipynb`, section 10 (12/11/2026). The
+criteria of *Evaluation criteria* on the hourly sums of the 186 common
+ERA5-Land cells (mm per cell and hour), where the bridges live. How a mapping
+fitted on this grid is applied to the 2 km / 15 min ODYSSEY pixels is not
+decided yet, so the dBZ measures of test 1 are not computed here.
+
+- **Data.** ODYSSEY cleaned as in H2 (above), CIRRUS as it is, final
+  ERA5-Land, VMM with its uncovered cell-hours left out. Complete radar
+  hours, except on the overlap days: CIRRUS has no frames at the quarter
+  hours there, so an hour with at least 8 of 12 frames is scaled by
+  12 / frames (94 hours, 1/7 08:00 → 5/7 05:00).
+- **Fit.** ODYSSEY 8/2018–6/2024, its last period (*Radars over time*), for
+  ERA5-Land and the plain mapping; 1/2023–6/2024 for VMM, where our copy
+  starts. CIRRUS 7/2024–12/2025, and 7/2024–8/2026 as a check because of the
+  2026 drop (#88). The overlap days are out of every fit.
+- **Mapping.** Empirical quantile mapping (QUANT of Gudmundsson et al. 2012,
+  section 2.3.1), pooled over the cells, with a 31-day window around each day of the
+  year pooled over the fit years (Themeßl et al. 2012, section 2.2.1).
+  Bridge variants as in section 5 of the notebook:
+  ODYSSEY → bridge at the same probability in the ODYSSEY years, bridge →
+  CIRRUS at the same probability in the CIRRUS years; plain: ODYSSEY →
+  CIRRUS. Dry stays dry, so the wet frequency can only be lowered. A value
+  above the fit range gets the largest target value, not the constant
+  correction of QUANT (section 2.3.1); to be aligned if this variant is kept.
+
+**Test 1, overlap days** (hourly sums, mm; ratio CIRRUS / row at the
+percentiles of the wet cell-hours, ≥ 0.1 mm):
+
+| | wet share | q25 | q50 | q75 | q90 | q99 | mean |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CIRRUS (target) | 0.338 | 1 | 1 | 1 | 1 | 1 | 1 |
+| ODYSSEY cleaned, uncorrected | 0.221 | 1.33 | 1.52 | 1.60 | 1.46 | 1.54 | 2.29 |
+| ERA5-Land, CIRRUS to 12/2025 | 0.245 | 1.18 | 1.14 | 1.13 | 1.14 | 1.45 | 1.68 |
+| ERA5-Land, CIRRUS to 8/2026 | 0.250 | 1.21 | 1.14 | 1.09 | 1.06 | 1.29 | 1.55 |
+| VMM, CIRRUS to 12/2025 | 0.299 | 1.23 | 1.34 | 1.47 | 1.41 | 1.55 | 1.62 |
+| VMM, CIRRUS to 8/2026 | 0.291 | 1.25 | 1.30 | 1.43 | 1.39 | 1.51 | 1.63 |
+| plain, CIRRUS to 12/2025 | 0.197 | 1.23 | 1.47 | 1.50 | 1.33 | 1.63 | 2.47 |
+| plain, CIRRUS to 8/2026 | 0.146 | 1.62 | 1.80 | 1.87 | 1.58 | 1.78 | 3.93 |
+
+**Test 2, continuity across 7/2024** (log10 jump of radar / bridge, 12
+CIRRUS months 7/2024–6/2025 against 12 corrected ODYSSEY months
+7/2023–6/2024; against ERA5-Land with, after the slash, the standard
+deviation of the yearly means of corrected ODYSSEY in 2019–2023, and * where
+the jump is larger):
+
+| against ERA5-Land | q25 | q50 | q75 | q90 | q99 | total |
+|---|---|---|---|---|---|---|
+| ODYSSEY cleaned, uncorrected | −0.005/0.020 | −0.013/0.029 | +0.011/0.032 | +0.033/0.041 | +0.074/0.038 * | +0.132/0.028 * |
+| ERA5-Land, CIRRUS to 12/2025 | −0.004/0.022 | +0.003/0.029 | +0.013/0.032 | +0.010/0.039 | +0.009/0.045 | +0.026/0.030 |
+| ERA5-Land, CIRRUS to 8/2026 | +0.013/0.023 | +0.015/0.033 | +0.031/0.034 | +0.048/0.040 * | +0.066/0.047 * | +0.079/0.035 * |
+| VMM, CIRRUS to 12/2025 | −0.030/0.023 * | −0.026/0.029 | −0.015/0.030 | +0.001/0.036 | +0.046/0.034 * | +0.041/0.030 * |
+| VMM, CIRRUS to 8/2026 | −0.005/0.021 | +0.000/0.031 | +0.028/0.033 | +0.053/0.041 * | +0.086/0.044 * | +0.091/0.029 * |
+| plain, CIRRUS to 12/2025 | −0.000/0.022 | +0.019/0.032 | +0.053/0.040 * | +0.065/0.046 * | +0.080/0.041 * | +0.183/0.042 * |
+| plain, CIRRUS to 8/2026 | +0.011/0.021 | +0.032/0.032 * | +0.066/0.038 * | +0.080/0.047 * | +0.105/0.043 * | +0.191/0.038 * |
+
+| against VMM (from 7/2023; no yardstick) | q25 | q50 | q75 | q90 | q99 | total |
+|---|---:|---:|---:|---:|---:|---:|
+| ODYSSEY cleaned, uncorrected | +0.000 | −0.013 | −0.021 | −0.021 | −0.009 | +0.104 |
+| ERA5-Land, CIRRUS to 12/2025 | +0.002 | +0.004 | −0.016 | −0.040 | −0.073 | −0.001 |
+| ERA5-Land, CIRRUS to 8/2026 | +0.018 | +0.016 | +0.001 | −0.005 | −0.017 | +0.051 |
+| VMM, CIRRUS to 12/2025 | −0.022 | −0.023 | −0.045 | −0.051 | −0.039 | +0.013 |
+| VMM, CIRRUS to 8/2026 | +0.003 | +0.004 | −0.004 | +0.002 | +0.002 | +0.063 |
+| plain, CIRRUS to 12/2025 | +0.009 | +0.021 | +0.022 | +0.013 | +0.001 | +0.156 |
+| plain, CIRRUS to 8/2026 | +0.020 | +0.035 | +0.035 | +0.029 | +0.023 | +0.163 |
+
+- **The plain mapping is worse than no correction.** On the overlap days it
+  lowers the wet share and the mean; across 7/2024 it leaves the largest
+  jumps. It copies the weather of the CIRRUS years (*Consequence for the
+  plain seasonal quantile mapping*).
+- **Both bridges about halve the gap on the overlap days**, but none
+  reaches CIRRUS: the mean stays 1.55–1.68 times lower. ERA5-Land brings
+  the percentiles closest (1.06–1.21 up to q90); VMM the wet share (0.29–0.30
+  against 0.34). The overlap days are 94 hours of one almost dry spell
+  (*Climate around the switch*), so this test weighs little.
+- **ERA5-Land with CIRRUS to 12/2025 is the only variant with every jump
+  within the yardstick against ERA5-Land.** That test is partly in-sample,
+  since the fit is on ERA5-Land and CIRRUS 7/2024–6/2025. Against VMM, an
+  independent check, its total jump is −0.001 and its percentile jumps are
+  within ±0.04 up to q90; q99 is −0.073, so its corrected ODYSSEY is higher
+  than CIRRUS at the top end, relative to VMM.
+- **The CIRRUS period changes the result** (#88): with 2026 in the fit the
+  target is lower, and ERA5-Land fails the yardstick at q90, q99 and the
+  total.
+- **First reading, not a choice.** ERA5-Land ≥ VMM, both far ahead of the
+  plain mapping, which #20 prefers when results are similar because it is
+  pan-European. Open for G1: how a mapping on the bridge grid is applied to
+  the ODYSSEY pixels; the CIRRUS period, after #88; the yardstick, ours (a
+  jump within the year-to-year spread).
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
