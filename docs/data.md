@@ -385,9 +385,10 @@ whole files, also with `extent` as long as the extent is inside the crop.
   applied. On July 2013 the store gives the same window sums as the files
   within 0.0003 mm.
 - `data/cerraland_bel/`: CERRA-Land daily precipitation, 1/2012–12/2025, made
-  with `fetch_cds.py` (window of 204 × 224 cells of the CERRA grid, about
-  4 MB a month); download in progress, newest year first (23 months on
-  11/11/2026), completed in S8.
+  with `fetch_cds.py` (S7, completed in S8): one netCDF file a month, 168 in
+  all, `tp` in kg m⁻² (= mm), float32, on a window of 204 × 224 cells of the CERRA grid,
+  with 2D `latitude` and `longitude`; each day is labelled at 06 UTC, the end
+  of its 24 h. 0.7 GB, about 4 MB a month.
 
 ## Inventory of sources and licences
 
