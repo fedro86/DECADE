@@ -1991,6 +1991,76 @@ data loader keeps up with the GPU, which T1 (#37) measures.
   normalisation.
 - **Frames.** IRENE uses 18 of the 24 frames of a window.
 
+### Inference on the whole domain (T8)
+
+GPU memory and time of one forecast of the whole Belgian CIRRUS crop by the
+pre-trained weights `it4lia/irene`, as a function of the ensemble size (#86).
+The weights have no layer of fixed size, so they apply to the whole grid
+padded to a multiple of 32, without tiles; the paper evaluates only
+256 × 256 patches (Camilletti et al. 2026, section 6). T0 measured training
+on patches only.
+
+- **Input.** Six consecutive CIRRUS frames of `data/cirrus_bel/`
+  (956 × 998 at 1 km, padded by `predict` to 960 × 1024), 5/7/2024
+  22:20–22:45 UTC. Every second frame of 5/7/2024 from 06:05 was read, and
+  22:40 has the largest wet share in the crop (24.5% of the pixels at 0.1 mm/h
+  or more); the six frames end at 22:45 so that they include it; rain
+  rate from Marshall–Palmer as in `opera_ds.clean.rain_rate`. Before 5/7/2024
+  06:05 CIRRUS has no frames at the quarter hours (*Overlap between products*
+  in [data.md](data.md)), so 1–4/7/2024 has no six consecutive frames.
+- **Runs.** IRENE's `predict` unchanged, fp32: forecasts of 12 and 24 steps
+  (60 and 120 min) with K = 1, 5, 10, 15, 20, 25 members, one warm-up then 5
+  timed forecasts per case; the same on the central 256 × 256 patch with
+  K = 10. `predict` runs without gradients and decodes the members one after
+  the other, keeping them all on the GPU until the end.
+- **Measured.** Wall time of `predict` (rain rate in, rain rate out, with the
+  copy of the members to the CPU) and of the model's forward pass alone;
+  peak memory allocated and reserved by PyTorch; peak GPU memory in use by
+  `nvidia-smi` (CUDA context and the desktop included), polled every 0.2 s,
+  so a peak shorter than that can be missed.
+
+**Weights.** `it4lia/irene` at revision `6a37e54` (27/2/2026), `model.ckpt`
+of 770,192,441 bytes (SHA-256 checked against the HuggingFace record). The
+code published with the weights (`convgru_ensemble/model.py`,
+`lightning_model.py`, `utils.py`, `losses.py`) is the same as the clone at
+`676ffe7`, apart from line endings. The weights configuration, identical in
+`config.json` and in the hyperparameters stored in the checkpoint:
+`num_blocks` 5, `ensemble_size` 10, `forecast_steps` 12, `noisy_decoder`
+true, `loss_class` "crps" with `temporal_lambda` 0.01, `masked_loss` false,
+Adam with lr 1e-4. In IRENE's code "crps" is the class `CRPS`, the standard
+ensemble CRPS of *Data, normalisation and loss* above, not the class
+`afCRPS`; the paper describes afCRPS with α = 0.95 (Camilletti et al. 2026,
+section 4.1). The model card of `it4lia/irene` (`README.md`, same
+revision) gives "CRPS with temporal consistency penalty (lambda=0.01)", 2
+members in training, and a masked loss for missing radar data, while the
+configuration has `masked_loss` false. So the published weights and the paper
+may differ in the loss and in the masking; neither is checked here.
+
+**Results** (12/11/2026; table and figure in [usage.md](usage.md),
+*Measured costs*):
+
+- **Memory is not a limit on the 4090.** The largest case, 25 members at
+  120 min, peaks at 4.9 GiB allocated, 6.2 GiB reserved by PyTorch and 7.5
+  GiB in use by `nvidia-smi` (0.9 GiB of it the desktop before the run), of
+  24 GiB. With 10 members at 120 min: 2.2, 3.0 and 4.2 GiB, at or below the
+  3–6 GB estimated from the code in #86.
+- **Memory grows by 0.083 GiB per member at 60 min and 0.17 GiB at 120
+  min**, twice the forecast of one member on the padded grid (960 × 1024 ×
+  steps × 4 bytes, 0.044 and 0.088 GiB): `predict` keeps every member on the
+  GPU and `torch.cat` copies them into one tensor at the end.
+- **Time is linear in K**: about 0.18 s per member at 60 min and 0.36 s at
+  120 min; 3.7 s for 10 members at 120 min, about 1,000 such forecasts per
+  hour. The 5 repetitions of a case differ by about 7% at most.
+- **The forward pass is 18–27% of the time on the whole domain.** The rest
+  is outside the model: rain rate to normalised reflectivity in numpy on the
+  CPU, the copy of the members back to the CPU, and back to rain rate in
+  numpy.
+- **Against T0.** One 256 × 256 patch with 10 members takes 0.25 s (60 min)
+  and 0.53 s (120 min) with 0.42–0.46 GiB allocated, of which the forward
+  pass is 64–66%; the whole domain, 15 times the area, takes 7 times as long.
+  Training in T0 needed far more memory (11.2 GiB in validation at batch 16,
+  from the pairwise term of the CRPS), which inference does not compute.
+
 ### Open point
 
 Where the IRENE code lives for DECADE (fork or pinned dependency). Here it is a
