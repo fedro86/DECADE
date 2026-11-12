@@ -1665,8 +1665,54 @@ final ERA5-Land hours only (to 8/2026). 163 months, 2/2013 → 8/2026.
   composites*). Against VMM the drop is also there
   and VMM / ERA5-Land is stable, so it is in CIRRUS (*Homogeneity of the
   bridge*, result).
-- **Next.** Repeat on ODYSSEY cleaned as in H2, which #20 requires and which
-  removes the artefact months.
+- **Next.** Repeat on ODYSSEY cleaned as in H2, which #20 requires: below.
+
+### ODYSSEY cleaned as in H2, against ERA5-Land and VMM
+
+`notebooks/07-mr-level-correction.ipynb`, section 9 (12/11/2026). #20 asks
+for ODYSSEY cleaned as in H2; CIRRUS stays as it is. `scripts/odyssey_clean_era5grid.py`
+redoes the hourly sums of *Radar rain on the ERA5-Land grid* on the ODYSSEY
+crops cleaned with `opera_ds.clean.clean_composite`, 4/2013 → 6/2024 (135
+months, no unreadable file; 30 min with 16 processes):
+
+- values above 70 dBZ removed, then Gabella on the whole crop;
+- the static mask of the period (4/2013–11/2015, 12/2015–7/2018,
+  8/2018–6/2024), the H2 rule on the monthly catalogue
+  (`static_mask_proposal_P1–P3`, checked equal to the rule), each masked
+  pixel switched with its radar within 20 km and the radars listed that day,
+  filled as in EURADCLIM (*Static mask: rules in the literature*).
+
+The same run keeps the raw sums, which match section 4 to 2e-5 mm. Cells,
+hours and steps as in the two sections above.
+
+![Radar / ERA5-Land per month, ODYSSEY raw and cleaned, and CIRRUS, over Belgium](figures/h3-level/radar-era5-monthly-clean.png)
+
+| step in log10 (`opera_ds.homog.step`) | raw | cleaned |
+|---|---|---|
+| amounts / ERA5-Land at 7/2024, 12 months | +0.090 (×1.23), p 0.006 | +0.132 (×1.36), p < 0.001 |
+| amounts / ERA5-Land at 7/2024, 24 months | +0.030 (×1.07), p 0.34 | +0.078 (×1.20), p 0.020 |
+| wet share / ERA5-Land at 7/2024, 12 months | +0.084 (×1.21), p < 0.001 | +0.112 (×1.29), p < 0.001 |
+| wet share / ERA5-Land at 7/2024, 24 months | +0.057 (×1.14), p 0.001 | +0.092 (×1.24), p < 0.001 |
+| amounts / VMM at 7/2024, 12 and 18 months, same hours | +0.096 and +0.082 (×1.25, ×1.21) | +0.140 and +0.130 (×1.38, ×1.35) |
+| amounts / ERA5-Land at 7/2024, 12 and 18 months, same hours as VMM | +0.095 and +0.091 (×1.25, ×1.23) | +0.139 and +0.139 (×1.38, ×1.38) |
+| amounts / ERA5-Land at 8/2018, 12 months | −0.197 (×0.64), p 0.002 | −0.132 (×0.74), p 0.022 |
+| amounts / ERA5-Land at 12/2015, 12 months | +0.071 (×1.18), p 0.37 | +0.093 (×1.24), p 0.18 |
+
+p: two-sample t-test; the Wilcoxon–Mann–Whitney p-values give the same
+reading (notebook).
+
+- **The cleaning lowers ODYSSEY** by 21–33% of the yearly median ratio to
+  ERA5-Land before 2019 and by 7–17% from 2019 (25% in 2020, with the May
+  2020 artefact). In 2023 the ratio falls by 9%, close to the 8.4% of the
+  Belgian annual sum that H2 removes in 2023 (*First version on ODYSSEY 2023*).
+- **So the ODYSSEY → CIRRUS gap grows: about +35–38% in amounts** with 12 or
+  18 months, the same against VMM and against ERA5-Land, and **+24–29% in the
+  wet share**. With 24 months the amount step is now significant (+20%).
+- **The cleaned ratio is more even across years**: yearly medians 2.8–3.9
+  over 2013–2024, against 3.5–5.6 raw; 3.1–3.7 in 2019–2023.
+- **Artefact months shrink but stay.** The wet share relative to ERA5-Land
+  peaks at 2.7 in spring 2018 (3.9 raw) and 2.4 in May 2020 (4.1 raw). The
+  break at 8/2018 is still found, smaller (−0.132 against −0.197).
 
 ## Training windows
 

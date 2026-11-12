@@ -99,6 +99,7 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `opera_ds/vmm.py` | VMM radar rasters (H3): `read_vmm` (−2 outside coverage → NaN, UTC label), `hourly_cell_sums` (hourly rain on the bridge cells), `steps_in_month` |
 | `opera_ds/homog.py` | homogeneity of a bridge (H3): `area_ratio` (product / bridge over the Belgian cells), `step` (log10 step of a monthly ratio at a date, with the spread before it) |
 | `scripts/vmm_hourly.py` | hourly VMM rain on the ERA5-Land cells over Belgium (H3) |
+| `scripts/odyssey_clean_era5grid.py` | hourly ODYSSEY rain on the ERA5-Land cells over Belgium, raw and cleaned as in H2 (H3) |
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
 | `site/index.html`, `site/fetch_data.sh` | project plan page; ticket status, owners, dates and dependencies are read from the issues by `fetch_data.sh` when `.github/workflows/pages.yml` publishes it, so only the plan text lives in the page |
 | `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py`, `scripts/fetch_cds.py`, `scripts/bridge_to_zarr.py` | download and masks; single-radar files for the radar positions of a day; ERA5-Land and CERRA-Land from the Copernicus Climate Data Store, ERA5-Land as one Zarr store |
