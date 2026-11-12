@@ -383,6 +383,10 @@ whole files, also with `extent` as long as the extent is inside the crop.
   rerun `fetch_cog_crop.py` with a later end date.
 - **The crops hold reflectivity only.** Quality fields would require redoing
   them, with the same network traffic.
+- `data/opera_pvol/issue88/`: 110 single-radar `DBZH` volumes of Helchteren,
+  Wideumont and Jabbeke (lowest-elevation scan set), rainy hours of
+  9/2025–1/2026, 75 MB, downloaded from the ORD bucket on 12/11/2026 by
+  `notebooks/07-mr-level-correction.ipynb`, section 11 (#88).
 - `data/mask_BEL_1km.npy`: Belgium mask on the full CIRRUS grid (Natural Earth
   1:10m), made with `make_region_mask.py`.
 - `data/radclim/`: RADCLIM zips from the project's internal copy, unpacked in place
