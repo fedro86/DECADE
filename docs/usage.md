@@ -280,6 +280,7 @@ measured in November 2026 for S0). "—" means not measured on that machine.
 | `fetch_cog_crop.py`, Belgium + 350 km, ODYSSEY | about 3 h for 12 years with 32 threads | 15 min and 3.0 GB for one year (2023) with 32 threads |
 | `fetch_cog_crop.py`, Belgium + 350 km, CIRRUS | — | 1.2 h and 25.5 GB (258 kB per frame) for one year (2025) with 32 threads |
 | `fetch_cds.py`, ERA5-Land, Belgium + 350 km | 6.6 h and 2.9 GB for 178 months with 4 requests at a time (queue on the CDS, not local work) | — |
+| `fetch_cds.py`, CERRA-Land, Belgium + 350 km | 47 h and 0.7 GB for 168 months, 10–12/11/2026, mostly one yearly request at a time, almost all of it waiting in the MARS queue of the CDS; the last 7 years came in the last 3 h | — |
 | `bridge_to_zarr.py`, ERA5-Land, 178 months | 4.5 min, 3.0 GB | — |
 | synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions | 3.9 min |
 

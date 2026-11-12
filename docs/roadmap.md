@@ -100,7 +100,7 @@ left allows it.
   bridge data over the Belgian domain: ERA5-Land, and the CERRA-Land download
   started newest year first; EURADCLIM 3.0 ends in 2023 and its download is
   left to H4 (F, 3–22/11; decided 10/11/2026).
-- [ ] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
+- [x] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
   CERRA-Land download over the Belgian domain (F, 11/11–6/12; split from S7
   on 11/11/2026).
 - [x] [**S9**](https://github.com/fedro86/DECADE/issues/83) Convert ERA5-Land
