@@ -1813,6 +1813,19 @@ the jump is larger):
   pan-European. Open for G1: how a mapping on the bridge grid is applied to
   the ODYSSEY pixels; the CIRRUS period, after #88; the yardstick, ours (a
   jump within the year-to-year spread).
+- **From the bridge grid to the pixels: what the literature says.** Fitting on
+  the bridge grid compares like with like. Applying the same deterministic
+  mapping to 2 km / 15 min pixel values, as if they were cell-hour sums, is
+  quantile mapping across a scale gap, which Maraun (2013, sections 1 and 3)
+  shows is not feasible for precipitation: area extremes overestimated by
+  about 30%, drizzle overcorrected, trends changed. The remedies he names
+  (section 4) are to correct only the level (the mean) or to add a
+  stochastic step; Volosciuk et al. (2017) correct at the grid scale and
+  handle the finer scale with a separate stochastic model. For DECADE the
+  small-scale structure is already in the radar, so a level correction per
+  cell and hour (the ratio of corrected to raw cell-hour sum, applied to the
+  pixels inside) would keep it; neither paper tests this on radar data, so
+  the choice is for G1.
 
 ## Training windows
 
