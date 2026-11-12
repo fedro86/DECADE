@@ -14,7 +14,17 @@ Must run with the Python of the IRENE environment, not DECADE's (IRENE needs Pyt
 
   <IRENE>/.venv/Scripts/python.exe scripts/irene_t0.py --out results/irene_t0 --batch-size 16 --steps 300
 
-Prints the time per step and the peak GPU memory, and writes them to <out>/stats_bs<batch>.json.
+Prints the time per step and the peak GPU memory, and writes them to
+<out>/stats_bs<batch>_k<members>_<loss>_<precision>_acc<accumulate>.json.
+
+T9 (#90) runs the same training with other settings: `--loss-class afcrps` (IRENE's `PIXEL_LOSSES`), `--accumulate`
+(gradient accumulation), `--no-checkpoints` (no model files written; they are not needed to measure). A case that runs
+out of GPU memory writes `"oom": true` instead of the measurements; on Windows the driver may instead spill into shared
+system memory and slow down, which `"exceeds_gpu_memory": true` flags (peak above the memory of the GPU). `--table <dir>` prints the stats files of a folder
+as a table, with hours per 10^5 optimiser steps:
+
+  <IRENE>/.venv/Scripts/python.exe scripts/irene_t0.py --out results/irene_t9 --ensemble-size 10 --loss-class afcrps       --batch-size 16 --steps 110 --no-checkpoints
+  <IRENE>/.venv/Scripts/python.exe scripts/irene_t0.py --table results/irene_t9
 """
 from __future__ import annotations
 
@@ -69,6 +79,25 @@ def make_fake_store(out: Path, n_windows: int, seed: int = 0) -> tuple[Path, Pat
     return zarr_path, csv_path
 
 
+def print_table(folder: Path) -> None:
+    """Markdown table of the stats files of `folder`; time per optimiser step = time per batch x accumulate."""
+    rows = [json.loads(f.read_text()) for f in sorted(folder.glob("stats_*.json"))]
+    rows.sort(key=lambda r: (r["ensemble_size"], r["loss_class"], r["precision"], r["batch_size"], r["accumulate"]))
+    print("| K | loss | precision | batch | accumulate | s per batch (median) | s per optimiser step | h per 1e5 steps |"
+          " train GiB | val GiB |")
+    print("|---:|---|---|---:|---:|---:|---:|---:|---:|---:|")
+    for r in rows:
+        head = (f"| {r['ensemble_size']} | {r['loss_class']} | {r['precision']} | {r['batch_size']} |"
+                f" {r['accumulate']} |")
+        if r["oom"]:
+            print(head + " out of memory | | | | |")
+            continue
+        step = r["step_s_median"] * r["accumulate"]
+        spill = " (beyond GPU memory)" if r.get("exceeds_gpu_memory") else ""
+        print(head + f" {r['step_s_median']:.3f}{spill} | {step:.3f} | {step * 1e5 / 3600:.1f} |"
+              f" {r['train_peak_allocated_GiB']:.1f} | {r['val_peak_allocated_GiB']:.1f} |")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--out", type=Path, default=Path("results/irene_t0"))
@@ -78,7 +107,14 @@ def main() -> None:
     p.add_argument("--num-workers", type=int, default=4)
     p.add_argument("--ensemble-size", type=int, default=2, help="members in training (IRENE default 2)")
     p.add_argument("--precision", default="32-true", help="Lightning precision, e.g. 32-true or bf16-mixed")
+    p.add_argument("--loss-class", default="crps", help="IRENE loss, a key of PIXEL_LOSSES: crps, afcrps, mse, mae (T9)")
+    p.add_argument("--accumulate", type=int, default=1, help="batches per optimiser step (accumulate_grad_batches, T9)")
+    p.add_argument("--no-checkpoints", action="store_true", help="do not write model checkpoints (T9)")
+    p.add_argument("--table", type=Path, help="print the stats_*.json of this folder as a table and exit")
     args = p.parse_args()
+    if args.table:
+        print_table(args.table)
+        return
     args.out.mkdir(parents=True, exist_ok=True)
 
     import fiddle as fdl
@@ -88,6 +124,7 @@ def main() -> None:
     from convgru_ensemble import train as irene_train
 
     zarr_path, csv_path = make_fake_store(args.out, args.windows)
+    case = f"bs{args.batch_size}_k{args.ensemble_size}_{args.loss_class}_{args.precision}_acc{args.accumulate}"
 
     class StepStats(Callback):
         """Wall time per training step (CUDA-synchronised) and peak GPU memory, apart for training and validation
@@ -123,6 +160,9 @@ def main() -> None:
         def on_train_end(self, trainer, pl_module) -> None:
             t = np.array(self.times[10:] or self.times)
             stats = {
+                "oom": False,
+                "loss_class": args.loss_class,
+                "accumulate": args.accumulate,
                 "gpu": torch.cuda.get_device_name(0),
                 "torch": torch.__version__,
                 "batch_size": args.batch_size,
@@ -136,9 +176,13 @@ def main() -> None:
                 "val_batch_size": min(args.batch_size, len(trainer.datamodule.val_dataset)),
                 "peak_reserved_GiB": torch.cuda.max_memory_reserved() / 2**30,
                 "parameters": sum(q.numel() for q in pl_module.parameters()),
+                "gpu_total_GiB": torch.cuda.get_device_properties(0).total_memory / 2**30,
             }
+            # on Windows the driver may spill into shared system memory instead of failing (T9): flag it
+            stats["exceeds_gpu_memory"] = max(stats["train_peak_allocated_GiB"], stats["val_peak_allocated_GiB"],
+                                              stats["peak_reserved_GiB"]) > stats["gpu_total_GiB"]
             print("T0 STATS " + json.dumps(stats), flush=True)
-            (args.out / f"stats_bs{args.batch_size}.json").write_text(json.dumps(stats, indent=1))
+            (args.out / f"stats_{case}.json").write_text(json.dumps(stats, indent=1))
 
     cfg = irene_train.experiment()
     dm = cfg.datamodule
@@ -147,14 +191,26 @@ def main() -> None:
     dm.multiprocessing_context = "spawn" if args.num_workers > 0 else None   # no fork on Windows
     dm.persistent_workers = args.num_workers > 0                              # spawn is slow to restart per epoch
     cfg.model.ensemble_size = args.ensemble_size
+    cfg.model.loss_class = args.loss_class
+    cfg.trainer.accumulate_grad_batches = args.accumulate
     cfg.trainer.max_steps = args.steps
     cfg.trainer.max_epochs = -1
     cfg.trainer.precision = args.precision
     cfg.trainer.log_every_n_steps = 10
     cfg.loggers.tensorboard.save_dir = str(args.out / "logs")
-    cfg.loggers.tensorboard.version = f"bs{args.batch_size}"
+    cfg.loggers.tensorboard.version = case
     cfg.callbacks.step_stats = fdl.Config(StepStats)
-    irene_train.train(cfg)
+    if args.no_checkpoints:                                                   # IRENE needs both callbacks: keep 0 files
+        cfg.callbacks.checkpoint_val.save_top_k = 0
+        cfg.callbacks.checkpoint_train.save_top_k = 0
+    try:
+        irene_train.train(cfg)
+    except torch.cuda.OutOfMemoryError as e:                                 # recorded, not fatal (T9)
+        stats = {"oom": True, "error": str(e).splitlines()[0], "batch_size": args.batch_size,
+                 "ensemble_size": args.ensemble_size, "precision": args.precision, "loss_class": args.loss_class,
+                 "accumulate": args.accumulate, "gpu": torch.cuda.get_device_name(0), "torch": torch.__version__}
+        print("T0 STATS " + json.dumps(stats), flush=True)
+        (args.out / f"stats_{case}.json").write_text(json.dumps(stats, indent=1))
 
 
 if __name__ == "__main__":
