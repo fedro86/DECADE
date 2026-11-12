@@ -1400,6 +1400,50 @@ The time per step starts when the batch is already loaded
 (`on_train_batch_start`), so it is GPU work only: T0 does not show whether the
 data loader keeps up with the GPU, which T1 (#37) measures.
 
+### Training cost on the 4090 (T9)
+
+What the workstation alone can train if Leonardo is not available (#90):
+`scripts/irene_t0.py` on the fake windows of T0, with IRENE's loss and
+members in training changed from outside (`--loss-class`, `--ensemble-size`),
+gradient accumulation (`--accumulate`) and no checkpoint files. Time per step
+is the median from the 11th step on, with the batch already loaded (GPU work
+only, a lower bound); memory is the peak allocated by PyTorch in training and
+in validation (10 members). Table and conditions in [usage.md](usage.md),
+*Measured costs*.
+
+- **2 members (the code's default) fit at every batch.** CRPS, fp32: 0.22,
+  0.32 and 0.56 s per step at batch 8, 16 and 32 (4.2, 7.4 and 13.8 GiB in
+  training), as in T0.
+- **10 members in training do not fit at batch 8.** With CRPS the peak
+  allocated is 21.9 GiB and the peak reserved goes beyond the 24 GiB of the
+  card; with afCRPS 24.7 GiB. There is no out-of-memory error: the run goes
+  on (1.6 and 2.1 s per step, per sample as fast as at batch 4 with CRPS and
+  30% slower with afCRPS), which fits the Windows driver falling back to
+  shared system memory (not checked in the driver settings). The fallback
+  can cost far more: at batch 16 (CRPS) fewer than 10 steps ran in 15
+  minutes, so more than 90 s per step (run stopped); batch 32, and afCRPS at
+  batch 16, were not run, since they need even more memory. The pairwise term
+  of the CRPS grows with the square of the members (*Data, normalisation and
+  loss* above).
+- **The largest batch that fits with 10 members is 6**: 16.7 GiB (CRPS) and
+  18.8 GiB (afCRPS) in training, 0.93 and 0.97 s per step. Batch 4: 11.3 and
+  12.8 GiB, 0.80 and 0.82 s.
+- **Gradient accumulation to the paper's batch** (afCRPS, 10 members): 4
+  batches of 4 make an effective batch of 16 at 3.3 s per optimiser step, 8
+  batches of 4 an effective batch of 32 at 6.6 s; the time per batch does not
+  change with accumulation (0.82–0.87 s), and memory stays at 12.8 GiB.
+- **bf16-mixed does not lower memory here, it raises it**: at batch 8 with 2
+  members it takes 5.8 GiB against 4.2 in fp32; with 10 members at batch 4,
+  22.4 GiB (CRPS) and 23.9 GiB (afCRPS, beyond the card) against 11.3 and
+  12.8, and it is slower (1.03 and 1.24 s against 0.80 and 0.82); at batch 8
+  it goes beyond the card and slows to about 27 s per step (run stopped after
+  69 steps). It saves time only at 2 members and batch 16–32 (0.27 and 0.42 s,
+  against 0.32 and 0.56 in fp32). Why the mixed precision needs more memory is
+  not checked here.
+- **So the paper's setting costs about 10 times the code's default per
+  optimiser step on the 4090**: 3.3 s against 0.32 s at effective batch 16,
+  that is 92 h against 8.8 h per 10⁵ steps.
+
 ### Notes for the data loader (T1)
 
 - **Layout.** The DECADE store holds `RR` (n, T, H, W) per window (*Window
