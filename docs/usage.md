@@ -35,8 +35,10 @@ uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
 uv run python scripts/fetch_cds.py --dataset era5-land --start 2012-01 --end 2026-10 --out data/era5land_bel
 uv run python scripts/fetch_cds.py --dataset cerra-land --start 2012-01 --end 2025-12 --out data/cerraland_bel
 
-# ERA5-Land as one Zarr store of hourly amounts in mm, written anew each time
+# ERA5-Land as one Zarr store of hourly amounts in mm, CERRA-Land as one store
+# of daily amounts in mm; each written anew each time
 uv run python scripts/bridge_to_zarr.py --dataset era5-land --src data/era5land_bel --out data/era5land_bel.zarr
+uv run python scripts/bridge_to_zarr.py --dataset cerra-land --src data/cerraland_bel --out data/cerraland_bel.zarr
 
 # Belgium mask on the full CIRRUS 1 km grid (Natural Earth 1:10m)
 uv run python scripts/make_region_mask.py --ref "data/cirrus/OPERA@20240702T1205@0@DBZH.h5" \
@@ -313,6 +315,7 @@ measured in November 2026 for S0). "—" means not measured on that machine.
 | `fetch_cds.py`, ERA5-Land, Belgium + 350 km | 6.6 h and 2.9 GB for 178 months with 4 requests at a time (queue on the CDS, not local work) | — |
 | `fetch_cds.py`, CERRA-Land, Belgium + 350 km | 47 h and 0.7 GB for 168 months, 10–12/11/2026, mostly one yearly request at a time, almost all of it waiting in the MARS queue of the CDS; the last 7 years came in the last 3 h | — |
 | `bridge_to_zarr.py`, ERA5-Land, 178 months | 4.5 min, 3.0 GB | — |
+| `bridge_to_zarr.py`, CERRA-Land, 168 months | 2.1 min, 0.52 GB | — |
 | synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions | 3.9 min |
 
 With the IRENE parameters `sample` selects about 56,000 windows in 5 days, so

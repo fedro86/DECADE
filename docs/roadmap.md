@@ -105,6 +105,8 @@ left allows it.
   on 11/11/2026).
 - [x] [**S9**](https://github.com/fedro86/DECADE/issues/83) Convert ERA5-Land
   to one Zarr store of hourly amounts (F, 12–13/11).
+- [x] [**S10**](https://github.com/fedro86/DECADE/issues/93) Convert
+  CERRA-Land to one Zarr store of daily amounts (F, 12–13/11).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
   environment on the CINECA modules (F, 18–29/11, if the call is won).
 - [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
