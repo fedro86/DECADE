@@ -135,7 +135,7 @@ fraction of the speed. Before long runs, set NVIDIA Control Panel → *Manage 3D
 settings* → *CUDA - Sysmem Fallback Policy* → *Prefer No Sysmem Fallback*, so
 that a training that outgrows the card stops with an out-of-memory error, as
 on Linux ([Cognex documentation](https://docs.cognex.com/deep-learning_400/web/EN/deep-learning/Content/Topics/optimization/gpu-disable-shared.htm));
-not yet set or checked on the workstation.
+set on the workstation on 12/11/2026, not yet checked with a run beyond the card.
 
 Then, from `DECADE`, with that Python:
 
