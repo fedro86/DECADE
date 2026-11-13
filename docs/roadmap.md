@@ -98,8 +98,8 @@ left allows it.
   the RADCLIM copy and read it on the OPERA grid (M, 3–22/11).
 - [x] [**S7**](https://github.com/fedro86/DECADE/issues/13) Get pan-European
   bridge data over the Belgian domain: ERA5-Land, and the CERRA-Land download
-  started newest year first; EURADCLIM 3.0 ends in 2023 and its download is
-  left to H4 (F, 3–22/11; decided 10/11/2026).
+  started newest year first; EURADCLIM 3.0 ends in 2023 and is not used
+  (F, 3–22/11; decided 10/11/2026, dropped 13/11/2026).
 - [x] [**S8**](https://github.com/fedro86/DECADE/issues/81) Complete the
   CERRA-Land download over the Belgian domain (F, 11/11–6/12; split from S7
   on 11/11/2026).
@@ -131,17 +131,13 @@ left allows it.
   interpolation error on degraded CIRRUS (M, 16–29/11).
 - [x] [**H2**](https://github.com/fedro86/DECADE/issues/19) Clean outliers and
   radar artefacts from ODYSSEY (M→F, 16–29/11).
-- [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Correct the ODYSSEY
-  → CIRRUS level difference through a bridge dataset (M→F, 16/11–6/12).
-- [ ] [**H3b**](https://github.com/fedro86/DECADE/issues/82) Add CERRA-Land
-  as bridge and check ERA5-Land against it (M→F, 7–18/12, indicative: starts
-  when S8 ends).
+- [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Harmonise the
+  ODYSSEY level with CIRRUS through a bridge, period by period; absorbs H3b
+  and H4 (M→F, 16/11–18/12, method frozen at G1).
 - [ ] [**H6**](https://github.com/fedro86/DECADE/issues/21) Decide the time
   shift used in production (F+M, 30/11–6/12).
 - [ ] [**H5**](https://github.com/fedro86/DECADE/issues/22) Validate archive v1
   over Belgium against VMM and RADCLIM (M, 7–24/1).
-- [ ] [**H4**](https://github.com/fedro86/DECADE/issues/23) Check the
-  consistency of the archive over 2012–2024 (F, 3–4/2027).
 - [ ] [**H8**](https://github.com/fedro86/DECADE/issues/24) Produce archive v1.1
   with the validation corrections (F, 4–5/2027).
 - [ ] [**H7**](https://github.com/fedro86/DECADE/issues/25) Port the
@@ -285,9 +281,9 @@ node stays to T3.
 - **WP3 runs in phases** (A/B/C, then a reduced learning curve, then the full
   one), as far as the compute budget allows (decided 3/11/2026).
 - **No ECA&D in DECADE.** The correction is anchored to CIRRUS through a
-  bridge, the Belgian validation to VMM and RADCLIM, the consistency check to
-  EURADCLIM (CC BY 4.0); so the non-commercial ECA&D terms do not touch the
-  release (decided 3/11/2026). ECA&D returns only with the parked rain archive.
+  bridge and the Belgian validation to VMM and RADCLIM; so the non-commercial
+  ECA&D terms do not touch the release (decided 3/11/2026). ECA&D returns only
+  with the parked rain archive.
 - **The whole archive is harmonised and released for Belgium + 350 km**, not
   only the training windows; Europe follows when the method is fast enough (H7)
   and pan-European references exist (decided 3/11/2026).
@@ -309,23 +305,26 @@ node stays to T3.
   CIRRUS has no equivalent, so a `QIND` mask could not run in the
   operational chain. The crops stay without quality bands.
 
-- **CERRA-Land moves to its own ticket** (11/11/2026). It is read from the
-  ECMWF MARS archive, where all CDS users share one queue and each user runs
-  one request at a time ([data.md](data.md), *Inventory of sources and
-  licences*), so its end date cannot be planned. S7 closes with ERA5-Land, H3
-  uses ERA5-Land only, and the CERRA-Land variant is a ticket of its own, H3b,
-  which starts when S8 ends.
 - **H3 checks the homogeneity of its bridge first** (11/11/2026). The bridge
   separates the product change from wetter or drier years only if it has no
   break of its own, and ERA5-Land precipitation can change with the
-  observations ERA5 assimilates. H3 checks it in the literature and against
-  VMM; H3b against CERRA-Land over 2012–2025. A change over time counts as
-  climate only with a published source.
+  observations ERA5 assimilates. H3 checks it in the literature, against VMM
+  and against CERRA-Land over 2013–2025. A change over time counts as climate
+  only with a published source.
+- **H3 corrects the level period by period, and only the level** (13/11/2026).
+  ODYSSEY changes level at 12/2015 and 8/2018 ([method.md](method.md), *Radars
+  over time*), so an offset fitted on one period does not hold for the others.
+  H3 absorbs H3b (CERRA-Land, the only independent check of ERA5-Land before
+  2022) and H4 (jumps inside 2012–2024). The bridge is a transfer standard:
+  each period gets one offset against CIRRUS, applied to the pixels as a shift
+  in dBZ, so the radar keeps its own structure. EURADCLIM is not used: it is
+  built on the OPERA composites. G1 freezes the procedure; offsets not ready
+  for archive v1 enter v1.1 (H8).
 
 ## Open decisions
 
 - **Level-correction bridge (H3):** pan-European, national or none; decided at
-  G1 with ERA5-Land, and confirmed or changed in H3b with CERRA-Land. With similar results the pan-European bridge is preferred, because the
+  G1 with ERA5-Land, CERRA-Land and VMM. With similar results the pan-European bridge is preferred, because the
   method must apply to the whole OPERA domain. If a national bridge is chosen,
   the decision states what would replace it in the other countries.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
