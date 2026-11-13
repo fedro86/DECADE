@@ -1298,6 +1298,89 @@ frames; Belgian cells of each grid.
   CERRA-Land; whether this comes from those spots or from CERRA-Land is not
   checked.
 
+## ERA5-Land against CERRA-Land (H3b)
+
+The second bridge (#82): first the literature on the homogeneity of
+CERRA-Land, then its ratio to ERA5-Land over Belgium. The CERRA-Land variant
+of the correction waits for G1 (H3, #20). Code in
+`notebooks/08-mr-level-correction-cerra.ipynb` (13/11/2026).
+
+### What the literature says
+
+- **How CERRA-Land makes its rain.** A daily (06–06 UTC) optimal
+  interpolation between the CERRA forecast and rain gauges (MESCAN; Soci et
+  al., [2016](sources/2016%20-%20Soci%20-%20High-resolution%20precipitation%20re-analysis%20system%20for%20climatological%20purposes.md);
+  Ridal et al., [2024](sources/2024%20-%20Ridal%20-%20CERRA,%20the%20Copernicus%20European%20Regional%20Reanalysis%20system.md)).
+  A gauge corrects the field within a few tens of kilometres (correlation
+  length 35 km in the first version); away from gauges the field is the
+  forecast. A change in the gauges used can therefore change the level, and
+  C3S warns users that it can give misleading trends
+  ([Schimanke 2024](sources/2024%20-%20Schimanke%20-%20CERRA%20Strengths%20and%20weaknesses.md)).
+- **Gauges over time.** About 8,000–8,700 a day until the early 2000s, then
+  a fall mostly in the ECA&D series to about 6,600 by about 2008, then
+  6,500–6,800 to about 2019, read off figure 1.2.2.2 of
+  [Le Moigne et al. 2021](sources/2021%20-%20Le%20Moigne%20-%20Documentation%20of%20the%20CERRA-Land%20system.md)
+  (whole domain, before quality control). The only documented break of the
+  analysis is east of 50° E from 27/11/1999 (Schimanke 2024).
+- **After 6/2021.** The original production ends in 6/2021; the months
+  after come from a new C3S contract, with about 8,000 gauges a day for the
+  present period ([Martí et al. 2026](sources/2026%20-%20Marti%20-%20MESCAN%20precipitation%20analysis%20as%20part%20of%20the%20CERRA%20reanalysis,%20for%20near%20real%20time%20and%20back%20extension%20production.md),
+  abstract only; the two counts may not be made the same way). No source
+  says whether the two parts are consistent.
+- **12-bit packing of 5/2021–7/2025.** Documented for snow, not for
+  precipitation ([data user guide](sources/2026%20-%20C3S%20-%20CERRA-Land%20surface%20reanalysis%20Data%20User%20Guide.md)).
+- **Trends.** Over Switzerland in 1986–2020 CERRA-Land precipitation follows
+  the observed trends better than ERA5-Land, which shows none, but also has
+  significant trends where observations have none
+  ([Wood et al. 2025](sources/2025%20-%20Wood%20-%20Comparison%20of%20high-resolution%20climate%20reanalysis%20datasets%20for%20hydro-climatic%20impact%20studies.md)).
+
+### The monthly ratio over Belgium
+
+Belgian cells of each grid (centre inside Belgium): 389 of ERA5-Land (one
+coastal cell has no values), 1,010 of CERRA-Land. ERA5-Land hourly amounts
+summed into the CERRA-Land days; months as the windows (1st 06 UTC, next 1st
+06 UTC], 1/2012–11/2025 (167 months). ERA5-Land is above CERRA-Land by
+×1.16 over the whole period. Test of a step as in H3 (log10 ratio, n months
+each side, t-test and Mann–Whitney; consecutive months may be autocorrelated,
+which makes the p-values too small).
+
+| date | 12 months | 18 months | 24 months |
+|---|---|---|---|
+| 5/2021 | +0.013 (×1.03), p 0.63 and 0.62 | +0.059 (×1.15), p 0.04 and 0.10 | +0.047 (×1.11), p 0.03 and 0.06 |
+| 7/2021 | +0.016 (×1.04), p 0.56 and 0.67 | +0.053 (×1.13), p 0.06 and 0.16 | +0.046 (×1.11), p 0.04 and 0.07 |
+| 7/2024 | +0.034 (×1.08), p 0.17 and 0.21 | +0.013 (×1.03), p 0.53 and 0.83 | −0.008 (×0.98), p 0.76 and 0.84 |
+
+![ERA5-Land / CERRA-Land over Belgium, monthly, 1/2012–11/2025](figures/bridge/era5land-cerraland-ratio.png)
+
+| year | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ERA5-Land / CERRA-Land | 1.07 | 1.08 | 1.09 | 1.06 | 1.09 | 1.16 | 1.21 | 1.17 | 1.13 | 1.21 | 1.28 | 1.21 | 1.23 | 1.24 |
+
+\* 11 months.
+
+- **No step at 7/2024**, with 12, 18 or 24 months each side: across the
+  ODYSSEY → CIRRUS change the two bridges agree, as ERA5-Land and VMM do
+  (H3).
+- **No step at 5–7/2021 with 12 months each side.** With 18 and 24 months the
+  step is +11 to +15% (p 0.03–0.06), but these windows reach back into the
+  drift below, so they do not separate a step at that date from the drift.
+- **A drift instead.** The ratio grows from about 1.07 in 2012–2016 to about
+  1.23 in 2021–2025, in every season: +0.0063 log10 a year (×1.16 a decade,
+  p 1·10⁻⁶ for the monthly values; Kendall's tau of the yearly ratios 0.74,
+  p 0.0001). The 12-month steps with the smallest p are around 8–9/2016
+  (+0.053) and 12/2021–3/2022 (+0.07 to +0.08), p 0.02–0.06 out of 143
+  tests, so not a step that stands out.
+- **Which of the two drifts is not known from the ratio.** ERA5-Land and VMM
+  have no step from 7/2022 on (H3), but VMM does not reach the earlier years.
+  The literature makes a change in the gauges of CERRA-Land a possible cause
+  (Schimanke 2024; Wood et al. 2025), but nothing documents one over Belgium
+  in 2012–2025.
+- **12-bit packing: no effect on precipitation in our copy.** The smallest
+  gap between distinct daily values is 7.6·10⁻⁶ mm before, during and after
+  5/2021–7/2025, with about 26,000–31,000 distinct values a day over the
+  window, where 12 bits would leave at most 4,096; the shares of dry cells
+  (0.26) and of amounts below 0.1 mm (0.18–0.19) do not change.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
