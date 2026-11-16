@@ -2162,6 +2162,80 @@ the level for the period.
   0.44 for B and 0.22 for C; VMM is 0.25 for C.
 - So by this rule the RMI check is worth it for A, just, and not for B or C. VMM is not worth it for C.
 
+### Volume or intensity: how often it rains and how hard
+
+Question of 16/11/2026: should the level correction act on the volume or on the intensity of the rain? The
+offsets above are on the volume, the ratio of the monthly sums. `notebooks/09-mr-level-periods.ipynb`, section 7.
+
+**The split.** A monthly sum is the number of wet hours times their mean rain. So per month, and exactly:
+
+log10(radar / ERA5-Land) = frequency + intensity + below-threshold share
+
+- **frequency**: log10 of the ratio of the wet cell-hours (at least 0.1 mm, as in *Radar against ERA5-Land, month
+  by month*);
+- **intensity**: log10 of the ratio of their mean rain;
+- **below-threshold share**: the rain under 0.1 mm, small (−0.008 to 0.000).
+
+The balanced offset is linear, so the offset on the volume splits the same way. A shift in dBZ multiplies every
+rain rate, so it corrects the intensity. It moves the frequency only through the pixels near the threshold.
+
+| period, against D | volume | frequency | intensity | q50 | q90 | q99 |
+|---|---|---|---|---:|---:|---:|
+| A | ×1.43 (+0.155) | ×1.08 (+0.035), ×0.97–1.21 | ×1.34 (+0.127), ×1.19–1.51 | +0.043 | +0.149 | +0.172 |
+| B | ×1.13 (+0.054) | ×1.07 (+0.030), ×0.95–1.22 | ×1.06 (+0.023), ×0.95–1.18 | −0.035 | +0.049 | +0.029 |
+| C | ×1.26 (+0.100) | ×1.26 (+0.101), ×1.14–1.40 | ×1.01 (+0.006), ×0.91–1.13 | −0.022 | +0.006 | +0.029 |
+
+q50, q90 and q99 are the median, 90th and 99th percentiles of the wet cell-hours, as balanced offsets in log10
+(95% half-widths 0.05–0.07). With thresholds of 0.5 and 1 mm the intensity offsets stay within 0.03 of these
+(A +0.122 and +0.103, B +0.047 and +0.044, C +0.009 and +0.012).
+
+**The steps** (`opera_ds.homog.step`, log10, 12 months each side; 7/2024 without 5/2020):
+
+| step | volume | frequency | intensity |
+|---|---|---|---|
+| 12/2015 | +0.093 (p 0.18) | −0.054 (p 0.22) | +0.153 (p 0.001) |
+| 8/2018 | −0.132 (p 0.02) | −0.143 (p 0.006) | +0.003 (p 0.95) |
+| 7/2024 | +0.132 (p < 0.001) | +0.112 (p < 0.001) | +0.033 (p 0.29) |
+
+With 16 months each side the same pattern holds. Each date was known before these tests (*Radars over time*).
+
+**After the volume offsets.** The radar hours are multiplied by the volume offset of their period, and the split
+is done again (D minus the corrected period; negative means the period is now above D):
+
+| period | frequency | intensity | q50 | q90 | q99 |
+|---|---:|---:|---:|---:|---:|
+| A | −0.003 | +0.009 | −0.044 | +0.021 | +0.031 |
+| B | +0.018 | −0.019 | −0.066 | +0.005 | −0.020 |
+| C | +0.079 | −0.074 | −0.078 | −0.079 | −0.063 |
+
+![Wet cell-hours and their mean rain, radar / ERA5-Land, by month and period mean, 2013–2025](figures/h3-level/level-frequency-intensity.png)
+
+**What the split shows:**
+- **The radar changes are of two kinds.**
+  - At 12/2015 ODYSSEY changes how hard it rains, not how often.
+  - At 8/2018 and 7/2024 it changes how often it rains, and the mean rain of the wet hours does not move.
+  - The 7/2024 step in frequency matches the wet share found in *Radar against ERA5-Land, month by month*.
+- **For C the whole volume offset is frequency.**
+  - CIRRUS has about 26% more wet cell-hours than ODYSSEY C per ERA5-Land wet cell-hour, in every season (+0.086
+    to +0.125).
+  - The intensity offset is ×1.01 (×0.91–1.13), at the median, the 90th and the 99th percentile alike.
+  - A shift in dBZ cannot add wet hours. The volume offset applied as a shift makes C about 19% too strong at
+    every percentile (−0.06 to −0.08), and CIRRUS still has about 20% more wet cell-hours (+0.079).
+- **For A the volume offset is mostly intensity**, and once applied, both frequency and intensity are within
+  0.01 of D. The gap grows with the rain, though: +0.04 at the median, +0.17 at the 99th percentile. One factor
+  leaves the median about 10% too strong (−0.044) and the 99th percentile about 7% too weak (+0.031).
+- **For B both parts are small**, inside their intervals.
+- **So the correction on the intensity is close to the volume one for A and B, and near zero for C.** The
+  frequency gap of C needs a step that matches the wet frequency first, as in the probability matching method
+  (Rosenfeld et al. 1993, section 5a) and in frequency adaptation (Themeßl et al. 2012, section 2.2.2). The bridge
+  mapping of notebook 07 does this with its threshold pair (*Bridge mapping on synthetic data*). A shift in dBZ
+  alone does not.
+- **Limits.**
+  - A wet cell-hour is a mean over 0.1° and one hour, not a pixel at 5 minutes. Whether CIRRUS has more rain area
+    or more rain time, and why, this does not say.
+  - ERA5-Land rains too often and too weakly (*Bridge candidates*). This cancels in the offsets as long as it
+    does not change over time. The RMI check found no trend in its totals; its wet frequency was not checked.
+
 ## ERA5-Land against CERRA-Land (H3b)
 
 The second bridge (#82): first the literature on the homogeneity of

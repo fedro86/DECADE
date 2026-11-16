@@ -340,6 +340,12 @@ node stays to T3.
   are about twice as large near the radars; A has a seasonal pattern
   ([method.md](method.md), *Level offsets of periods A and B*). Split B or
   not, offsets by ring or not, seasonal offsets for A or not: for G1.
+- **Volume or intensity (H3):** the offsets are on the volume. Split into
+  frequency and intensity, the volume offset of C is all frequency (CIRRUS
+  has more wet hours), and a shift in dBZ then makes C about 19% too strong;
+  for A and B the two corrections are close ([method.md](method.md),
+  *Volume or intensity*). Which one is applied, and whether the wet
+  frequency is matched first: for G1.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
   frames with `alpha = 0`, but configuration C is meant to test the
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training
