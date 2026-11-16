@@ -2234,6 +2234,61 @@ uncertainty of the offsets of A and B, as before, with the evidence above leanin
 - **Its limit:** these stations are synoptic, so CERRA-Land probably assimilates them, and CERRA-Land /
   stations at their cells is not independent.
 
+### Check against the RMI automatic stations: CERRA-Land drifts, ERA5-Land does not
+
+`notebooks/08-mr-level-correction-cerra.ipynb`, section 4c (16/11/2026), run after the go-ahead on #96 with its
+two cautions and three conditions.
+
+**Reference.**
+- **Data:** hourly precipitation of the RMI automatic weather stations, fetched by `scripts/fetch_rmi_aws.py`
+  ([data.md](data.md), *RMI automatic weather stations*).
+- **Licence:** CC BY 4.0, confirmed on the RMI site. The catalogue record `RMI_DATASET_AWS_1HOUR` gives it, and
+  the terms of the open-data portal ask to cite the RMI as the source.
+- **Hours:** the time stamp is the end of the hour. The mean hourly correlation with ERA5-Land, over 12
+  stations in 2016–2024, is 0.433 at lag 0, against 0.389 and 0.399 one hour either way.
+- **Days:** 06–06 UTC, as for the bridges, from hours validated by the RMI; only days with all 24 hours.
+- **Stations:** a fixed set of 12 of the 14 stations, each with at least 80% complete days in every year
+  2012–2025. Stabroek starts in 8/2012 and De Haan in 2025.
+- **Bridges at the stations:** the nearest ERA5-Land cell and the nearest CERRA-Land cell.
+- **Months:** sums over the days valid for all three, pooled over the stations, with calendar-month means
+  removed. The trend p-values and intervals allow for the lag-1 autocorrelation of the residuals.
+
+**Result, 159 months:**
+
+| trend, 2012–11/2025 | all days | without the 3 stations with a step | without each station's wettest 1% / 5% of wet days |
+|---|---|---|---|
+| ERA5-Land / stations | ×1.02 a decade (95% ×0.95–1.11), p 0.57 | ×1.02 (×0.95–1.10), p 0.59 | ×1.01 (p 0.71) / ×1.01 (p 0.67) |
+| CERRA-Land / stations | ×0.90 a decade (95% ×0.87–0.94), p 8·10⁻⁷ | ×0.89 (×0.86–0.93), p 2·10⁻⁷ | ×0.90 / ×0.89, p ≤ 10⁻⁷ |
+| ERA5-Land / CERRA-Land at the stations | ×1.13 a decade (×1.06–1.21) | ×1.15 | ×1.13 / ×1.15 |
+
+- **ERA5-Land has no drift against the stations. CERRA-Land falls by about 10% a decade.** The drift between
+  the bridges at the station cells (×1.13 a decade) is the one found over Belgium (×1.16, *The monthly ratio
+  over Belgium*), so the drift is in CERRA-Land.
+- **This holds with CERRA-Land as the favoured side.** CERRA-Land probably assimilates these stations, which
+  should pull it towards them. It still drifts away from them.
+- **Station changes (caution 1).**
+  - No instrument history is published: the WMO OSCAR records of the stations list none for precipitation, and
+    no RMI document was found. So each station was tested against the mean of the others (Pettitt test).
+  - Zeebrugge (11/2018, −0.099), Melle (2/2017, −0.120) and Mont Rigi (7/2014, +0.119) have a step, p ≤ 0.01.
+    They are probably instrument or site changes.
+  - Without them the result is the same. With the six stations at p < 0.1 left out it is also the same:
+    ERA5-Land ×1.03 (×0.95–1.11), CERRA-Land ×0.92 (×0.89–0.96).
+- **Heavy rain (caution 2).**
+  - Tipping-bucket gauges lose water while the bucket tips, more at high intensity, unless corrected (Lanza et
+    al. 2010, the WMO intercomparison); wind-induced undercatch adds to it.
+  - Without each station's wettest days the trends do not change (table). The level of ERA5-Land / stations
+    rises from ×1.07 to ×1.18, as expected from removing the days ERA5-Land underestimates.
+- **Points against cells (condition 3).** A station is a point, a cell is 0.1° (ERA5-Land) or 5.5 km
+  (CERRA-Land). This changes the level (ERA5-Land / stations ×1.07, CERRA-Land / stations ×0.96), not the trend.
+- **Consequence for H3.**
+  - Over Belgium the offsets of A and B keep their ERA5-Land values (*Level offsets of periods A and B*). The
+    higher CERRA-Land offsets come from its drift, and the bridge term of the uncertainty budget is removed.
+  - This does not transfer to the rest of Europe. The drift of CERRA-Land depends on its local gauge input
+    (Monteiro and Morin 2023; Wood et al. 2025), and stations like these are not open everywhere. Over Europe,
+    the bridge term stays where no such check exists.
+- **VMM** confirms only from 2022 on (*Homogeneity of the bridge*). It cannot test 2012–2021, where the drift
+  is, and a radar is not a reference for homogeneity over time.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
