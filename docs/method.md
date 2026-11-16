@@ -2156,6 +2156,84 @@ which makes the p-values too small).
   window, where 12 bits would leave at most 4,096; the shares of dry cells
   (0.26) and of amounts below 0.1 mm (0.18–0.19) do not change.
 
+### Which bridge drifts (comment of 16/11/2026 on #96)
+
+With CERRA-Land as the bridge, the offsets of A and B rise by +0.064 and +0.049 (*Level offsets of periods A and
+B*), about the size of the corrections. If one of the two bridges drifts, those offsets are biased, not only
+uncertain. Here: the literature, then what each product is made of, then the shape of the drift in our data.
+
+**Literature on the drift.**
+- **No study** of the time stability of ERA5 / ERA5-Land or CERRA / CERRA-Land precipitation over Belgium or the
+  Benelux after 2010 was found. Searches covered ERA5 and ERA5-Land against gauges over time in Europe, against
+  E-OBS and HYRAS, CERRA-Land trends and homogeneity, and the CERRA-Land continuation.
+- **ERA5 / ERA5-Land drift slowly against homogenised gauges.** In the Alps and Italy the drift is +1.4 to
+  +1.6% a decade over 1940–2010, rising again from 1995 to 2020 (Lussana et al. 2024). That is about a tenth of
+  the ×1.16 a decade between the two bridges.
+  - ERA5 and ERA5-Land winter precipitation trends agree with a homogenised gauge reference in the Alps
+    (Monteiro and Morin 2023).
+  - In Switzerland they damp the observed trends (Wood et al. 2025), which is not a trend created by the
+    product.
+- **CERRA-Land and its predecessor create precipitation trends.**
+  - MESCAN-SURFEX and CERRA-Land give spurious precipitation trends in the Alps, with the opposite sign to the
+    other datasets for the 10–30-year windows centred on 2005 (Monteiro and Morin 2023).
+  - In Switzerland CERRA-Land shows many significant trends that the observations do not have (Wood et al.
+    2025).
+  - Both studies name the same cause: a gauge input that changes in number and quality over time.
+
+**What each product is made of, 2012–2025.**
+- **ERA5-Land** is the ERA5 forecast precipitation, interpolated. It assimilates no gauges. Its changes come
+  from the observing system and from the production streams, which change on 1/1/2015, 1/3/2019, 1/9/2021,
+  1/1/2022 and 23/10/2022 (Hersbach et al. 2020; Soci et al. 2024; ECMWF documentation).
+- **CERRA-Land** is MESCAN: the CERRA forecast corrected by daily gauges within a few tens of kilometres (Soci et
+  al. 2016).
+  - Its gauges come from national services (Belgium is not among those named), synoptic reports through ECMWF's
+    MARS archive, and ECA&D (Le Moigne et al. 2021).
+  - The total count is stable at about 6,500–6,800 a day over 2008–2019, with a small step up of the MARS
+    reports around 2016 (about 1,200 → 1,550, read off the graph).
+  - The continuation after 6/2021 uses about 8,000 a day from the same three kinds of source, not the same set
+    (Marti et al. 2026).
+  - No count for Belgium is published.
+
+**Shape of the drift in our data.** The data are the 167 monthly ratios of 1/2012–11/2025 (*The monthly ratio
+over Belgium*), with the calendar-month means removed. The models are compared by the Bayesian information
+criterion (BIC; lower is better):
+
+| model | BIC | detail |
+|---|---:|---|
+| linear trend | −942.2 | +0.0065 log10 a year |
+| one step at 7/2021 (end of the original production) | −938.6 | +0.053 |
+| trend, then flat | −938.5 | break at 10/2022 |
+| one step at the best date | −938.3 | 12/2020, +0.055 |
+| two steps at the best dates | −937.8 | 9/2016 and 3/2022 |
+| constant | −916.6 | |
+
+- The linear trend fits best, but by only 3.6–4.4 BIC points, so steps are not excluded.
+- The trend is +0.0051 a year over 1/2012–6/2021 (p 0.006). It is −0.0029 a year over 7/2021–11/2025 (p 0.69,
+  53 months).
+- The Pettitt test puts a change point at 4/2017.
+- The best two steps, 9/2016 and 3/2022, lie close to the two known changes in the gauge input of CERRA-Land:
+  the MARS step around 2016 and the continuation production from 7/2021. That timing is a hint, not a test:
+  the dates of those changes are known only to about a year, and Belgium is not in the counts.
+
+**Which risk applies over Belgium, 2012–2025.**
+- The drift that the literature documents for ERA5 is about ten times smaller than the gap between the bridges.
+- The literature documents trends that CERRA-Land creates in precipitation, and our data allow steps at about
+  the dates when its gauge input changed.
+- Both point to CERRA-Land as the product that drifts, but neither is a test over Belgium.
+
+**Statement for G1, for now:** neither bridge can be preferred on sources. The gap between them is stated as the
+uncertainty of the offsets of A and B, as before, with the evidence above leaning to ERA5-Land.
+
+**Check proposed, not run** (point 4 of the comment):
+- **Reference:** the daily precipitation of the RMI automatic weather stations, open data (opendata.meteo.be,
+  CC BY 4.0 as given by the `wetterdienst` documentation, to be confirmed on the RMI site). Use a fixed set of
+  stations complete over 2012–2025.
+- **Why it can decide:** ERA5-Land assimilates no gauges, so the ratio ERA5-Land / stations is an independent
+  test of ERA5-Land. A drift of about +16% a decade would show; no drift would leave CERRA-Land as the product
+  that drifts.
+- **Its limit:** these stations are synoptic, so CERRA-Land probably assimilates them, and CERRA-Land /
+  stations at their cells is not independent.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
