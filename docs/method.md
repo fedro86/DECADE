@@ -1906,6 +1906,82 @@ the jump is larger):
   pixels inside) would keep it; neither paper tests this on radar data, so
   the choice is for G1.
 
+### Level only: one offset for period C (choices of 13/11/2026)
+
+`notebooks/07-mr-level-correction.ipynb`, section 12 (16/11/2026). The choices of 13/11/2026 for G1 (#20 and
+the comments of 13/11 on #79):
+- **level only**: one offset per period, radar / bridge against the target D, with its 95% interval, applied to
+  the pixels as one shift in dBZ (rain × k is +16·log10 k dB, Marshall–Palmer);
+- **seasonal offsets** only if the seasonal difference exceeds the year-to-year spread;
+- **a check by rings** of distance from the nearest radar;
+- **target D**: CIRRUS 7/2024–17/11/2025, before CIRRUS 1.5.0 (#88);
+- **continuity yardstick**: the year-to-year spread of the corrected ratio, with years left out in turn, and its
+  interval.
+
+Here period C, 8/2018–6/2024 (*Radars over time*); A and B come in the second H3 pull request.
+
+**Data.** As in *ODYSSEY cleaned as in H2*: ODYSSEY cleaned, CIRRUS as it is, the 186 common ERA5-Land cells,
+complete radar hours, final ERA5-Land. Months with less than half of their hours are left out; 11/2025 counts
+its 17 days. That gives 71 months in C and 17 in D.
+
+**Offset.** For each month, log10 of radar / ERA5-Land. For each calendar month, the mean over D minus the mean
+over C. The offset is the mean of these 12 differences, so every season weighs the same, although D covers
+July–November twice. The 95% interval comes from the spread of the 12 differences (t, 11 degrees of freedom).
+
+| period C against D | offset log10 | factor on ODYSSEY | shift | 95% interval |
+|---|---:|---:|---:|---|
+| ERA5-Land, 186 cells | +0.100 | ×1.26 | +1.6 dB | ×1.09–1.45 (+0.6 to +2.6 dB) |
+| without May 2020 (artefact month) | +0.104 | ×1.27 | +1.7 dB | ×1.11–1.45 |
+| cells 0–50 km from the nearest radar (139) | +0.098 | ×1.25 | +1.6 dB | ×1.07–1.47 |
+| cells 50–100 km (47) | +0.106 | ×1.28 | +1.7 dB | ×1.16–1.41 |
+
+![Radar / ERA5-Land per month: ODYSSEY period C raw and corrected, CIRRUS 7/2024–11/2025](figures/h3-level/level-offset-C.png)
+
+- **One offset brings C to the level of D.** The ratio of the totals gives ×1.32. Without the calendar-month
+  balance the offset would be +0.117, because the CIRRUS summers and autumns count twice.
+- **Distance from the radar changes nothing.** The two rings differ by 0.008, far inside their intervals. No
+  cell is more than 74 km from a radar, so the ring beyond 100 km is empty in Belgium.
+- **Seasons: the rule is met in two seasons, on one year of D.**
+
+  | season | offset | minus the single offset | year-to-year sd of the season in C | rule |
+  |---|---:|---:|---:|---|
+  | DJF | +0.143 (×1.39) | +0.042 | 0.082 | within |
+  | MAM | +0.026 (×1.06) | −0.074 | 0.036 | exceeds |
+  | JJA | +0.063 (×1.16) | −0.037 | 0.052 | within |
+  | SON | +0.170 (×1.48) | +0.069 | 0.062 | exceeds |
+
+  - By the letter of the rule, spring and autumn exceed the spread.
+  - D has one spring, 2025, and one or two of each other season. So the seasonal offset of D is one or two
+    years of weather, and its own year-to-year spread is not in the comparison.
+  - The 12 monthly differences do not differ by season (one-way analysis of variance, p 0.25).
+  - So the evidence for seasonal offsets is weak. To be decided at G1.
+- **Same window for the two bridges** (comment of 13/11 on #79). C is restricted to 5/2022–6/2024. VMM has
+  enough hours from 7/2022, so the window has 24 months of C and 17 of D. Both bridges use the same hours and
+  cells:
+
+  | bridge, C 7/2022–6/2024 against D | offset | 95% interval |
+  |---|---:|---|
+  | VMM | +0.101 (×1.26) | ×1.10–1.45 |
+  | ERA5-Land, same hours and cells | +0.125 (×1.33) | ×1.13–1.57 |
+  | ERA5-Land, whole C (above) | +0.100 (×1.26) | ×1.09–1.45 |
+
+  - The two intervals overlap, so ERA5-Land can carry the whole of C (the rule of the comment).
+  - On this window ERA5-Land gives 0.024 more than VMM. VMM / ERA5-Land itself rises by 0.019 from the C window
+    to D, about the same amount.
+  - The ERA5-Land offset on the short window (×1.33) is within the interval of the whole C (×1.26).
+- **Continuity across 7/2024: the jump is within the yardstick.** C is split into six July–June years
+  (8/2018–6/2019 has 11 months). Each year is left out in turn: the offset is refitted on the others and
+  applied to it.
+  - The corrected yearly means are +0.590 to +0.696, with offsets of the others from +0.094 to +0.112.
+  - The yardstick is their standard deviation: 0.044, with a 95% interval of 0.028–0.109 (chi-square, 5
+    degrees of freedom). It is very uncertain, as the comment of 13/11 on #79 expected.
+  - The jump is D 7/2024–6/2025 (+0.640) minus the corrected 7/2023–6/2024 (+0.603, offset fitted without that
+    year): +0.037 (×1.09). That is within the yardstick (0.044), but above the lower end of its interval
+    (0.028).
+- **Open for G1:**
+  - the seasonal offsets (above);
+  - the single offset of C, ×1.26 (+1.6 dB, 95% ×1.09–1.45), as the correction of 8/2018–6/2024.
+
 ## Training windows
 
 ### Sampling on ODYSSEY at 2 km
