@@ -136,7 +136,8 @@ left allows it.
   and H4 (M→F, 16/11–18/12, method frozen at G1). Period C (8/2018–6/2024)
   against CIRRUS done on 16/11/2026, proposal for G1 on #79
   ([method.md](method.md), *Level only: one offset for period C*); periods
-  A and B with CERRA-Land in a second pull request.
+  A and B, with the CERRA-Land check, done on 16/11/2026 in the second pull
+  request, #96 ([method.md](method.md), *Level offsets of periods A and B*).
 - [ ] [**H6**](https://github.com/fedro86/DECADE/issues/21) Decide the time
   shift used in production (F+M, 30/11–6/12).
 - [ ] [**H5**](https://github.com/fedro86/DECADE/issues/22) Validate archive v1
@@ -334,6 +335,11 @@ node stays to T3.
   rule of 13/11/2026 on one year of CIRRUS, while the monthly offsets show no
   seasonal pattern ([method.md](method.md), *Level only: one offset for
   period C*); one offset or seasonal offsets, decided at G1.
+- **Periods A and B (H3):** a single offset leaves a jump at 8/2018 beyond
+  the yardstick, because B rises over time; the steps at 12/2015 and 8/2018
+  are about twice as large near the radars; A has a seasonal pattern
+  ([method.md](method.md), *Level offsets of periods A and B*). Split B or
+  not, offsets by ring or not, seasonal offsets for A or not: for G1.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
   frames with `alpha = 0`, but configuration C is meant to test the
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training

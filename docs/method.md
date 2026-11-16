@@ -1982,6 +1982,97 @@ July–November twice. The 95% interval comes from the spread of the 12 differen
   - the seasonal offsets (above);
   - the single offset of C, ×1.26 (+1.6 dB, 95% ×1.09–1.45), as the correction of 8/2018–6/2024.
 
+### Level offsets of periods A and B (second H3 pull request)
+
+`notebooks/09-mr-level-periods.ipynb` (16/11/2026). The procedure of the section above, for the two earlier
+ODYSSEY periods: A, 4/2013–11/2015, and B, 12/2015–7/2018 (*Radars over time*). D is still CIRRUS
+7/2024–17/11/2025. CERRA-Land is the independent check of ERA5-Land at 12/2015 and 8/2018, where VMM is not
+available (comment of 13/11/2026 on #79).
+
+**Data.** The monthly sums per cell of the section above, from 4/2013: 152 months, A 32, B 32, C 71, D 17.
+
+For CERRA-Land, the radar and ERA5-Land are averaged over the 186 cells and summed into 06–06 UTC days, as in
+*ERA5-Land against CERRA-Land (H3b)* below. Only days with all 24 hours complete are kept (4,262 days). CERRA-Land
+is averaged over its 488 cells whose centre lies in one of the 186 cells. So the check uses the same area as the
+offsets, and ODYSSEY need not be recomputed on the CERRA-Land grid.
+
+The days are aligned: ERA5-Land and CERRA-Land correlate at 0.94 on the same day and at 0.29 one day apart.
+
+**Offsets against D, ERA5-Land, 186 cells:**
+
+| period | offset log10 | factor on ODYSSEY | shift | 95% interval |
+|---|---:|---:|---:|---|
+| A, 4/2013–11/2015 | +0.155 | ×1.43 | +2.5 dB | ×1.20–1.69 (+1.3 to +3.7 dB) |
+| A without the summers 2014 and 2015 | +0.147 | ×1.40 | +2.4 dB | ×1.17–1.68 |
+| B, 12/2015–7/2018 | +0.054 | ×1.13 | +0.9 dB | ×0.97–1.32 (−0.2 to +2.0 dB) |
+| B without 3–6/2018 (artefact months) | +0.076 | ×1.19 | +1.2 dB | ×1.03–1.37 |
+| C, 8/2018–6/2024 (section above) | +0.100 | ×1.26 | +1.6 dB | ×1.09–1.45 |
+
+![Radar / ERA5-Land per month, the three ODYSSEY periods raw and corrected, CIRRUS, and ERA5-Land / CERRA-Land](figures/h3-level/level-offsets-periods.png)
+
+**CERRA-Land confirms the steps of ERA5-Land.** The table gives the step of log10 of the monthly ratio, with 12
+months each side, and the t-test p-value (`opera_ds.homog.step`):
+
+| step, 12 months each side | radar / ERA5-Land | radar / CERRA-Land | ERA5-Land / CERRA-Land |
+|---|---:|---:|---:|
+| 12/2015 | +0.094 (p 0.17) | +0.089 (p 0.23) | −0.005 (p 0.83) |
+| 8/2018 | −0.128 (p 0.03) | −0.117 (p 0.06) | +0.010 (p 0.67) |
+| 7/2024 | +0.132 (p < 0.001) | +0.162 (p < 0.001) | +0.029 (p 0.24) |
+
+- The radar steps are the same with both bridges, and the ratio of the two bridges has no step. So the steps
+  are in ODYSSEY, not in ERA5-Land. With 24 months each side the reading is the same (notebook).
+- With CERRA-Land as the bridge, on the same days, the offsets are higher: ×1.67 for A (95% ×1.42–1.96), ×1.28
+  for B (×1.05–1.56), ×1.32 for C (×1.10–1.58).
+  - The ERA5-Land offsets on these days are ×1.44, ×1.14 and ×1.27.
+  - The difference grows with age: +0.064 for A, +0.049 for B, +0.016 for C. This is the slow drift of
+    ERA5-Land against CERRA-Land (*The monthly ratio over Belgium*, below), not a step.
+  - The intervals overlap for every period. By the rule of the comment of 13/11 on #79, ERA5-Land carries A
+    and B. The difference is an uncertainty of the correction, to be stated at G1.
+
+**Continuity across the period boundaries.**
+- Each period is split into 12-month blocks aligned to its end. Each block is left out in turn: the offset is
+  refitted on the rest of its period and applied to it.
+- The yardstick is the standard deviation of the corrected means of the 9 full blocks of A, B and C: 0.082,
+  with a 95% interval of 0.055–0.157. It is larger than the 0.044 of C alone, because A and B vary more.
+
+| boundary | jump (corrected after minus corrected before) | against the yardstick 0.082 |
+|---|---:|---|
+| 12/2015, A → B | +0.013 (×1.03) | within |
+| 8/2018, B → C | −0.134 (×0.73) | larger; within the upper end of its interval (0.157) |
+| 8/2018, without 3–6/2018 in the fit and the block | −0.086 (×0.82) | just larger |
+| 7/2024, C → D | +0.037 (×1.09) | within |
+
+- **B is not homogeneous.** Its corrected yearly means rise from +0.513 (12/2015–7/2016) to +0.584
+  (8/2016–7/2017) and +0.757 (8/2017–7/2018). The offset of B fitted without its last year is +0.034; without
+  its first, +0.026. With a single offset, the end of B stays above C. Spring 2018, the artefact months
+  (*ODYSSEY cleaned as in H2*), explains part of it.
+- **The steps depend on the distance from the radar.** Here is the local 12-month step of radar / ERA5-Land at
+  each boundary, by ring:
+  - 12/2015: +0.105 at 0–50 km (139 cells), +0.051 at 50–100 km (47 cells);
+  - 8/2018: −0.145 near the radar, −0.079 far from it.
+
+  So the offsets of A and B differ by ring, while those of C do not:
+  - A: ×1.39 near, ×1.61 far;
+  - B: ×1.08 near, ×1.38 far;
+  - C: ×1.25 near, ×1.28 far.
+
+  The intervals still overlap (B: ×0.91–1.28 near, ×1.20–1.59 far). This fits the OPERA changes at both dates,
+  which act mostly near the radars (*Radars over time*).
+- **Seasons.**
+  - A has 2–3 years of each season, and its 12 monthly differences differ by season (one-way analysis of
+    variance, p 0.04): the offsets are lower in spring and summer and higher in autumn and winter. This matches the summer echoes near
+    the radars until 2015 (*Radars over time*).
+  - B does not (p 0.30).
+
+**Open, for Federico and G1:**
+- B: a single offset leaves a jump at 8/2018 beyond the yardstick. The options are to split B, to leave out its
+  artefact months, or to accept the jump as within the interval of the yardstick.
+- A and B: whether the dependence on the distance from the radar, clear in the local steps but within the
+  intervals of the offsets, calls for offsets by ring before 8/2018.
+- A: seasonal offsets (p 0.04, on 2–3 years of each season).
+- The ERA5-Land / CERRA-Land difference of the offsets of A (+0.064) and B (+0.049), as the uncertainty of the
+  bridge.
+
 ## ERA5-Land against CERRA-Land (H3b)
 
 The second bridge (#82): first the literature on the homogeneity of
