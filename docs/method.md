@@ -2076,84 +2076,91 @@ months each side, and the t-test p-value (`opera_ds.homog.step`):
 
 ### Uncertainty budget of the level correction (for G1)
 
-Asked on #96 (comment of 16/11/2026). Every layer of H3 leaves a row, whether it is used or dropped, so that
+Asked on #96 (comments of 16/11/2026). Every layer of H3 leaves a trace, whether it is used or dropped, so that
 the method can be judged where a local check is not possible. Two kinds of layer:
 - **in the correction**: they change the number applied to the pixels, and must use pan-European data only;
 - **check only**: they test an assumption and can shrink a term where they exist.
 
+The budget comes in two parts, which are not added together:
+1. **The uncertainty of the level**: how well the one offset of a period is known, over the area and the year.
+2. **The residual of one offset**: how far that offset stays off for a given season or ring. The offset is
+   balanced over the 12 calendar months, so the seasons average out over a year by construction; the rings
+   average out over the area. Their spread says how far a winter or a ring stays off after the correction, not
+   how uncertain the yearly offset is. Mixed into the level, the seasons would dominate every period, and C
+   would read ×1.00–1.59, as if no correction were possible (second comment of 16/11 on #96).
+
+`notebooks/09-mr-level-periods.ipynb`, section 6. Values are in log10; ×16 gives dB.
+
 **How the terms are combined** (JCGM 100:2008, the *Guide to the expression of uncertainty in measurement*):
 - **The 95% interval of the offset** comes from 12 monthly differences. It is a t interval with 11 degrees of
-  freedom, so its standard uncertainty is the half-width divided by 2.20.
-- **A choice between two alternatives** (two bridges, one offset or one per ring or season) leaves the value
-  somewhere between them, with nothing to prefer inside that range. That is a rectangular distribution whose
-  full width is the difference D, so u = D/√12 (section 4.3.7).
-- **Independent terms add in quadrature** (section 5.1.2). The terms below come from different effects, so for
-  one period they are taken as independent. The uncertainty budget of a homogenised climate record does the
-  same: Lenssen et al. (2019) add independent components as variances, method choices included, and warn that
-  correlations left out make the total too small.
-- **Fully correlated terms add linearly** (section 5.2.2, note 1). The bridge term is systematic: it is the
-  same for every pixel and goes the same way for A, B and C. So it does not average out over pixels or
-  periods, and wherever periods are compared or combined it adds linearly. The linear sum of all terms is also
-  given, as an upper bound.
+  freedom, so u = half-width / 2.20.
+- **The bridge over Europe** is a choice between two alternatives, ERA5-Land and CERRA-Land. That is a
+  rectangular distribution whose full width is the gap D between them, so u = D/√12 (section 4.3.7).
+- **The bridge over Belgium**, after the RMI check, is the 95% interval of the ERA5-Land / stations trend
+  (×0.95–1.11 a decade) times the years between the middle of the period and the middle of D (10.4 for A, 7.9
+  for B, 3.5 for C). It is an interval of a trend, so u = half-width / 1.96.
+- **Independent terms add in quadrature** (section 5.1.2), and U = 2u.
+  - The uncertainty budget of a homogenised climate record does the same: Lenssen et al. (2019) add independent
+    components as variances, and warn that correlations left out make the total too small.
+  - The bridge term is systematic: the same for every pixel, and going the same way for A, B and C. So wherever
+    periods are combined or compared it adds linearly (section 5.2.2, note 1).
 - **A known systematic effect is corrected, not covered by a larger uncertainty** (sections 3.2.4 and 6.3.1,
-  note). Over Belgium the drift of CERRA-Land is known, so ERA5-Land is used and the drift is not a term. What
-  remains is the interval of the ERA5-Land / stations trend.
+  note). Over Belgium the drift of CERRA-Land is known, so ERA5-Land is used and the drift is not a term.
 
-**The table** (`notebooks/09-mr-level-periods.ipynb`, section 6). Values are in log10 units; ×16 gives dB. "Size" is the half-width of the 95% interval for the
-offset, and the full difference D for the other rows; u is the standard uncertainty.
+**1. Uncertainty of the level.** Each interval is written around the offset:
 
-| layer | question | data, pan-European? | status | A: size (u) | B: size (u) | C: size (u) |
-|---|---|---|---|---:|---:|---:|
-| offset, 95% interval | how well 12 calendar months fix the level | ERA5-Land, CIRRUS; yes | in the correction | 0.074 (0.034) | 0.068 (0.031) | 0.062 (0.028) |
-| bridge, ERA5-Land against CERRA-Land | does the choice of bridge change the offset? | ERA5-Land, CERRA-Land; yes | in the correction (ERA5-Land) | 0.064 (0.018) | 0.049 (0.014) | 0.016 (0.005) |
-| bridge over Belgium, after the RMI check | how much ERA5-Land could drift between the period and D | RMI stations; no | check only | 0.072 (0.021) | 0.054 (0.016) | 0.025 (0.007) |
-| periods, one offset each | is one offset per period continuous at the boundaries? | OPERA dates; yes | in the correction | jump at 12/2015 +0.013 | jumps +0.013 and −0.134 (8/2018) | jumps −0.134 and +0.037 (7/2024) |
-| stability inside the period (years left out) | does the offset hold through the period? | ERA5-Land; yes | check only | 0.117 | 0.076 | 0.018 |
-| rings, far against near | does the offset depend on the distance from the radar? | ERA5-Land, OPERA radar list; yes | dropped (one offset) | 0.062 (0.018) | 0.108 (0.031) | 0.009 (0.002) |
-| seasons, largest against smallest | does the offset depend on the season? | ERA5-Land, CIRRUS; yes, but one CIRRUS spring | dropped (one offset) | 0.191 (0.055) | 0.151 (0.044) | 0.144 (0.041) |
-| VMM as second bridge, same window | does a national radar bridge agree? | VMM; no | check only | not available | not available | 0.024 (0.007) |
-| RADCLIM | gauge-merged radar | RADCLIM; no | check only | not estimated | not estimated | not estimated (no time in common with CIRRUS) |
+| period | offset | u: offset | u: bridge, Europe | u: bridge, Belgium | 95%, Europe | 95%, Belgium |
+|---|---:|---:|---:|---:|---|---|
+| A, 4/2013–11/2015 | ×1.43 (+0.155) | 0.034 | 0.018 | 0.018 | ×1.20–1.70 (±1.2 dB) | ×1.20–1.70 (±1.2 dB) |
+| B, 12/2015–7/2018 | ×1.13 (+0.054) | 0.031 | 0.014 | 0.014 | ×0.97–1.32 (±1.1 dB) | ×0.97–1.32 (±1.1 dB) |
+| C, 8/2018–6/2024 | ×1.26 (+0.100) | 0.028 | 0.005 | 0.006 | ×1.10–1.44 (±0.9 dB) | ×1.10–1.44 (±0.9 dB) |
+
+The other layers of the level are checks or not estimated, so they are not in U:
+
+| layer | question | data, pan-European? | status | A | B | C |
+|---|---|---|---|---|---|---|
 | target D, CIRRUS to 17/11/2025 | does the length or version of the target change the offset? | CIRRUS; yes | in the correction | not estimated | not estimated | not estimated (#88) |
+| periods, one offset each | is one offset per period continuous at its boundaries? | OPERA dates; yes | check | jump at 12/2015: +0.013 | jumps +0.013 and −0.134 (8/2018), against a yardstick of 0.082 | jumps −0.134 and +0.037 (7/2024) |
+| stability inside the period | does the offset hold with one year left out? (range of the offsets) | ERA5-Land; yes | check | 0.117 | 0.076 | 0.018 |
+| VMM as second bridge, same window | does a national radar bridge agree? (gap D, u) | VMM; no | check | — | — | 0.024 (0.007) |
+| RADCLIM | gauge-merged radar | RADCLIM; no | check | not estimated | not estimated | not estimated (no time in common with CIRRUS) |
 
-Notes on the rows:
-- **Bridge.** The full width of the Belgian row is the 95% interval of the ERA5-Land / stations trend
-  (×0.95–1.11 a decade) times the years between the middle of the period and the middle of D. That is 10.4
-  years for A, 7.9 for B and 3.5 for C.
-- **Stability inside the period** is the range of the offsets fitted with one year left out (*Level offsets of
-  periods A and B*). It overlaps the 95% interval, so it is not added. It shows that B is not homogeneous.
+**2. Residual of one offset**: the layer minus the single offset, in log10. A * marks a residual larger than U
+of the level over Europe (A 0.077, B 0.068, C 0.057).
 
-**Combined, for one period:**
+| period | winter | spring | summer | autumn | rings 0–50 km | rings 50–100 km |
+|---|---:|---:|---:|---:|---:|---:|
+| A | +0.089 * | −0.072 | −0.102 * | +0.086 * | −0.010 | +0.052 |
+| B | +0.082 * | −0.070 * | −0.047 | +0.035 | −0.022 | +0.086 * |
+| C | +0.042 | −0.074 * | −0.037 | +0.069 * | −0.002 | +0.006 |
+| CIRRUS years behind it | 1 | 1 | 2 | 2 | 1.4 (all of D) | 1.4 (all of D) |
 
-| | quadrature: u, then U = 2u | as a factor | linear sum: 2 × Σu |
-|---|---|---|---|
-| A, Europe | 0.070, 0.139 (2.2 dB) | ×0.73–1.38 | 0.250 (4.0 dB) |
-| A, Belgium | 0.070, 0.140 (2.2 dB) | ×0.72–1.38 | 0.255 (4.1 dB) |
-| B, Europe | 0.064, 0.127 (2.0 dB) | ×0.75–1.34 | 0.240 (3.8 dB) |
-| B, Belgium | 0.064, 0.128 (2.0 dB) | ×0.75–1.34 | 0.243 (3.9 dB) |
-| C, Europe | 0.050, 0.101 (1.6 dB) | ×0.79–1.26 | 0.154 (2.5 dB) |
-| C, Belgium | 0.051, 0.101 (1.6 dB) | ×0.79–1.26 | 0.159 (2.5 dB) |
+- The period side has 2–3 years of each season for A and B, and 5–6 for C.
+- **The rule of the comment** is to use offsets by season or by ring only where the residual exceeds the level
+  uncertainty and rests on more than one year. By that rule, the candidates are:
+  - summer and autumn in A, autumn in C, each on 2 CIRRUS years;
+  - the far ring in B, on the 17 months of D.
+- **Winter and spring** exceed U in some periods, but they rest on one CIRRUS year, so by the rule they stay out.
+- The decision is for G1.
 
 **What the budget shows:**
-- **The seasons are the largest term in every period.** They can be computed anywhere in Europe, and they
-  depend on the length of the CIRRUS target, not on local data.
-- **The 95% interval of the offset comes next.** The bridge and the rings come after it, except the rings in
-  B.
-- **The RMI check decides which bridge to trust over Belgium, but it does not shrink the term.** Its trend
-  interval is wide, so the remaining drift term (A 0.072) is as large as the ERA5-Land / CERRA-Land difference
-  (0.064). What it removes is a bias: without it, the A offset could have been anywhere between the two bridges.
+- **The level of every period is known to about ±1 dB** (95%). Over Europe the offset interval is the largest
+  term; the bridge comes next for A and B and is negligible for C.
+- **The RMI check decides which bridge to trust over Belgium, but it does not shrink the level term.** Its
+  trend interval is wide, so the remaining drift term (u 0.018 for A) equals the ERA5-Land / CERRA-Land term.
+  What it removes is a bias: without it, the A offset could have been anywhere between the two bridges.
 - **This does not transfer to the rest of Europe.** The drift of CERRA-Land depends on its local gauge input
   (Monteiro and Morin 2023; Wood et al. 2025), and open stations like the RMI ones do not exist everywhere.
-  Over Europe the bridge row stays at its pan-European size.
-- **VMM is too small to matter.** Its u (0.007) is 0.17 times the largest term of C (seasons, 0.041), and in
-  quadrature such a term changes the total by about 1%.
+  Over Europe the bridge term stays at its pan-European size.
 
-**Rule proposed for G1.** A local check is worth adding only where its term is at least half the largest
-pan-European term of the period.
+**Rule proposed for G1.** A local check is worth adding only where its term is at least half the largest term of
+the level for the period.
 - The reason is arithmetic, in quadrature: a term 0.3 times the largest raises the total by 4%, a term 0.5
   times by 12%, and an equal one by 41%.
 - The threshold of one half is ours, not from a source.
-- By this rule VMM is not worth it for C. The RMI check is worth running once, for which bridge to use, but it
-  does not change the total.
+- The largest level term is the offset interval in every period. The Belgian bridge term is 0.54 of it for A,
+  0.44 for B and 0.22 for C; VMM is 0.25 for C.
+- So by this rule the RMI check is worth it for A, just, and not for B or C. VMM is not worth it for C.
 
 ## ERA5-Land against CERRA-Land (H3b)
 
@@ -2370,7 +2377,9 @@ two cautions and three conditions.
   (CERRA-Land). This changes the level (ERA5-Land / stations ×1.07, CERRA-Land / stations ×0.96), not the trend.
 - **Consequence for H3.**
   - Over Belgium the offsets of A and B keep their ERA5-Land values (*Level offsets of periods A and B*). The
-    higher CERRA-Land offsets come from its drift, and the bridge term of the uncertainty budget is removed.
+    higher CERRA-Land offsets come from its drift. This removes a bias, not the bridge term of the uncertainty
+    budget: the trend interval of the check is wide, so the term stays about the same (*Uncertainty budget of
+    the level correction*).
   - This does not transfer to the rest of Europe. The drift of CERRA-Land depends on its local gauge input
     (Monteiro and Morin 2023; Wood et al. 2025), and stations like these are not open everywhere. Over Europe,
     the bridge term stays where no such check exists.
