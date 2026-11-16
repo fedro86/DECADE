@@ -1,13 +1,15 @@
 """Pan-European bridge data (S7, #13) read over a time window and set on the OPERA grid as coarse cells.
 
-The sources are the monthly netCDF of `scripts/fetch_cds.py` (docs/data.md, *Derived datasets*):
+The sources are the monthly netCDF of `scripts/fetch_cds.py`, each turned into one Zarr store by
+`scripts/bridge_to_zarr.py` (docs/data.md, *Derived datasets*):
 
 - **ERA5-Land** `tp` (m) is accumulated from 00 UTC: the value at 00 UTC is the total of the previous day, and
   hourly amounts are differences of consecutive hours (docs/data.md, *Inventory*). `era5land_to_zarr` turns
   the files into one Zarr store of hourly amounts in mm, with `expver` for every hour (1 final, 5 preliminary),
   and `era5land_sum` reads that store.
 - **CERRA-Land** `tp` (kg m-2, i.e. mm) is one analysis a day at 06 UTC: the value labelled D 06 UTC is the
-  total from 06 UTC of D−1 to 06 UTC of D (CERRA-Land data user guide, in docs/data.md).
+  total from 06 UTC of D−1 to 06 UTC of D (CERRA-Land data user guide, in docs/data.md). `cerraland_to_zarr`
+  copies the files into one Zarr store (S10, #93), and `cerraland_sum` reads that store.
 
 A window (start, end] therefore sums ERA5-Land hours ending after `start` up to `end`, and CERRA-Land days
 labelled after `start` up to `end`; for CERRA-Land both must be at 06 UTC.
@@ -22,12 +24,6 @@ import datetime as dt
 from pathlib import Path
 
 import numpy as np
-
-
-def _open(paths):
-    import xarray as xr
-
-    return xr.open_mfdataset([str(p) for p in paths], combine="by_coords", engine="h5netcdf")
 
 
 def era5land_amounts(tp_m: np.ndarray, valid_time: np.ndarray, prev_m=None, prev_time=None) -> np.ndarray:
@@ -120,23 +116,83 @@ def era5land_sum(store, start: dt.datetime, end: dt.datetime, allow_preliminary:
     return tp.astype(np.float64).sum(0), lat, lon
 
 
-def cerraland_sum(paths, start: dt.datetime, end: dt.datetime):
+def cerraland_to_zarr(files, out: Path, chunk_days: int = 366) -> dict:
+    """Monthly CERRA-Land files (in time order, without gaps) to one Zarr store at `out`, written anew.
+
+    `tp` is the amount (mm) of the 24 h ending at `valid_time` (06 UTC), float32 as downloaded, lossless (zstd with
+    bitshuffle), one chunk of `chunk_days` over the whole window, with 2D `latitude` and `longitude` (longitude in
+    −180…180). Raises if the days are not consecutive at 06 UTC, if the grid changes between files, or if a file
+    holds an `expver` other than "prod". Returns the store attributes."""
+    import shutil
+
+    import xarray as xr
+    import zarr
+    from zarr.codecs import BloscCodec
+
+    out = Path(out)
+    part = out.with_name(out.name + ".part")
+    shutil.rmtree(part, ignore_errors=True)
+    last = lat0 = lon0 = None
+    for i, f in enumerate(files):
+        with xr.open_dataset(f, engine="h5netcdf") as ds:
+            tp, t = ds["tp"].values, ds["valid_time"].values
+            expver = {str(x) for x in np.atleast_1d(ds["expver"].values)} if "expver" in ds else {"prod"}
+            lat, lon = ds["latitude"].values, (ds["longitude"].values + 180.0) % 360.0 - 180.0
+        days = t.astype("datetime64[h]")
+        if np.any(days - days.astype("datetime64[D]") != np.timedelta64(6, "h")):
+            raise ValueError(f"CERRA-Land: {f} holds days not labelled at 06 UTC")
+        tt = days if last is None else np.concatenate([[last], days])
+        if np.any(np.diff(tt) != np.timedelta64(24, "h")):
+            raise ValueError(f"CERRA-Land: days are not consecutive at {f}")
+        if lat0 is None:
+            lat0, lon0 = lat, lon
+        elif not (np.array_equal(lat, lat0) and np.array_equal(lon, lon0)):
+            raise ValueError(f"CERRA-Land: {f} is on another grid")
+        if expver != {"prod"}:
+            raise ValueError(f"CERRA-Land: {f} holds expver {sorted(expver)}, expected prod only")
+        month = xr.Dataset(
+            {"tp": (("valid_time", "y", "x"), tp.astype(np.float32),
+                    {"units": "mm", "long_name": "total precipitation in the 24 h ending at valid_time (06 UTC)"})},
+            coords={"valid_time": t})
+        if i == 0:
+            month = month.assign_coords(latitude=(("y", "x"), lat, {"units": "degrees_north"}),
+                                        longitude=(("y", "x"), lon, {"units": "degrees_east"}))
+            enc = {"tp": {"chunks": (chunk_days,) + lat.shape,
+                          "compressors": [BloscCodec(cname="zstd", clevel=5, shuffle="bitshuffle")]},
+                   "valid_time": {"units": "hours since 1970-01-01", "dtype": "int64"}}
+            month.to_zarr(part, mode="w", zarr_format=3, consolidated=False, encoding=enc)
+        else:
+            month.to_zarr(part, append_dim="valid_time", zarr_format=3, consolidated=False)
+        last = days[-1]
+    attrs = {
+        "title": "CERRA-Land daily total precipitation over the Belgian working domain (DECADE, S10)",
+        "source": "CERRA-Land, total_precipitation, daily analysis, Copernicus Climate Data Store "
+                  "(reanalysis-cerra-land); window of the CERRA Lambert conformal grid, y and x are cell indices",
+        "licence": "CC BY 4.0; contains modified Copernicus Climate Change Service information",
+        "tp_convention": "amount of the 24 h from 06 UTC of the day before to 06 UTC of valid_time; values as "
+                         "downloaded, expver prod in every file",
+        "history": f"opera_ds.bridge.cerraland_to_zarr, {dt.date.today().isoformat()}",
+    }
+    zarr.open_group(part, mode="r+").attrs.update(attrs)
+    shutil.rmtree(out, ignore_errors=True)
+    part.rename(out)
+    return attrs
+
+
+def cerraland_sum(store, start: dt.datetime, end: dt.datetime):
     """CERRA-Land total precipitation (mm) over the days labelled in (start, end], with (lat, lon) 2D in
-    degrees (longitude in −180…180). `start` and `end` must be at 06 UTC."""
+    degrees (longitude in −180…180), from the store of `cerraland_to_zarr`. `start` and `end` must be at 06 UTC."""
+    import xarray as xr
+
     if start.time() != dt.time(6) or end.time() != dt.time(6):
         raise ValueError("CERRA-Land days run from 06 UTC to 06 UTC: start and end must be at 06 UTC")
-    with _open(paths) as ds:
-        tp = ds["tp"].sel(valid_time=slice(np.datetime64(start + dt.timedelta(days=1)), np.datetime64(end))).load()
-        lat, lon = ds["latitude"].values, (ds["longitude"].values + 180.0) % 360.0 - 180.0
+    with xr.open_zarr(store, consolidated=False) as ds:
+        tp = ds["tp"].sel(valid_time=slice(np.datetime64(start + dt.timedelta(days=1)), np.datetime64(end))).values
+        lat, lon = ds["latitude"].values, ds["longitude"].values
     expected = (end - start).days
-    if tp.sizes["valid_time"] != expected:
-        raise ValueError(f"CERRA-Land: {tp.sizes['valid_time']} days in ({start}, {end}], expected {expected}")
-    return tp.values.astype(np.float64).sum(0), lat, lon
-
-
-def monthly_files(folder: Path, dataset: str, months) -> list[Path]:
-    """Monthly files of `fetch_cds.py` for the (year, month) pairs in `months`."""
-    return [Path(folder) / f"{y}" / f"{dataset}_{y}{m:02d}.nc" for y, m in months]
+    if tp.shape[0] != expected:
+        raise ValueError(f"CERRA-Land: {tp.shape[0]} days in ({start}, {end}], expected {expected}")
+    return tp.astype(np.float64).sum(0), lat, lon
 
 
 def _xyz(lat, lon):

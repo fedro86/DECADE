@@ -35,8 +35,10 @@ uv run python scripts/fetch_cog_crop.py --product DBZH_QIND \
 uv run python scripts/fetch_cds.py --dataset era5-land --start 2012-01 --end 2026-10 --out data/era5land_bel
 uv run python scripts/fetch_cds.py --dataset cerra-land --start 2012-01 --end 2025-12 --out data/cerraland_bel
 
-# ERA5-Land as one Zarr store of hourly amounts in mm, written anew each time
+# ERA5-Land as one Zarr store of hourly amounts in mm, CERRA-Land as one store
+# of daily amounts in mm; each written anew each time
 uv run python scripts/bridge_to_zarr.py --dataset era5-land --src data/era5land_bel --out data/era5land_bel.zarr
+uv run python scripts/bridge_to_zarr.py --dataset cerra-land --src data/cerraland_bel --out data/cerraland_bel.zarr
 
 # Belgium mask on the full CIRRUS 1 km grid (Natural Earth 1:10m)
 uv run python scripts/make_region_mask.py --ref "data/cirrus/OPERA@20240702T1205@0@DBZH.h5" \
@@ -174,6 +176,14 @@ uv pip install --python .venv/Scripts/python.exe --no-deps -e .
 On Linux and on Leonardo the Python of that environment is `.venv/bin/python`
 instead of `.venv/Scripts/python.exe`, here and below.
 
+On Windows the NVIDIA driver can spill GPU memory into shared system memory
+instead of failing: in T9 runs beyond the 24 GiB of the card went on at a
+fraction of the speed. Before long runs, set NVIDIA Control Panel → *Manage 3D
+settings* → *CUDA - Sysmem Fallback Policy* → *Prefer No Sysmem Fallback*, so
+that a training that outgrows the card stops with an out-of-memory error, as
+on Linux ([Cognex documentation](https://docs.cognex.com/deep-learning_400/web/EN/deep-learning/Content/Topics/optimization/gpu-disable-shared.htm));
+set on the workstation on 12/11/2026, not yet checked with a run beyond the card.
+
 Then, from `DECADE`, with that Python:
 
 ```bash
@@ -184,9 +194,32 @@ Then, from `DECADE`, with that Python:
 It writes 400 fake windows (about 600 MB) to `--out` once (a later run with a
 different `--windows` stops with an error: use a new `--out`), trains with IRENE's
 `train.py`, and prints a line `T0 STATS` with time per step and GPU memory
-(also in `stats_bs<batch>.json`); TensorBoard logs and checkpoints go to
-`--out/logs`. `--precision bf16-mixed`, `--ensemble-size` and `--num-workers`
-change the run.
+(also in `stats_bs<batch>_k<members>_<loss>_<precision>_acc<accumulate>.json`);
+TensorBoard logs and checkpoints go to `--out/logs`. `--precision bf16-mixed`,
+`--ensemble-size` and `--num-workers` change the run.
+
+## IRENE training cost on the workstation (T9)
+
+The same script measures the training cost of other settings ([method.md](method.md),
+*Training cost on the 4090 (T9)*). One case per run, alone on the GPU (check
+`nvidia-smi` first), for example the paper's loss with 10 members:
+
+```bash
+../IT4LIA-FBK-Seminar/module2-irene-nowcasting/.venv/Scripts/python.exe scripts/irene_t0.py \
+  --out results/irene_t9 --ensemble-size 10 --loss-class afcrps --batch-size 4 --accumulate 4 \
+  --steps 110 --no-checkpoints
+```
+
+- `--loss-class` is a key of IRENE's `PIXEL_LOSSES` (`crps`, `afcrps`, `mse`,
+  `mae`); `--accumulate` sets Lightning's `accumulate_grad_batches`, and
+  `--steps` counts optimiser steps; `--no-checkpoints` writes no model files.
+- A run needs more steps than one epoch (360 training windows / batch), or
+  IRENE's early stopping finds no `val_loss` and stops with an error.
+- A case that runs out of GPU memory writes `"oom": true`; one whose peak goes
+  beyond the memory of the GPU writes `"exceeds_gpu_memory": true` (on Windows
+  the run then goes on, much slower).
+- `--table results/irene_t9` prints all the `stats_*.json` of the folder as a
+  table, with seconds per optimiser step and hours per 10⁵ steps.
 
 ## IRENE inference cost on the whole domain (T8)
 
@@ -325,7 +358,9 @@ measured in November 2026 for S0). "—" means not measured on that machine.
 | `fetch_cog_crop.py`, Belgium + 350 km, ODYSSEY | about 3 h for 12 years with 32 threads | 15 min and 3.0 GB for one year (2023) with 32 threads |
 | `fetch_cog_crop.py`, Belgium + 350 km, CIRRUS | — | 1.2 h and 25.5 GB (258 kB per frame) for one year (2025) with 32 threads |
 | `fetch_cds.py`, ERA5-Land, Belgium + 350 km | 6.6 h and 2.9 GB for 178 months with 4 requests at a time (queue on the CDS, not local work) | — |
+| `fetch_cds.py`, CERRA-Land, Belgium + 350 km | 47 h and 0.7 GB for 168 months, 10–12/11/2026, mostly one yearly request at a time, almost all of it waiting in the MARS queue of the CDS; the last 7 years came in the last 3 h | — |
 | `bridge_to_zarr.py`, ERA5-Land, 178 months | 4.5 min, 3.0 GB | — |
+| `bridge_to_zarr.py`, CERRA-Land, 168 months | 2.1 min, 0.52 GB | — |
 | synthetic test (`uv run pytest`) | about 2.5 min locally, 3 min on GitHub Actions | 3.9 min |
 
 With the IRENE parameters `sample` selects about 56,000 windows in 5 days, so
@@ -357,6 +392,50 @@ domain (T8)*.
 No case ran out of memory.
 
 ![IRENE forecast of the whole domain: time and peak GPU memory against the ensemble size](figures/irene/inference-cost.png)
+
+### IRENE training on the 4090 (T9)
+
+`scripts/irene_t0.py` on the workstation, 12/11/2026: RTX 4090 (24 GiB,
+driver 610.60), torch 2.11.0+cu128, IRENE code `676ffe7`, 400 fake windows of
+24 × 256 × 256, 4 `spawn` workers, no checkpoints, one case at a time with no
+other job on the GPU (checked with `nvidia-smi`). Time: median per batch from
+the 11th step, with the batch already loaded (GPU work only); per optimiser
+step it is that times the accumulated batches. Memory: peak allocated by
+PyTorch in training and in validation (10 members; validation batch 20 when
+the batch is 32). "Beyond" means a peak above the memory of the card, where
+the run goes on, slower. What the numbers mean: [method.md](method.md),
+*Training cost on the 4090 (T9)*.
+
+| members | loss | precision | batch × accumulated | s per batch | s per optimiser step | h per 10⁵ steps | GiB, training | GiB, validation |
+|---:|---|---|---|---:|---:|---:|---:|---:|
+| 2 | CRPS | fp32 | 8 | 0.22 | 0.22 | 6.0 | 4.2 | 5.9 |
+| 2 | CRPS | fp32 | 16 | 0.32 | 0.32 | 8.8 | 7.4 | 11.2 |
+| 2 | CRPS | fp32 | 32 | 0.56 | 0.56 | 15.4 | 13.8 | 13.8 |
+| 2 | CRPS | bf16 | 8 | 0.21 | 0.21 | 5.9 | 5.8 | 5.9 |
+| 2 | CRPS | bf16 | 16 | 0.27 | 0.27 | 7.6 | 7.8 | 11.2 |
+| 2 | CRPS | bf16 | 32 | 0.42 | 0.42 | 11.7 | 11.9 | 13.8 |
+| 10 | CRPS | fp32 | 4 | 0.80 | 0.80 | 22.2 | 11.3 | 3.3 |
+| 10 | CRPS | fp32 | 6 | 0.93 | 0.93 | 25.8 | 16.7 | 4.6 |
+| 10 | CRPS | fp32 | 8 | 1.63 | 1.63 | 45.2 | 21.9, beyond | 5.9 |
+| 10 | CRPS | fp32 | 16 | more than 90 | | | beyond | |
+| 10 | CRPS | bf16 | 4 | 1.03 | 1.03 | 28.7 | 22.4 | 3.3 |
+| 10 | CRPS | bf16 | 8 | about 27 | | | beyond | |
+| 10 | afCRPS | fp32 | 4 | 0.82 | 0.82 | 22.9 | 12.8 | 5.7 |
+| 10 | afCRPS | fp32 | 4 × 4 = 16 | 0.87 | 3.47 | 96.3 | 12.8 | 5.7 |
+| 10 | afCRPS | fp32 | 4 × 8 = 32 | 0.82 | 6.60 | 183.3 | 12.8 | 5.7 |
+| 10 | afCRPS | fp32 | 6 | 0.97 | 0.97 | 26.8 | 18.8 | 8.1 |
+| 10 | afCRPS | fp32 | 8 | 2.13 | 2.13 | 59.2 | 24.7, beyond | 10.6 |
+| 10 | afCRPS | bf16 | 4 | 1.24 | 1.24 | 34.5 | 23.9, beyond | 5.7 |
+
+- Not run: 10 members at batch 32 (CRPS and afCRPS) and afCRPS at batch 16,
+  which need more memory than the batch-16 CRPS case that already ran at more
+  than 90 s per step; afCRPS in bf16 at batch 8, beyond the card like CRPS.
+- Stopped and read from the TensorBoard log: CRPS bf16 at batch 8 after 69 of
+  110 steps (27.4 s per step from step 9 to 69); CRPS fp32 at batch 16 after
+  15 minutes with fewer than 10 steps.
+- The 4 × 4 case ran while a CPU job (VMM hourly sums, 12 processes) was
+  running: 0.87 s per batch against 0.82 s alone. The phase-1 plan in
+  [roadmap.md](roadmap.md) uses 0.825 s.
 
 Each window currently rereads and decompresses its 9–11 whole ODYSSEY files:
 see [roadmap.md](roadmap.md) for the planned grouping by time.

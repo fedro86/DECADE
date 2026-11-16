@@ -1,5 +1,5 @@
-"""Unit tests of the bridge readers (S7, #13; S9, #83): the ERA5-Land Zarr store and window sums of synthetic
-ERA5-Land and CERRA-Land files, and OPERA pixels assigned to coarse cells."""
+"""Unit tests of the bridge readers (S7, #13; S9, #83; S10, #93): the ERA5-Land and CERRA-Land Zarr stores and
+their window sums on synthetic files, and OPERA pixels assigned to coarse cells."""
 from __future__ import annotations
 
 import datetime as dt
@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from opera_ds.bridge import cell_index, cell_mean, cerraland_sum, era5land_sum, era5land_to_zarr
+from opera_ds.bridge import cell_index, cell_mean, cerraland_sum, cerraland_to_zarr, era5land_sum, era5land_to_zarr
 
 
 def era5land_file(path, start, hours, rate_mm=1.0, expver="0001"):
@@ -76,20 +76,53 @@ def test_era5land_store_negative_differences_and_gaps(tmp_path):
         era5land_to_zarr([a, b], tmp_path / "g.zarr")
 
 
-def test_cerraland_days_labelled_at_the_end(tmp_path):
-    t = np.array([np.datetime64("2013-07-01T06:00") + np.timedelta64(d, "D") for d in range(5)])
-    tp = np.broadcast_to(np.arange(1.0, 6.0)[:, None, None], (5, 2, 2)).astype(np.float32)
-    lat = np.array([[50.0, 50.0], [51.0, 51.0]])
-    lon = np.array([[364.0, 365.0], [364.0, 365.0]])                     # 0–360 as in the CDS files
+def cerraland_file(path, start, days, lat=None, expver="prod"):
+    """CERRA-Land-like daily `tp` (mm) labelled at 06 UTC, value d + 1 on day d, on a 2 × 2 grid in 0–360 longitude."""
+    t = np.array([np.datetime64(start) + np.timedelta64(d, "D") for d in range(days)])
+    tp = np.broadcast_to(np.arange(1.0, days + 1.0)[:, None, None], (days, 2, 2)).astype(np.float32)
+    lat = np.array([[50.0, 50.0], [51.0, 51.0]]) if lat is None else lat
+    lon = np.array([[364.0, 365.0], [364.0, 365.0]])
     ds = xr.Dataset({"tp": (("valid_time", "y", "x"), tp)},
-                    coords={"valid_time": t, "latitude": (("y", "x"), lat), "longitude": (("y", "x"), lon)})
-    p = tmp_path / "c.nc"
-    ds.to_netcdf(p, engine="h5netcdf")
-    s, la, lo = cerraland_sum([p], dt.datetime(2013, 7, 2, 6), dt.datetime(2013, 7, 4, 6))
+                    coords={"valid_time": t, "latitude": (("y", "x"), lat), "longitude": (("y", "x"), lon),
+                            "expver": ("valid_time", np.full(days, expver))})
+    ds.to_netcdf(path, engine="h5netcdf")
+    return path
+
+
+def test_cerraland_store_days_labelled_at_the_end(tmp_path):
+    files = [cerraland_file(tmp_path / "a.nc", "2013-06-29T06:00", 2),      # 29/6, 30/6: values 1, 2
+             cerraland_file(tmp_path / "b.nc", "2013-07-01T06:00", 5)]      # 1/7 … 5/7: values 1 … 5
+    attrs = cerraland_to_zarr(files, tmp_path / "c.zarr", chunk_days=3)
+    assert attrs["licence"].startswith("CC BY 4.0")
+    store = tmp_path / "c.zarr"
+    s, la, lo = cerraland_sum(store, dt.datetime(2013, 7, 2, 6), dt.datetime(2013, 7, 4, 6))
     assert np.allclose(s, 3.0 + 4.0)                 # days labelled 3/7 and 4/7, not 2/7
-    assert np.allclose(lo, [[4.0, 5.0], [4.0, 5.0]])
-    with pytest.raises(ValueError):
-        cerraland_sum([p], dt.datetime(2013, 7, 2), dt.datetime(2013, 7, 4))
+    assert np.allclose(lo, [[4.0, 5.0], [4.0, 5.0]]) and la.shape == (2, 2)
+    s, _, _ = cerraland_sum(store, dt.datetime(2013, 6, 29, 6), dt.datetime(2013, 7, 1, 6))   # across the files
+    assert np.allclose(s, 2.0 + 1.0)
+    with xr.open_zarr(store, consolidated=False) as ds:
+        assert ds.sizes["valid_time"] == 7 and ds["tp"].dtype == np.float32
+    with pytest.raises(ValueError, match="06 UTC"):
+        cerraland_sum(store, dt.datetime(2013, 7, 2), dt.datetime(2013, 7, 4))
+    with pytest.raises(ValueError, match="days"):
+        cerraland_sum(store, dt.datetime(2013, 7, 4, 6), dt.datetime(2013, 7, 7, 6))
+
+
+def test_cerraland_store_refuses_gaps_other_grids_and_versions(tmp_path):
+    a = cerraland_file(tmp_path / "a.nc", "2013-06-29T06:00", 2)
+    gap = cerraland_file(tmp_path / "gap.nc", "2013-07-02T06:00", 2)
+    with pytest.raises(ValueError, match="consecutive"):
+        cerraland_to_zarr([a, gap], tmp_path / "g.zarr")
+    moved = cerraland_file(tmp_path / "m.nc", "2013-07-01T06:00", 2, lat=np.array([[50.1, 50.1], [51.0, 51.0]]))
+    with pytest.raises(ValueError, match="grid"):
+        cerraland_to_zarr([a, moved], tmp_path / "m.zarr")
+    other = cerraland_file(tmp_path / "o.nc", "2013-07-01T06:00", 2, expver="0005")
+    with pytest.raises(ValueError, match="expver"):
+        cerraland_to_zarr([a, other], tmp_path / "o.zarr")
+    noon = cerraland_file(tmp_path / "n.nc", "2013-07-01T12:00", 2)
+    with pytest.raises(ValueError, match="06 UTC"):
+        cerraland_to_zarr([noon], tmp_path / "n.zarr")
+    assert not (tmp_path / "g.zarr").exists()
 
 
 def test_cell_index_and_mean_on_a_regular_grid():
