@@ -2357,7 +2357,13 @@ two cautions and three conditions.
     ERA5-Land ×1.03 (×0.95–1.11), CERRA-Land ×0.92 (×0.89–0.96).
 - **Heavy rain (caution 2).**
   - Tipping-bucket gauges lose water while the bucket tips, more at high intensity, unless corrected (Lanza et
-    al. 2010, the WMO intercomparison); wind-induced undercatch adds to it.
+    al. 2010, the WMO intercomparison). The loss is appreciable above 100 mm h⁻¹ (WMO guide, WMO-No. 8,
+    2024, section 6.2.3.2).
+  - Wind-induced undercatch adds to it: typically 2–10% for rain (WMO-No. 8, section 6.2.1.2). Against a
+    gauge in a pit, a conventional gauge at 0.5 m lost 9.4% at an exposed lowland site and 23.8% at a windy
+    upland one, linearly with wind speed (Pollock et al. 2018).
+  - These errors are mostly constant for a given gauge and site. They change the level of the ratio, not
+    its trend, unless the gauge, the site or the share of heavy or windy rain changes.
   - Without each station's wettest days the trends do not change (table). The level of ERA5-Land / stations
     rises from ×1.07 to ×1.18, as expected from removing the days ERA5-Land underestimates.
 - **Points against cells (condition 3).** A station is a point, a cell is 0.1° (ERA5-Land) or 5.5 km
