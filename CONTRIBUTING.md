@@ -101,6 +101,8 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `scripts/vmm_hourly.py` | hourly VMM rain on the ERA5-Land cells over Belgium (H3) |
 | `scripts/odyssey_clean_era5grid.py` | hourly ODYSSEY rain on the ERA5-Land cells over Belgium, raw and cleaned as in H2 (H3) |
 | `scripts/fetch_rmi_aws.py` | hourly precipitation of the RMI automatic weather stations from the RMI open-data WFS (H3) |
+| `scripts/cirrus_window_volumes.py` | CIRRUS frames against the Belgian single-radar volumes in their window: maximum, latest or earliest (H3) |
+| `scripts/cirrus_window_odyssey.py` | ODYSSEY interpolated to 1 min, 5 min frames at NT and as the maximum over (NT−10, NT], hourly on the ERA5-Land cells (H3) |
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
 | `site/index.html`, `site/fetch_data.sh` | project plan page; ticket status, owners, dates and dependencies are read from the issues by `fetch_data.sh` when `.github/workflows/pages.yml` publishes it, so only the plan text lives in the page |
 | `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py`, `scripts/fetch_cds.py`, `scripts/bridge_to_zarr.py` | download and masks; single-radar files for the radar positions of a day; ERA5-Land and CERRA-Land from the Copernicus Climate Data Store, ERA5-Land as one Zarr store |
