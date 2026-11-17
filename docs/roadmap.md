@@ -340,18 +340,28 @@ node stays to T3.
   are about twice as large near the radars; A has a seasonal pattern
   ([method.md](method.md), *Level offsets of periods A and B*). Split B or
   not, offsets by ring or not, seasonal offsets for A or not: for G1.
-- **Volume or intensity (H3):** the offsets are on the volume. Split into
-  frequency and intensity, the volume offset of C is all frequency (CIRRUS
-  has more wet hours), and a shift in dBZ then makes C about 19% too strong;
-  for A and B the two corrections are close ([method.md](method.md),
-  *Volume or intensity*). Which one is applied, and whether the wet
-  frequency is matched first: for G1. Proposal on #96 (17/11/2026): the
-  intensity only (A ×1.34, B ×1.06, C ×1.01, ±0.7–0.9 dB), with the
-  frequency gap of C documented as a difference of quality control. Its
-  extra echoes sit in hours that ERA5-Land and the RMI stations call dry
-  ([method.md](method.md), *Level on the intensity* and *Are the extra
-  echoes of CIRRUS rain?*). Revisiting the H2 rule (match CIRRUS, do not
-  clean it) is for G1 with Vito.
+- **Volume or intensity, and the target (H3): decided on 17/11/2026** (#96).
+  - **Target:** the level offsets for G1 and archive v1 (G2) use D, CIRRUS
+    7/2024–17/11/2025.
+  - **Offsets:** they are on the intensity, applied as a shift in dBZ: A ×1.34, B ×1.06, C ×1.01
+    (±0.7–0.9 dB).
+  - **Frequency gap:** not corrected, documented as a difference of quality control. The
+    extra echoes of CIRRUS against C sit in hours that ERA5-Land and the RMI
+    stations call dry ([method.md](method.md), *Level on the intensity* and
+    *Are the extra echoes of CIRRUS rain?*).
+  - **Period E:** CIRRUS from 18/11/2025 (CIRRUS 1.5.0) is assessed again in
+    May 2027, with data complete to 30/4/2027. H3 then runs with E as the
+    target, and the target of v1.1 is chosen at that point (H8,
+    [#24](https://github.com/fedro86/DECADE/issues/24)).
+  - **The H2 rule** is to match CIRRUS and not to clean it. Revisiting it is
+    for G1 with Vito.
+- **Where CIRRUS stops in archive v1 (for G1).** CIRRUS frames are not
+  corrected (real-time rule). If the archive goes past 18/11/2025, it holds a
+  step between D and E inside CIRRUS itself ([method.md](method.md), *CIRRUS
+  in 2026*). Two options:
+  1. stop the CIRRUS part of v1 at 17/11/2025;
+  2. keep E as a separate period, labelled in the store metadata, so that
+     training can include it or leave it out.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
   frames with `alpha = 0`, but configuration C is meant to test the
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training

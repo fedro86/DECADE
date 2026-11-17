@@ -2386,6 +2386,15 @@ Europe):
   intensity in the hours that both call wet by about 28% (*CIRRUS in 2026: what changes and where*). That part is
   a deficit of real rain in the product that IRENE will see in operation.
 
+**Decided on 17/11/2026 (#96):** the offsets of this section, with D as the target, are the level correction for
+G1 and archive v1. E is assessed again in May 2027 (H8, #24; [roadmap](roadmap.md), *Open decisions*).
+
+**Known limit of archive v1.**
+- In the hours wet for both, operational CIRRUS (E) is about 28% weaker than D, more so near the radars
+  (*CIRRUS in 2026*).
+- Archive v1 is corrected towards D, so it is more intense than what IRENE receives in operation, until v1.1.
+- This matters for G3 if IRENE is tested on recent CIRRUS.
+
 ## ERA5-Land against CERRA-Land (H3b)
 
 The second bridge (#82): first the literature on the homogeneity of
@@ -2856,3 +2865,7 @@ clone of the FBK repository next to DECADE, with its own environment.
 - **Motion is stationary within the interval.** With very fast systems (above
   about 120 km/h) LK can lock onto a wrong match.
 - **The time shift is not yet applied in production.**
+- **Archive v1 is more intense than operational CIRRUS.** Its level is corrected towards CIRRUS 7/2024–17/11/2025
+  (D). From 18/11/2025, CIRRUS is about 28% weaker in the hours that it and ERA5-Land both call wet, more so near
+  the radars (*Level on the intensity*, *CIRRUS in 2026*). Until v1.1 (H8) re-targets the level, this matters for
+  G3 if IRENE is tested on recent CIRRUS.
