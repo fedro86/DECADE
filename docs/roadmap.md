@@ -345,7 +345,13 @@ node stays to T3.
   has more wet hours), and a shift in dBZ then makes C about 19% too strong;
   for A and B the two corrections are close ([method.md](method.md),
   *Volume or intensity*). Which one is applied, and whether the wet
-  frequency is matched first: for G1.
+  frequency is matched first: for G1. Proposal on #96 (17/11/2026): the
+  intensity only (A ×1.34, B ×1.06, C ×1.01, ±0.7–0.9 dB), with the
+  frequency gap of C documented as a difference of quality control. Its
+  extra echoes sit in hours that ERA5-Land and the RMI stations call dry
+  ([method.md](method.md), *Level on the intensity* and *Are the extra
+  echoes of CIRRUS rain?*). Revisiting the H2 rule (match CIRRUS, do not
+  clean it) is for G1 with Vito.
 - **Loss and time step of B (T2):** the earlier plan computed the loss only on
   frames with `alpha = 0`, but configuration C is meant to test the
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training

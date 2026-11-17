@@ -14,6 +14,6 @@ code*.
 | `06-fc-bridge-data.ipynb` | S7: July 2013 of ERA5-Land and CERRA-Land on the OPERA grid as coarse cells, beside cleaned ODYSSEY summed over the same 06–06 UTC window; level gap and cell-by-cell agreement |
 | `07-mr-level-correction.ipynb` | H3: distributions of ODYSSEY and CIRRUS over Belgium per month and hour, the product gap on the overlap days 1–5/7/2024, the year-to-year spread of each month against that gap, and hourly radar rain on the ERA5-Land grid |
 | `08-mr-level-correction-cerra.ipynb` | H3b: ERA5-Land against CERRA-Land over Belgium, monthly on 06–06 UTC days 2012–2025, steps at 5/2021 and 7/2024, drift, 12-bit packing |
-| `09-mr-level-periods.ipynb` | H3, second pull request: level offsets of ODYSSEY periods A and B (and C) against CIRRUS with ERA5-Land, CERRA-Land check of the steps at 12/2015 and 8/2018, seasons, rings, continuity with years left out |
+| `09-mr-level-periods.ipynb` | H3, second pull request: level offsets of ODYSSEY periods A and B (and C) against CIRRUS with ERA5-Land, CERRA-Land check of the steps at 12/2015 and 8/2018, seasons, rings, continuity with years left out; uncertainty budget; volume or intensity; level on the intensity with the frequency gap documented (section 8) |
 
 Add a line here when you add a notebook. Name: `NN-<initials>-<topic>.ipynb`.

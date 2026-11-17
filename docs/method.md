@@ -823,10 +823,16 @@ are used.
     processing in December 2015: satellite filter and beam-blockage
     correction (Saltikoff et al. 2019).
   - **August 2018.** The near frequency falls again, from 0.23 in July to
-    0.10 in August 2018. The OPERA note on CIRRUS and ODYSSEY (Radojevic
-    2024, Table 3) says that ODYSSEY uses a 2018 satellite filter. A new
-    version of the filter in 2018 is consistent with this step, but it is
-    not proven: the note gives the year, not the month.
+    0.10 in August 2018. Its cause is not documented. The "2018 satellite
+    filter" of ODYSSEY (Radojevic 2024, Table 3; Bouilloud et al. 2024,
+    Table 1) is a software version label, not a start date: the satellite
+    filter entered production in December 2015 (Saltikoff et al. 2019,
+    section 3; Peura et al. 2017), and no central change is reported at
+    8/2018 (review of #96, 17/11/2026). The nearest documented changes are
+    the members' "best data" input, agreed in 3/2017 and in place for 11
+    members by 5/2018 (Saltikoff et al. 2018), and Helchteren entering on
+    21/3/2018. Seen from H3, what ODYSSEY lost at 8/2018 are echoes in hours
+    that ERA5-Land calls dry (*Are the extra echoes of CIRRUS rain?*).
   - For each radar, the largest change of the ratio was taken (median of 6
     months after against 6 months before). For 25 of the 42 radars with
     enough months, it is a fall that starts in November 2015–April 2016 or in
@@ -1584,6 +1590,21 @@ date was read from the data.
   part is seasonal or common to the whole composite and does not explain
   the local drop; the wet-share ratios do not change significantly. The
   cause near Helchteren and Wideumont stays open.
+- **Wet and dry hours** (review of #96, 17/11/2026; `scripts/qc_dry_wet_hours.py`, period E = CIRRUS from
+  18/11/2025 against D, balanced over the calendar months; method in *Are the extra echoes of CIRRUS rain?*).
+  With final ERA5-Land, to 8/2026 (10 calendar months):
+  - **Frequency:** the wet frequency falls by −0.248 ± 0.227. About three quarters of the fall are in hours
+    that ERA5-Land calls dry (−0.183 ± 0.273), and a quarter in wet hours (−0.066 ± 0.115); neither part alone
+    is significant.
+  - **Intensity:** in the hours that both call wet, CIRRUS / ERA5-Land falls by −0.144 ± 0.068 (×0.72). This is
+    a real-rain deficit. It grows towards the radars: −0.257 within 30 km, −0.128 at 30–60 km, −0.069 beyond.
+  - **Against C:** the wet frequency of E is back at the level of C (+0.004 ± 0.197), but its intensity is
+    lower (−0.094 ± 0.042, ×0.81).
+  - With the preliminary ERA5-Land hours, to 10/2026 (12 calendar months), the numbers stay within 0.02:
+    frequency −0.268 ± 0.185, of which −0.200 in dry hours; intensity −0.157 ± 0.060.
+  - The RMI stations have data only to 12/2025, so there is no station check of E.
+  - OPERA release 2026a (notes of 16/6/2026) changes only metadata in CIRRUS (1.6.0) and nothing in the Belgian
+    data ([summary](sources/2026%20-%20OPERA%20-%20Production%20data%20and%20software%20release%202026a.md)).
 
 ### ODYSSEY and CIRRUS alone: the gap and the year-to-year spread
 
@@ -2235,6 +2256,135 @@ is done again (D minus the corrected period; negative means the period is now ab
     or more rain time, and why, this does not say.
   - ERA5-Land rains too often and too weakly (*Bridge candidates*). This cancels in the offsets as long as it
     does not change over time. The RMI check found no trend in its totals; its wet frequency was not checked.
+
+### Are the extra echoes of CIRRUS rain? Wet and dry hours
+
+Asked on #96 (comment of 17/11/2026): does the frequency gap of C against D sit in hours that the references
+call dry (CIRRUS keeps echoes that are not rain) or in wet hours (ODYSSEY loses light rain)?
+`scripts/qc_dry_wet_hours.py`.
+
+**Setup.**
+- The hourly sums of *Volume or intensity*: ODYSSEY cleaned for A, B, C; CIRRUS as it is for D, to 17/11/2025;
+  complete radar hours; final ERA5-Land. Wet means at least 0.1 mm in the hour.
+- **References:**
+  - ERA5-Land on the 186 cells, per cell-hour;
+  - the 14 RMI stations, per validated station-hour, against the radar sum of the cell that holds each station.
+    A point against a cell mean gives large shares in every period, so only the differences between periods
+    count.
+- **Rings:** distance from the nearest Belgian radar in the composite that month: Wideumont always; Jabbeke from
+  12/2014; Helchteren from 4/2018 (*Radars over time*).
+- **Where a gap sits:** per month, F = radar-wet hours / reference-wet hours. It splits exactly into
+  - FA = (radar wet, reference dry) / reference wet;
+  - H = (radar wet, reference wet) / reference wet.
+
+  The change of F, FA and H between two periods is balanced over the 12 calendar months, with a 95% t interval.
+
+| period | radar wet, ERA5-Land dry | ERA5-Land wet, radar dry | F, ERA5-Land | radar wet, station dry | station wet, radar dry |
+|---|---:|---:|---:|---:|---:|
+| A | 0.495 | 0.378 | 1.23 | 0.493 | 0.162 |
+| B | 0.483 | 0.366 | 1.23 | 0.575 | 0.219 |
+| C | 0.389 | 0.348 | 1.07 | 0.525 | 0.156 |
+| D | 0.493 | 0.322 | 1.34 | 0.645 | 0.127 |
+
+| change of F, ERA5-Land | dF | in dry hours (dFA) | in wet hours (dH) | share in dry hours |
+|---|---:|---:|---:|---:|
+| C → D | +0.275 ± 0.141 | +0.243 ± 0.170 | +0.033 ± 0.053 | 0.88 |
+| 8/2018, 12 months each side | −0.499 ± 0.365 | −0.509 ± 0.385 | +0.009 ± 0.057 | 1.02 |
+| 12/2015, 12 months each side | −0.187 ± 0.283 | −0.174 ± 0.258 | −0.012 ± 0.055 | 0.93 |
+
+**With the stations:**
+- C → D: dF +0.79 ± 0.58, of which +0.77 ± 0.59 in station-dry hours and +0.02 ± 0.04 in station-wet hours.
+- The share of radar-wet hours where the station is dry rises from C to D at all 13 stations with data in both
+  periods.
+- The largest rise is at Diepenbeek, 17 km from Helchteren: F goes from 2.33 to 4.24.
+
+**What it shows:**
+- **C against D:** the frequency gap is in the hours that both references call dry: about 90% with ERA5-Land,
+  about 97% with the stations. In wet hours D gains little, and not significantly.
+  - So CIRRUS, like A and B, keeps echoes that the references do not see as rain, and C has fewer of them.
+  - This is not ODYSSEY C losing light rain.
+- **8/2018:** the frequency step is all in dry hours. This is the fall of the near-radar echo frequency found in
+  H2 (*Radars over time*), seen from H3. Its cause is not documented.
+- **12/2015:** the frequency change is not significant. The step there is in intensity (*Volume or intensity*).
+- **Split further:**
+  - **ring:** the dry-hour gain of D over C is about the same in every ring (+0.20 to +0.30);
+  - **hour:** it is largest at 03–09 UTC (+0.32 and +0.36) and smallest at 12–15 UTC (+0.14 ± 0.11);
+  - **season:** it is positive in all four, and clear only in autumn (+0.31 ± 0.16; 3 calendar months each).
+- **Limits:**
+  - ERA5-Land can be dry where light rain falls, and wrong in timing for showers.
+  - The station check compares a point with a cell.
+  - D has 17 months.
+
+**The QC chains, from the literature** (summaries in `docs/sources/`):
+- The filters are the same BALTRAD modules in ODYSSEY and CIRRUS: hit accumulation, bRopo, beam blockage,
+  satellite filter. Each data provider chooses which of them run on its radars (Bouilloud et al. 2024, section 8;
+  CIRRUS product sheet).
+- No document lists them for the Belgian radars.
+- Beam blockage and the satellite filter entered ODYSSEY in December 2015 (Saltikoff et al. 2019, sections 2.2
+  and 3; Peura et al. 2017; Haase and Johnson 2018, section 3.1).
+- What changed in the 2023 satellite filter of CIRRUS is not documented.
+
+### Level on the intensity (proposal of 17/11/2026 for G1)
+
+Proposal on #96 (17/11/2026): correct the intensity only, and document the frequency gap.
+- The rule of H2 is to match CIRRUS, not to be cleaner than it, with only real-time steps (review of #74).
+- A, B and CIRRUS keep echoes in dry hours at about the same rate, and C has fewer (*Are the extra echoes of
+  CIRRUS rain?*).
+- Matching CIRRUS in frequency would therefore add to C echoes that are not rain.
+- Applied to the pixels, the volume offset of C (×1.26) would scale real rain by 26% to make up for those echoes.
+- The intensity offsets are applied as a shift in dBZ (+16·log10 k), which acts on the intensity and moves the
+  frequency only near the threshold (*Volume or intensity*).
+
+`notebooks/09-mr-level-periods.ipynb`, section 8. Terms combined as in *Uncertainty budget of the level
+correction*:
+- **Offset:** the intensity offsets of *Volume or intensity*, t interval with 11 df.
+- **Bridge over Europe:** CERRA-Land is daily, so the intensity offset is computed on the 06–06 days (area mean
+  of the 186 cells) against ERA5-Land and against CERRA-Land. A wet day has at least 1 mm, the daily wet threshold
+  of Goudenhoofdt and Delobbe (2009). The gap D between the two gives u = D/√12.
+- **Bridge over Belgium:** the trend of the wet-day intensity of ERA5-Land against the 12 RMI stations is ×1.01 a
+  decade (95% ×0.96–1.06). The check is the same as in *Check against the RMI automatic stations*, with a wet day
+  of at least 1 mm on both. For comparison, the totals of the same wet days give ×1.03 (×0.95–1.12).
+
+**1. Uncertainty of the level, on the intensity.** Each interval is written around the offset:
+
+| period | offset | u: offset | u: bridge, Europe | u: bridge, Belgium | 95%, Europe | 95%, Belgium |
+|---|---:|---:|---:|---:|---|---|
+| A, 4/2013–11/2015 | ×1.34 (+0.127) | 0.024 | 0.015 | 0.013 | ×1.18–1.53 (±0.9 dB) | ×1.19–1.52 (±0.9 dB) |
+| B, 12/2015–7/2018 | ×1.06 (+0.023) | 0.022 | 0.014 | 0.009 | ×0.94–1.19 (±0.8 dB) | ×0.95–1.18 (±0.8 dB) |
+| C, 8/2018–6/2024 | ×1.01 (+0.006) | 0.022 | 0.004 | 0.004 | ×0.92–1.12 (±0.7 dB) | ×0.92–1.12 (±0.7 dB) |
+
+- **C needs about no level correction:** its interval holds ×1.00.
+- **B's interval holds ×1.00 too.**
+- **A stays about +2 dB** (+16 × 0.127).
+
+**2. Residual of one offset, on the intensity** (layer minus the offset, log10; * larger than U of the level over
+Europe):
+
+| period | winter | spring | summer | autumn | rings 0–50 km | rings 50–100 km | U, Europe |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A | +0.058 * | −0.088 * | −0.022 | +0.052 | +0.013 | −0.031 | 0.056 |
+| B | +0.080 * | −0.059 * | −0.007 | −0.015 | −0.000 | +0.012 | 0.052 |
+| C | +0.052 * | −0.065 * | −0.034 | +0.047 * | +0.006 | −0.022 | 0.044 |
+
+- The rings stay within U in every period.
+- Winter and spring exceed U everywhere. They rest on one CIRRUS year, so by the rule of the budget they stay out.
+- Autumn in C rests on two CIRRUS years.
+
+**3. The frequency gap, documented, not corrected** (D against the period, log10, 95%; where it sits, as in
+*Are the extra echoes of CIRRUS rain?*):
+
+| period | frequency gap | dF | in ERA5-Land-dry hours | in wet hours |
+|---|---|---:|---:|---:|
+| A | ×1.08 (+0.035 ± 0.048) | +0.086 | +0.038 ± 0.166 | +0.049 ± 0.050 |
+| B | ×1.07 (+0.030 ± 0.055) | +0.056 | +0.008 ± 0.234 | +0.048 ± 0.059 |
+| C | ×1.26 (+0.101 ± 0.044) | +0.275 | +0.243 ± 0.170 | +0.033 ± 0.053 |
+
+- **C:** CIRRUS has about 26% more wet cell-hours, almost all in hours that ERA5-Land and the RMI stations call
+  dry. It is a difference of quality control, not of level, and its cause at 8/2018 is not documented.
+- **A and B:** the frequency gaps are not significant.
+- **The 2026 drop of CIRRUS** (E, from 18/11/2025) brings the wet frequency back to that of C. It also lowers the
+  intensity in the hours that both call wet by about 28% (*CIRRUS in 2026: what changes and where*). That part is
+  a deficit of real rain in the product that IRENE will see in operation.
 
 ## ERA5-Land against CERRA-Land (H3b)
 
