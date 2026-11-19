@@ -175,9 +175,11 @@ uv run python scripts/crop_offsets.py --processes 8
 - Outputs `results/h3_level/era5grid_odyssey_clean_crop_<YYYY-MM>.npz` and
   `era5grid_cirrus_crop_<YYYY-MM>.npz`, the layout above with only the cleaned
   rain (`rain_clean`; `rain` for CIRRUS); the Belgian files are not touched.
-- About 11 MB and 95 s per ODYSSEY month with one process on the
-  workstation; on the Belgian cells with the same pixels the sums are those of
-  the Belgian files.
+- With one process on the workstation, about 11 MB and 95 s per ODYSSEY
+  month (1/2017) and 13 MB and 6.5 min per CIRRUS month (2/2025). On the
+  Belgian cells with the same pixels the sums equal those of the Belgian files.
+- Radars listed in the composite but missing from the OPERA database (for
+  example `deflg`) are left out of the nearest radar and printed.
 - `crop_offsets.py` writes `results/h3_level/crop_monthly.npz` (wet counts
   and sums per month and cell, country and distance of the nearest radar) and
   `crop_offsets.csv`, and prints the tables; `--summary` prints them again.
