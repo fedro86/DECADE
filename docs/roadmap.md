@@ -345,6 +345,14 @@ node stays to T3.
   from a drop in the last year of A. No jump with no date is significant
   inside A, B or C (SNHT and Pettitt; the strongest is A at 12/2014,
   p 0.09) ([method.md](method.md), *Continuity and jumps on the intensity*).
+- **Offsets outside Belgium (H3, for G1):** on the whole crop (19/11/2026,
+  #96), the Belgian offset holds for C and, outside the Netherlands,
+  Switzerland and Denmark, for A. B needs ×1.20–1.28 in France, Germany and
+  the United Kingdom, against ×1.06. The Netherlands are beyond U in every
+  period: CIRRUS is about 1.8 times more intense there than ODYSSEY was. One
+  offset per period, offsets per country of the nearest radar, or "adjusted"
+  for Belgium only; and what to apply over the sea ([method.md](method.md),
+  *Whole crop: does the Belgian offset hold?*).
 - **Volume or intensity, and the target (H3): decided on 17/11/2026** (#96).
   - **Target:** the level offsets for G1 and archive v1 (G2) use D, CIRRUS
     7/2024–17/11/2025.

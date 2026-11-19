@@ -2446,6 +2446,66 @@ yardstick is the standard deviation of the corrected means of the 9 full blocks.
   therefore hard to tell from noise (WMO 2020, section 2.4: detectability is set by the step against the spread of
   the series).
 
+### Whole crop: does the Belgian offset hold? (for G1)
+
+Point 3 of the review of #96 (18/11/2026). The intensity offsets come from the 186 Belgian ERA5-Land cells, while
+archive v1 covers Belgium + 350 km, with French, German, Dutch, British and Swiss radars and their own national
+processing. `scripts/odyssey_clean_era5grid.py --crop` and `scripts/crop_offsets.py` (`docs/usage.md`).
+
+- **Cells:** 8,896 land cells of the crop, fully covered in both products. Sea cells are NaN in ERA5-Land, so
+  there is no bridge there.
+- **Quantity:** as *Volume or intensity* and *Level on the intensity*. It is the wet-hour intensity radar /
+  ERA5-Land, at 0.1 mm per cell-hour, on complete radar hours and final ERA5-Land. The offset against D is
+  balanced over the 12 calendar months, with the t interval of 11 df.
+- **Country:** the country of the nearest radar, recomputed each month. The radars counted are those listed in
+  the composite on at least 80% of the days (*Radars over time*), placed with the OPERA radar database of
+  10/11/2026. Radars missing from the database, such as `deflg`, `dehan` and `deham` in Germany, are left out; the
+  cells near them go to another German radar.
+- **Comparison:** each offset minus the Belgian offset decided for G1, against U of the level over Europe (A 0.056,
+  B 0.052, C 0.044; *Level on the intensity*, table 2).
+
+Offset against D (95%), and minus the Belgian offset in log10 (* beyond U). Cells are the mean number per month.
+On the 186 Belgian cells the decided offsets come back exactly.
+
+| group | cells | A | B | C |
+|---|---:|---|---|---|
+| 186 Belgian cells (check) | 186 | ×1.34 (1.19–1.51), +0.000 | ×1.06 (0.95–1.18), +0.000 | ×1.01 (0.91–1.13), +0.000 |
+| whole crop | 8,896 | ×1.28 (1.21–1.35), −0.021 | ×1.17 (1.10–1.24), +0.045 | ×1.00 (0.95–1.06), −0.005 |
+| Belgium | 392 | ×1.26 (1.13–1.40), −0.027 | ×0.99 (0.92–1.06), −0.028 | ×1.01 (0.92–1.11), −0.001 |
+| France | 3,444 | ×1.32 (1.23–1.42), −0.006 | ×1.23 (1.13–1.33), +0.065 * | ×0.98 (0.93–1.04), −0.014 |
+| Germany | 2,841 | ×1.39 (1.33–1.46), +0.016 | ×1.20 (1.10–1.31), +0.057 * | ×1.00 (0.93–1.07), −0.006 |
+| United Kingdom | 1,453 | ×1.17 (1.06–1.29), −0.058 * | ×1.28 (1.18–1.38), +0.083 * | ×1.01 (0.94–1.09), −0.002 |
+| Netherlands | 295 | ×1.96 (1.77–2.17), +0.166 * | ×1.38 (1.17–1.63), +0.117 * | ×1.81 (1.49–2.20), +0.252 * |
+| Switzerland | 407 | ×2.13 (1.81–2.51), +0.202 * | ×1.04 (0.90–1.20), −0.007 | ×0.81 (0.75–0.87), −0.098 * |
+| Denmark | 60 | ×0.74 (0.62–0.87), −0.260 * | ×0.69 (0.58–0.82), −0.186 * | ×0.88 (0.77–1.00), −0.062 * |
+| ring 0–50 km | 2,819 | ×1.22 (1.11–1.33), −0.042 | ×1.11 (1.05–1.18), +0.024 | ×1.01 (0.94–1.07), −0.003 |
+| ring 50–100 km | 4,960 | ×1.24 (1.18–1.31), −0.033 | ×1.18 (1.10–1.27), +0.049 | ×1.00 (0.95–1.04), −0.008 |
+| ring 100–150 km | 984 | ×1.35 (1.26–1.45), +0.003 | ×1.19 (1.05–1.36), +0.054 * | ×1.03 (0.97–1.09), +0.005 |
+| ring 150+ km | 134 | ×1.17 (0.95–1.44), −0.059 * | ×1.03 (0.75–1.40), −0.012 | ×1.03 (0.77–1.38), +0.008 |
+
+- **C holds on the whole crop** (×1.00), in Belgium, France, Germany, the United Kingdom and in every ring.
+- **A holds** on the whole crop (×1.28), in Belgium, France and Germany. The United Kingdom is just beyond U
+  (−0.058 against 0.056).
+- **B does not hold outside Belgium.**
+  - France, Germany and the United Kingdom need ×1.20–1.28, against ×1.06.
+  - The whole crop (×1.17, +0.045) is within U, but close to it.
+  - Belgium alone has ×0.99.
+- **Netherlands: beyond U in every period, because of the change to CIRRUS.** Over the Dutch cells the yearly
+  log10 ratio radar / ERA5-Land is about +0.48 to +0.59 in 2018–2023 and +0.82 in 2025. Over the 12 months on each
+  side of 7/2024 it steps by +0.247 (×1.77). The other countries step by −0.067 to +0.028. CIRRUS over the
+  Netherlands is therefore about 1.8 times more intense than ODYSSEY was. The cause is not documented here.
+- **Switzerland and Denmark** sit at the edge of the crop. The Swiss radars enter over time (78 cells a month in A,
+  about 550 in C), and Denmark has 60 cells. Their offsets rest on few cells or on changing ones.
+- **Rings:** no pattern with distance. Within each period the rings differ by at most 0.07.
+
+**For G1** (options in the review of #96, 18/11/2026):
+- **One offset per period** holds on the whole crop for C, and for A outside the Netherlands, Switzerland and
+  Denmark.
+- **B** needs offsets per country of the nearest radar, or "adjusted" for Belgium only.
+- **The Netherlands** need their own offset in every period.
+- **Over the sea** there is no bridge. A pixel can take the offset of the country of its nearest radar, labelled
+  as extrapolated in the metadata.
+
 ## ERA5-Land against CERRA-Land (H3b)
 
 The second bridge (#82): first the literature on the homogeneity of
