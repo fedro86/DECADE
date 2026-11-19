@@ -10,8 +10,10 @@ a wet cell-hour having at least 0.1 mm, on complete radar hours and final ERA5-L
 kept if at least half of its hours are complete and final. The offset of a period against D is balanced over the 12
 calendar months, with the t interval of 11 df (`balanced` of section 7).
 
-- **Cells:** land cells of the crop whose pixel count in both products, at 7/2024, is at least 0.8 of the largest
-  in the same grid row (the rule of the 186 Belgian cells, by row because the cells shrink to the north).
+- **Cells:** land cells of the crop whose pixel count in both products, at 7/2024, is at least 0.8 of the median
+  of the same grid row, so the cells cut by the edge of the crop are left out. The median, not the largest as for
+  the 186 Belgian cells: on the 2 km grid a full cell gets 18 to 24 pixels depending on how the grids fall on each
+  other, and the cells shrink to the north.
 - **Nearest radar:** each month, among the radars listed in the composite on at least 80% of the days (listed on a
   day: in at least half of its time steps; `results/h2_artefacts/nodes_*.csv`, as `docs/method.md`, *Radars over
   time*), positions and country from the OPERA radar database of 10/11/2026. A cell belongs to the country of
@@ -67,13 +69,13 @@ def all_months():
 
 
 def full_cells():
-    """Cells of the crop fully covered in both products at 7/2024: npix at least 0.8 of the row maximum."""
+    """Cells of the crop fully covered in both products at 7/2024: npix at least 0.8 of the row median."""
     keep = None
     for name in ("odyssey_clean", "cirrus"):
         z = np.load(H3 / f"era5grid_{name}_crop_2024-07.npz")
         c, n = z["cells"], z["npix"]
-        rowmax = pd.Series(n).groupby(c[:, 0]).transform("max").values
-        s = {tuple(x) for x in c[n >= 0.8 * rowmax]}
+        rowmed = pd.Series(n).groupby(c[:, 0]).transform("median").values
+        s = {tuple(x) for x in c[n >= 0.8 * rowmed]}
         keep = s if keep is None else keep & s
     return np.array(sorted(keep))
 
