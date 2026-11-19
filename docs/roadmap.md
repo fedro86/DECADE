@@ -340,6 +340,11 @@ node stays to T3.
   are about twice as large near the radars; A has a seasonal pattern
   ([method.md](method.md), *Level offsets of periods A and B*). Split B or
   not, offsets by ring or not, seasonal offsets for A or not: for G1.
+  On the intensity offsets (19/11/2026, #96), B no longer breaks at 8/2018
+  (−0.032, within the yardstick of 0.067). A→B is just above it (+0.080),
+  from a drop in the last year of A. No jump with no date is significant
+  inside A, B or C (SNHT and Pettitt; the strongest is A at 12/2014,
+  p 0.09) ([method.md](method.md), *Continuity and jumps on the intensity*).
 - **Volume or intensity, and the target (H3): decided on 17/11/2026** (#96).
   - **Target:** the level offsets for G1 and archive v1 (G2) use D, CIRRUS
     7/2024–17/11/2025.

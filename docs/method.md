@@ -2395,6 +2395,57 @@ G1 and archive v1. E is assessed again in May 2027 (H8, #24; [roadmap](roadmap.m
 - Archive v1 is corrected towards D, so it is more intense than what IRENE receives in operation, until v1.1.
 - This matters for G3 if IRENE is tested on recent CIRRUS.
 
+### Continuity and jumps on the intensity (for G1)
+
+Two checks asked on #96 (18/11/2026) before G1, so that archive v1 can be called level-adjusted.
+`notebooks/09-mr-level-periods.ipynb`, section 9. Both run on the monthly wet-hour intensity radar / ERA5-Land
+(0.1 mm per cell-hour, *Volume or intensity*), corrected with the intensity offsets above (×1.34, ×1.06, ×1.01). The
+correction is applied as a constant on the log ratio. On the pixels the shift in dBZ moves part of itself into the
+frequency, because of the 7 dBZ threshold and the 55 dBZ cap (closure test, #100).
+
+**1. Continuity at the period boundaries.** The test of *Seasons, rings and continuity*, recomputed on the
+intensity. Same 12-month blocks, each left out in turn and corrected with the offset refitted on the rest; the
+yardstick is the standard deviation of the corrected means of the 9 full blocks.
+
+| boundary | jump, offset refitted without the block | with the offset of the whole period | on the volume (section 4) |
+|---|---:|---:|---:|
+| A→B, 12/2015 | **+0.080 (×1.20)** | +0.049 | +0.013 |
+| B→C, 8/2018 | −0.032 (×0.93) | −0.015 | **−0.134** |
+| C→D, 7/2024 | +0.031 (×1.07) | +0.027 | +0.037 |
+| yardstick (95%) | 0.067 (0.045–0.128) | | 0.082 |
+
+- **B does not break at 8/2018 on the intensity.** The jump is within the yardstick, also without 3–6/2018 (−0.053).
+  The break of the volume at 8/2018 is the frequency step, which is documented and not corrected (*Are the extra
+  echoes of CIRRUS rain?*).
+- **A→B is just above the yardstick** (+0.080 against 0.067), and inside its 95% interval. It comes from the last
+  year of A: the block 12/2014–11/2015 is 0.17–0.22 lower than the two before it. Jabbeke enters the composite in
+  12/2014 (rings of *Are the extra echoes of CIRRUS rain?*), but that is not shown to be the cause. With the offset
+  of the whole period the jump is +0.049, within the yardstick.
+- **C→D** is within the yardstick.
+
+**2. Jumps with no date inside A, B and C** (acceptance criterion of #20).
+- **Test:** SNHT (Alexandersson 1986), the maximal t test that WMO (2020, sections 2.3.1 and 3.2.1) names for one
+  break at an unknown date, with Pettitt (1979; Ribeiro et al. 2016, section 3.1) as a check.
+- **Series:** the corrected monthly intensity of each period, with the calendar-month means of the period removed
+  (as notebook 08), without 3–6/2018 and 5/2020.
+- **Critical values:** consecutive months are autocorrelated (WMO 2020, section 2.2.2), so the 95% critical value
+  and the p value come from 20,000 Monte Carlo series (WMO 2020, section 5.3.2). They are AR(1) with the lag-1
+  correlation of the series, and have the same calendar-month means removed.
+
+| period | months | lag-1 r | most likely break (first month after) | step | SNHT, p | Pettitt, p |
+|---|---:|---:|---|---:|---:|---:|
+| A | 32 | 0.45 | 12/2014 | −0.113 (×0.77) | 0.09 | 0.11 |
+| B | 28 | 0.24 | 2/2017 | +0.054 (×1.13) | 0.39 | 0.25 |
+| C | 70 | 0.26 | 10/2022 | −0.041 (×0.91) | 0.73 | 0.50 |
+
+- **No jump is significant at 5%** in any period.
+- **The strongest candidate is A at 12/2014** (p 0.09), the same drop that lifts the A→B jump of point 1. Jabbeke
+  enters the composite that month; the cause is not established.
+- **B:** the rise of B over time shows as a step of +0.054 at 2/2017, not significant.
+- **Limit:** A and B have about 30 months, and their lag-1 correlation is 0.24–0.45. A step of about 0.1 is
+  therefore hard to tell from noise (WMO 2020, section 2.4: detectability is set by the step against the spread of
+  the series).
+
 ## ERA5-Land against CERRA-Land (H3b)
 
 The second bridge (#82): first the literature on the homogeneity of
