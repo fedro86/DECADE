@@ -4,8 +4,12 @@
   M. Martet, D. Idziorek, H. Leijnse, P. Novák, M. Lukach, K. Stephan, 2019,
   *Atmosphere* 10, 320
 - **Link:** [10.3390/atmos10060320](https://doi.org/10.3390/atmos10060320)
-- **Access:** open, CC BY 4.0
-- **Read:** full text (13 pages)
+- **Access:** open, CC BY 4.0; the MDPI site blocks automatic download, the
+  publisher's PDF is mirrored on
+  [Semantic Scholar](https://pdfs.semanticscholar.org/e1f2/9f21fbe6f3cf3a1747d2c228a0ff39876b82.pdf)
+  (downloaded 17/11/2026)
+- **Read:** full text (13 pages); section 2.2 and the dates re-checked on the
+  PDF on 17/11/2026
 
 ## What it is
 
@@ -36,13 +40,21 @@ CIRRUS, which came later.
   satellite filter (NWC SAF precipitating clouds), which sets echoes with zero
   probability of precipitation to undetect. The quality index is the minimum of
   the three, weighted by distance from the radar and beam height.
+- **Dates of the central QC** (pages 4–5): anomaly removal and hit
+  accumulation were "the first two" methods, with no date (Scovell et al. 2013
+  give 2011 and 3/2013). Beam blockage **and** the satellite filter were both
+  implemented "in late 2015" (section 2.2, page 4), "in December 2015"
+  (section 3, page 5). Fig. 4 (page 6) shows fewer never-dry pixels in
+  1–11/2016 than in 1–11/2015.
 - **Not implemented** (section 4): a vertical profile of reflectivity
   correction, and a Z–R relation that depends on the phase (rain or snow).
 - **Bias** (section 3.1): against MESAN, OPERA underestimates by typically
   1–3 mm/day (2015–2017), more in winter because of beam overshooting.
 - **Input data** (section 4): since March 2017 the members send their best
   processed data, documenting the processing, and the unfiltered reflectivity
-  as a separate quantity; the change was introduced gradually.
+  as a separate quantity; the change was introduced gradually (page 11). The
+  reason given (page 10) is that the central QC had removed some real
+  precipitation.
 
 ## Relevance to DECADE
 
