@@ -158,6 +158,30 @@ uv run python scripts/odyssey_clean_era5grid.py --first 2013-04 --last 2024-06 -
   last period. Months outside 4/2013–7/2024 stop with an error: the static
   mask has no period for them.
 
+### Whole crop, and the offsets per country and per ring
+
+Does the Belgian offset hold on the whole crop (review of #96, 18/11/2026)?
+With `--crop` the sums cover every land ERA5-Land cell of the crop: cleaned
+ODYSSEY for A, B and C, and CIRRUS as it is for D (`--product cirrus`, the
+sums of notebook 07, section 4). Then `scripts/crop_offsets.py` computes the
+intensity offsets per country of the nearest radar and per ring of distance.
+
+```bash
+uv run python scripts/odyssey_clean_era5grid.py --crop --first 2013-04 --last 2024-07 --processes 16
+uv run python scripts/odyssey_clean_era5grid.py --crop --product cirrus --first 2024-07 --last 2025-11 --processes 16
+uv run python scripts/crop_offsets.py --processes 8
+```
+
+- Outputs `results/h3_level/era5grid_odyssey_clean_crop_<YYYY-MM>.npz` and
+  `era5grid_cirrus_crop_<YYYY-MM>.npz`, the layout above with only the cleaned
+  rain (`rain_clean`; `rain` for CIRRUS); the Belgian files are not touched.
+- About 11 MB and 95 s per ODYSSEY month with one process on the
+  workstation; on the Belgian cells with the same pixels the sums are those of
+  the Belgian files.
+- `crop_offsets.py` writes `results/h3_level/crop_monthly.npz` (wet counts
+  and sums per month and cell, country and distance of the nearest radar) and
+  `crop_offsets.csv`, and prints the tables; `--summary` prints them again.
+
 ## IRENE test training on the workstation (T0)
 
 IRENE has its own environment (Python 3.13, torch with CUDA), next to DECADE;

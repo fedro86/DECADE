@@ -20,6 +20,19 @@ Use --last 2024-07 to add the overlap days, 1-5/7/2024, with the mask of the las
 
 Writes results/h3_level/era5grid_odyssey_clean_<YYYY-MM>.npz and prints one line per month when it is done.
 Months already written are skipped.
+
+Whole crop (review of #96, point 3 of 18/11/2026: does the Belgian offset hold on the whole crop?). With --crop the
+same sums are made on every land ERA5-Land cell of the crop, not only the Belgian ones: every pixel of the file
+goes to the cell with the nearest centre, as above, if it lies within half a cell (0.05 degrees) of that centre,
+so the pixels beyond the edge of the ERA5-Land grid are left out; cells over the sea (NaN in ERA5-Land) are left
+out too. Only the cleaned rain is kept. With --product cirrus the CIRRUS sums of notebook 07, section 4 (CIRRUS
+as it is, 1 km, 5 min frames), on the same cells, for target D:
+
+  uv run python scripts/odyssey_clean_era5grid.py --crop --first 2013-04 --last 2024-07 --processes 16
+  uv run python scripts/odyssey_clean_era5grid.py --crop --product cirrus --first 2024-07 --last 2025-11 --processes 16
+
+They write results/h3_level/era5grid_odyssey_clean_crop_<YYYY-MM>.npz and era5grid_cirrus_crop_<YYYY-MM>.npz; the
+Belgian files stay as they are. The offsets per country and per ring are in scripts/crop_offsets.py.
 """
 from __future__ import annotations
 
@@ -39,7 +52,7 @@ from opera_ds.paths import DATA_DIR, RESULTS_DIR
 H2 = RESULTS_DIR / "h2_artefacts"
 OUT = RESULTS_DIR / "h3_level"
 LAT_N, LON_W, STEP, NLAT, NLON = 55.0, -3.9, 0.1, 95, 158
-STEP_H = 0.25
+STEP_H = {"odyssey": 0.25, "cirrus": 5 / 60}
 # periods of the static mask; the mask of 8/2018-6/2024 also serves the last ODYSSEY days, 1-5/7/2024 (overlap)
 PERIODS = (("2013-04", "2015-11"), ("2015-12", "2018-07"), ("2018-08", "2024-07"))
 
@@ -72,6 +85,40 @@ def cell_index(where, win, m):
     return np.where(m, bridge_cell_index(elat, elon, lat, lon), -1)
 
 
+def land_cells() -> np.ndarray:
+    """Flat indices of the land cells of the ERA5-Land grid (the sea is NaN in ERA5-Land)."""
+    import xarray as xr
+
+    era = xr.open_zarr(DATA_DIR / "era5land_bel.zarr", consolidated=False)
+    assert era.sizes["latitude"] == NLAT and era.sizes["longitude"] == NLON
+    return np.flatnonzero(np.isfinite(era["tp"].isel(valid_time=12).values).ravel())
+
+
+def crop_index(where, shape, land):
+    """Whole crop: window of the file (absolute rows and cols) and the ERA5-Land land cell of each pixel centre, -1
+    if the pixel lies more than half a cell from the nearest centre (beyond the grid) or the cell is over the sea."""
+    from pyproj import Proj
+
+    a, b = int(where.get("crop_row0", 0)), int(where.get("crop_col0", 0))
+    win = (a, a + shape[0], b, b + shape[1])
+    idx = cell_index(where, win, np.ones(shape, bool))
+    p = Proj(where["projdef"])
+    sx, sy = float(where["xscale"]), float(where["yscale"])
+    xu, yu = p(float(where["UL_lon"]), float(where["UL_lat"]))
+    rr, cc = np.mgrid[0:shape[0], 0:shape[1]]
+    lon, lat = p(xu + (cc + 0.5) * sx, yu - (rr + 0.5) * sy, inverse=True)
+    clat, clon = LAT_N - STEP * (idx // NLON), LON_W + STEP * (idx % NLON)
+    inside = (np.abs(lat - clat) <= STEP / 2 + 1e-9) & (np.abs(lon - clon) <= STEP / 2 + 1e-9)
+    return win, np.where(inside & np.isin(idx, land), idx, -1)
+
+
+def rain_cirrus(z, cov, und):
+    """Rain rate of the CIRRUS sums, as notebook 07, section 4 (`rain_rate`)."""
+    zz = np.nan_to_num(z, nan=0.0)
+    r = np.where((zz >= 7) & (zz <= 70) & ~und, (10 ** (np.minimum(zz, 55.0) / 10) / 200.0) ** (1 / 1.6), 0.0)
+    return np.where(cov, r, np.nan)
+
+
 def rain(dbz: np.ndarray) -> np.ndarray:
     """Marshall-Palmer from 7 dBZ capped at 55 dBZ; NaN (outside coverage) stays NaN."""
     z = np.nan_to_num(dbz, nan=0.0)
@@ -94,20 +141,32 @@ def listed_by_day() -> dict[int, set[str]]:
     return nd.groupby("day").node.apply(set).to_dict()
 
 
-def month(ym: str) -> str:
+def out_path(ym: str, product: str = "odyssey", crop: bool = False) -> Path:
+    name = "odyssey_clean" if product == "odyssey" else "cirrus"
+    return OUT / f"era5grid_{name}{'_crop' if crop else ''}_{ym}.npz"
+
+
+def month(ym: str, product: str = "odyssey", crop: bool = False) -> str:
     from opera_ds.clean import StaticMask, clean_composite
     from opera_ds.odim_io import read_odim_composite
 
-    path = OUT / f"era5grid_odyssey_clean_{ym}.npz"
+    path = out_path(ym, product, crop)
     if path.exists():
         return f"{ym}: already written"
-    win, m2 = belgian_window()
-    radars = {k: (v["row"], v["col"]) for k, v in json.loads((H2 / "db_rowcol_odyssey_crop.json").read_text()).items()}
-    static = StaticMask(np.load(H2 / f"static_mask_proposal_P{period_of(ym)}.npy").astype(bool), radars=radars,
-                        pixel_km=2.0)
-    listed = listed_by_day()
+    odyssey = product == "odyssey"
+    if odyssey:
+        radars = {k: (v["row"], v["col"])
+                  for k, v in json.loads((H2 / "db_rowcol_odyssey_crop.json").read_text()).items()}
+        static = StaticMask(np.load(H2 / f"static_mask_proposal_P{period_of(ym)}.npy").astype(bool), radars=radars,
+                            pixel_km=2.0)
+        listed = listed_by_day()
+    if crop:
+        land = land_cells()
+    else:
+        win, m2 = belgian_window()
+    keys = ("clean",) if crop or not odyssey else ("raw", "clean")
     y, m = map(int, ym.split("-"))
-    files = sorted(glob.glob(str(DATA_DIR / "odyssey_bel" / f"{y}" / f"{m:02d}" / "*.h5")))
+    files = sorted(glob.glob(str(DATA_DIR / f"{product}_bel" / f"{y}" / f"{m:02d}" / "*.h5")))
     nh = calendar.monthrange(y, m)[1] * 24
     start = dt.datetime(y, m, 1, 1)
     idx = None
@@ -120,34 +179,45 @@ def month(ym: str) -> str:
             bad += 1
             continue
         if idx is None:
-            idx = cell_index(f.where, win, m2)
+            if crop:
+                win, idx = crop_index(f.where, f.values.shape, land)
+            else:
+                idx = cell_index(f.where, win, m2)
             sel = idx >= 0
             cells, inv = np.unique(idx[sel], return_inverse=True)
             npix = np.bincount(inv, minlength=len(cells))
-            sums = {k: np.zeros((nh, len(cells))) for k in ("raw", "clean")}
+            sums = {k: np.zeros((nh, len(cells))) for k in keys}
             cover = np.zeros((nh, len(cells)), np.int64)
         k = int(np.ceil((f.time - start).total_seconds() / 3600.0))
         if not 0 <= k < nh:
             continue
-        dbz = f.to_field(0.0)
-        day = int(f.time.strftime("%Y%m%d"))
-        clean = clean_composite(dbz, static, listed.get(day, set()), gabella=True)
         a, b = int(f.where.get("crop_row0", 0)), int(f.where.get("crop_col0", 0))
         s = (slice(win[0] - a, win[1] - a), slice(win[2] - b, win[3] - b))
-        for key, field in (("raw", dbz), ("clean", clean)):
-            r = rain(field[s])[sel]
+        if odyssey:
+            dbz = f.to_field(0.0)
+            day = int(f.time.strftime("%Y%m%d"))
+            clean = clean_composite(dbz, static, listed.get(day, set()), gabella=True)
+            fields = {"raw": rain(dbz[s]), "clean": rain(clean[s])}
+        else:
+            fields = {"clean": rain_cirrus(f.values[s].astype(np.float64), f.coverage[s], f.undetect[s])}
+        for j, key in enumerate(keys):
+            r = fields[key][sel]
             ok = np.isfinite(r)
-            sums[key][k] += np.bincount(inv[ok], weights=r[ok] * STEP_H, minlength=len(cells))
-            if key == "raw":
+            sums[key][k] += np.bincount(inv[ok], weights=r[ok] * STEP_H[product], minlength=len(cells))
+            if j == 0:  # coverage of the raw field (Belgian ODYSSEY files) or of the only field kept
                 cover[k] += np.bincount(inv[ok], minlength=len(cells))
         frames[k] += 1
     if idx is None:
         return f"{ym}: no readable file"
     out = {f"rain_{key}": (v * frames[:, None] / np.maximum(cover, 1)).astype(np.float32) for key, v in sums.items()}
+    if not odyssey:
+        out = {"rain": out["rain_clean"]}  # the name of the CIRRUS sums of notebook 07
     hours = [(start + dt.timedelta(hours=h)).isoformat() for h in range(nh)]
+    extra = {"period": period_of(ym)} if odyssey else {}
     np.savez_compressed(path, frames=frames, cover=cover, npix=npix, cells=np.stack([cells // NLON, cells % NLON], 1),
-                        hour_end=np.array(hours), period=period_of(ym), n_bad=bad, **out)
-    return f"{ym}: {len(files)} file, period P{period_of(ym)}, {bad} unreadable"
+                        hour_end=np.array(hours), n_bad=bad, **extra, **out)
+    return (f"{ym}: {len(files)} file, {len(cells)} cells, " + (f"period P{period_of(ym)}, " if odyssey else "")
+            + f"{bad} unreadable")
 
 
 def months(first: str, last: str) -> list[str]:
@@ -164,15 +234,20 @@ def main() -> None:
     ap.add_argument("--first", default="2013-04")
     ap.add_argument("--last", default="2024-06")
     ap.add_argument("--processes", type=int, default=16)
+    ap.add_argument("--crop", action="store_true", help="every land ERA5-Land cell of the crop, not only Belgium")
+    ap.add_argument("--product", choices=("odyssey", "cirrus"), default="odyssey",
+                    help="cirrus: the CIRRUS sums of notebook 07, section 4, only with --crop")
     args = ap.parse_args()
+    if args.product == "cirrus" and not args.crop:
+        ap.error("--product cirrus needs --crop (the Belgian CIRRUS sums are made by notebook 07, section 4)")
     OUT.mkdir(parents=True, exist_ok=True)
     todo = months(args.first, args.last)
     if args.processes == 1:
         for ym in todo:
-            print(month(ym), flush=True)
+            print(month(ym, args.product, args.crop), flush=True)
         return
     with ProcessPoolExecutor(args.processes) as ex:
-        for fut in as_completed([ex.submit(month, ym) for ym in todo]):
+        for fut in as_completed([ex.submit(month, ym, args.product, args.crop) for ym in todo]):
             print(fut.result(), flush=True)
     print("FINITO", flush=True)
     sys.exit(0)
