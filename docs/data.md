@@ -426,7 +426,7 @@ whole files, also with `extent` as long as the extent is inside the crop.
   on 11/11/2026 as four zips, one per year, and extracted with their
   `manifest_*.json` beside them. 1/1/2023 → 11/11/2026: 101,049 files in 2023
   (96.1% of the 5 min steps), 104,328 in 2024 (99.0%), 103,126 in 2025
-  (98.1%), 81,923 in 2026; 390,426 files and 66.9 GB in all (counted on the disk). The manifests of the yearly zips count one file more for 2023, 2024 and 2025, because each zip ends at 00:05 of 1 January and also holds the first file of the next year. 2022 added on 12/11/2026 (one zip, 11.0 GB):
+  (98.1%), 81,923 in 2026; 390,426 files and 66.8 GB in all (counted on the disk on 27/11/2026). The manifests of the yearly zips count one file more for 2023, 2024 and 2025, because each zip ends at 00:05 of 1 January and also holds the first file of the next year. 2022 added on 12/11/2026 (one zip, 11.0 GB):
   60,227 files from 17/5/2022 05:55, 44% of the steps of May, 80–100% of
   June–December; the download page lists 1.9% of the expected files for
   4/6–31/12/2021 (1,178), which were not downloaded. Read by `opera_ds.vmm.read_vmm`; same
