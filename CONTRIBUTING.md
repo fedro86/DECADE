@@ -5,7 +5,7 @@ Two kinds of work happen in this repository:
 - **exploration** in Jupyter notebooks: looking at data, trying a method,
   making figures;
 - **production code** in `opera_ds/` and `scripts/`: what builds the archive and
-  the training data on HPC (Leonardo Booster), as batch jobs without notebooks.
+  the training data on HPC (a EuroHPC system), as batch jobs without notebooks.
 
 Notebooks are where ideas start. Results that go into the archive, the training
 data or a paper must come from production code.
@@ -62,7 +62,7 @@ Production code must not depend on notebooks or interactive input.
 
 ## Portability
 
-Production runs on Linux HPC (Leonardo Booster); colleagues work on Linux,
+Production runs on Linux HPC (a EuroHPC system); colleagues work on Linux,
 macOS and Windows. CI runs the tests on Linux and Windows.
 
 - Nowhere in the repository (code, notebooks, documentation) write a path of a
