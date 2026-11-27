@@ -86,11 +86,84 @@ remain available as methods `lk:Z` and `lk:dB`, or with `mass_correction=false`.
 ### Output labels and `alpha`
 
 Every produced frame carries `alpha`: 0 is a real ODYSSEY frame, 1/3 and 2/3
-are interpolated. By default the output labels are the ODYSSEY times. A time
-shift of −2.5 min moves them to the CIRRUS convention (see [data.md](data.md),
-*Time windows*), but then every frame is interpolated (α = 1/6, 1/2, 5/6). Which
-convention is used for training is a decision recorded in
-[roadmap.md](roadmap.md).
+are interpolated. The output labels are the ODYSSEY times (shift 0, decided in
+H6, [roadmap.md](roadmap.md), *Decisions taken*). A time shift of −2.5 min
+would move them to the CIRRUS convention (see [data.md](data.md), *Time
+windows*), but then every frame is interpolated (α = 1/6, 1/2, 5/6). Each frame
+stores its `alpha` and `time_shift_min`.
+
+### Choice of the time shift (H6)
+
+For the same label, the windows declared in the files put the ODYSSEY content
+about 2.5 min after the CIRRUS one ([data.md](data.md), *Time windows*). Which
+radar volumes enter a window is not documented
+([#71](https://github.com/fedro86/DECADE/issues/71)), so the real offset can
+differ from 2.5 min. Three options were compared:
+
+| shift | ODYSSEY frame at T labelled | real frames | distance from the nearest real frame |
+|---|---|---|---|
+| 0 | T | one in three (α = 0) | 0, 5, 5 min |
+| −2.5 min | between two CIRRUS labels | none | 2.5, 7.5, 2.5 min |
+| −5 min | T+5, the CIRRUS window inside the ODYSSEY one | one in three | 0, 5, 5 min |
+
+**Error against CIRRUS** on 1–5/7/2024, Belgium, `lk`, 380 times per row
+(`docs/figures/summary.csv`, from `opera_ds_cli.py validate`):
+
+| shift | α | distance | RMSE [dBZ] | MAE [dBZ] | CSI 20 dBZ |
+|---|---|---:|---:|---:|---:|
+| 0 | 1/3 | 5 min | 12.76 | 8.58 | 0.562 |
+| 0 | 2/3 | 5 min | 12.88 | 8.70 | 0.558 |
+| −2.5 | 1/6 | 2.5 min | 12.60 | 8.37 | 0.570 |
+| −2.5 | 1/2 | 7.5 min | 12.90 | 8.72 | 0.557 |
+| −5 | 0 | real frame | 12.93 | 8.89 | 0.545 |
+| −5 | 1/3 | 5 min | 13.15 | 9.20 | 0.530 |
+| +2.5 | 1/2 | 7.5 min | 13.15 | 9.28 | 0.526 |
+| +2.5 | 5/6 | 2.5 min | 13.16 | 9.28 | 0.529 |
+
+- −2.5 is better than 0 by 0.07 dB of RMSE and 0.1 dB of MAE on average over
+  its frames, under 1%.
+- +2.5 is clearly worse, which confirms the sign of the offset.
+- The level difference between the products dominates every row: bias −5.4 to
+  −6.2 dB in the same file.
+- CIRRUS has almost no frames at the quarter hours on those days, so α = 0 of
+  shift 0 is not scored.
+- H1 cannot score 2.5 or 7.5 min, since CIRRUS has a frame every 5 min
+  (*Interpolation error on degraded CIRRUS (H1)*).
+
+**Lag test** (`scripts/h6_lag_test.py`, 27/11/2026): each ODYSSEY frame of
+1–5/7/2024 against CIRRUS at T−10 … T+10 min, degraded to 2 km by `zmean`, on
+the whole crop (Belgium + 350 km), 381 times. Lag 0 is missing for the same
+reason as above.
+
+| CIRRUS at | T−10 | T−5 | T+5 | T+10 |
+|---|---:|---:|---:|---:|
+| CSI 20 dBZ | 0.484 | 0.579 | 0.691 | 0.553 |
+| CSI 30 dBZ | 0.339 | 0.446 | 0.597 | 0.418 |
+| r (pixels ≥ 10 dBZ) | 0.335 | 0.489 | 0.634 | 0.454 |
+
+- **ODYSSEY at T is later than CIRRUS at T.** T+5 beats T−5 by 0.11 in CSI 20
+  (95% 0.108–0.117, block bootstrap over 97 hours), on each of the five days.
+- **It is nearer T than T+5.** T−5 and T+10 are both 7.5 min from T+2.5, and
+  T−5 is the better one by 0.026 in CSI 20 (95% 0.023–0.028), on each day. So the
+  offset lies between 0 and 5 min, below the middle, as the declared windows
+  give. This reading assumes the scores fall off the same way on both sides.
+- **Relabelling to T+5 does not help.** It moves the offset to the other side
+  without making it smaller. T+5 scores best only because its CIRRUS window
+  lies inside the ODYSSEY one; so does the window of T, which cannot be scored
+  here.
+
+**Decision (H6, 27/11/2026): shift 0.**
+- The archive keeps the ODYSSEY labels and one real frame in three.
+- The offset is a fraction of the 5 min step, not known exactly, and changes the
+  scores by less than 1%.
+- IRENE reads sequences without time stamps, so the offset does not reach
+  training.
+- Shift 0 is the simplest: it is already the default of the code, and every
+  frame keeps its `alpha`.
+- To compare the archive with time-stamped data (CIRRUS, VMM, RADCLIM), the
+  ODYSSEY frame at T lies between the CIRRUS labels T and T+5. H1 pairs it with
+  T+5, the CIRRUS window inside the ODYSSEY one (*Degraded CIRRUS as a stand-in
+  for ODYSSEY*).
 
 ## Validation against CIRRUS
 

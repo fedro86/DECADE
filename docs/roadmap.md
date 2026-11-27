@@ -277,7 +277,11 @@ node stays to T3.
 - **Interpolated frames are flagged** with `alpha` (0 = real ODYSSEY frame).
 - **Windows are chosen on ODYSSEY at 2 km** and cut from the harmonised archive.
 - **Output labels stay on ODYSSEY times** (shift 0), so that real frames remain
-  real.
+  real (3/11/2026; confirmed in H6 on 27/11/2026). The ODYSSEY content lies
+  between the CIRRUS labels T and T+5, nearer T, as the declared windows give;
+  the shift changes the scores against CIRRUS by less than 1%, and relabelling
+  to T+5 would not reduce the offset ([method.md](method.md), *Choice of the
+  time shift (H6)*).
 - **WP3 runs in phases** (A/B/C, then a reduced learning curve, then the full
   one), as far as the compute budget allows (decided 3/11/2026).
 - **No ECA&D in DECADE.** The correction is anchored to CIRRUS through a
@@ -332,8 +336,6 @@ node stays to T3.
   interpolated 5 min sequences. B is at 15 min: 15 min steps in pre-training
   and 5 min in fine-tuning, plain linear interpolation to 5 min, or each frame
   repeated three times; the choice changes what B vs C measures.
-- **Time shift in production (H6):** with shift 0 the labels keep the offset
-  between the products' time windows ([data.md](data.md), *Time windows*).
 - **Basins and thresholds (V5).**
 - **Rain archive at 2 km / 15 min** (ODYSSEY `RATE`/`ACRR` plus NIMBUS, outlier
   cleaning, homogenisation of the two periods anchored to ECA&D gauges). Planned
