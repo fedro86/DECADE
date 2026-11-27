@@ -113,6 +113,125 @@ uv run python scripts/opera_ds_cli.py windows \
   `row0` and `col0` (n,) on the OPERA 1 km grid; its attributes describe grid,
   Z–R and configuration.
 
+## Hourly VMM rain on the ERA5-Land cells (H3)
+
+For the homogeneity test of the bridge ([method.md](method.md), *Homogeneity
+of the bridge*): the VMM 5 min rasters (`data/vmm/`, any folder layout, one
+HDF5 file per step; [data.md](data.md), VMM row) averaged over the ERA5-Land
+0.1° cells and summed per hour on the Belgian cells.
+
+```bash
+uv run python scripts/vmm_hourly.py --vmm-dir data/vmm --out results/h3_level --processes 16
+```
+
+- Output `results/h3_level/vmm_hourly_era5grid.npz`: hourly sums per Belgian
+  cell (mm), rasters per hour (12 = complete), the Belgian cells and the
+  ERA5-Land axes (0.1° over the default `--area` of `scripts/fetch_cds.py`).
+- A raster stands for the step ending at its label, so the hour ending at H
+  sums the labels H−55 min … H, as ERA5-Land hourly amounts.
+- `--pattern` sets the file name pattern (default `*.hdf5`, as in the
+  project's copy, e.g. `vmm/2026/01/VMM202601010000.hdf5`); `--chunk` the
+  rasters per task.
+- A cell not fully covered in any raster of an hour is NaN for that hour.
+
+## Hourly ODYSSEY rain on the ERA5-Land cells, cleaned as in H2 (H3)
+
+For the level correction on cleaned ODYSSEY ([method.md](method.md), *ODYSSEY
+cleaned as in H2, against ERA5-Land and VMM*): the ODYSSEY crops of
+`data/odyssey_bel/` cleaned with `opera_ds.clean.clean_composite` and summed
+per hour on the Belgian ERA5-Land cells, raw and cleaned side by side. It
+needs the H2 outputs of `notebooks/05-mr-artefacts.ipynb` in
+`results/h2_artefacts/`: `static_mask_proposal_P1–P3.npy`, `nodes_odyssey.csv`
+and `db_rowcol_odyssey_crop.json`.
+
+```bash
+uv run python scripts/odyssey_clean_era5grid.py --first 2013-04 --last 2024-06 --processes 16
+```
+
+- Output `results/h3_level/era5grid_odyssey_clean_<YYYY-MM>.npz`, one per
+  month: `rain_raw` and `rain_clean` (mean mm per cell and hour), frames per
+  hour (4 = complete), covered pixels, the cells and the hour ends; the
+  layout of the `era5grid_odyssey_<YYYY-MM>.npz` of notebook 07.
+- One line per month when it is written; months already written are
+  skipped. 30 min for 135 months with 16 processes on the workstation.
+- `--last 2024-07` adds the overlap days, 1–5/7/2024, with the mask of the
+  last period. Months outside 4/2013–7/2024 stop with an error: the static
+  mask has no period for them.
+- `--product cirrus` writes the Belgian CIRRUS sums of the target D, CIRRUS
+  as it is (1 km, 5 min frames, 12 = complete hour), the CIRRUS input of
+  notebook 09: `results/h3_level/era5grid_cirrus_<YYYY-MM>.npz`, with the sums
+  in `rain`. They equal those of notebook 07, section 4 (checked on 7 and
+  8/2024); about 3 min for two months with 2 processes.
+
+```bash
+uv run python scripts/odyssey_clean_era5grid.py --product cirrus --first 2024-07 --last 2025-11 --processes 16
+```
+
+### Whole crop, and the offsets per country and per ring
+
+Does the Belgian offset hold on the whole crop (review of #96, 18/11/2026)?
+With `--crop` the sums cover every land ERA5-Land cell of the crop: cleaned
+ODYSSEY for A, B and C, and CIRRUS as it is for D (`--product cirrus`, the
+sums of notebook 07, section 4). Then `scripts/crop_offsets.py` computes the
+intensity offsets per country of the nearest radar and per ring of distance.
+
+```bash
+uv run python scripts/odyssey_clean_era5grid.py --crop --first 2013-04 --last 2024-07 --processes 16
+uv run python scripts/odyssey_clean_era5grid.py --crop --product cirrus --first 2024-07 --last 2025-11 --processes 16
+uv run python scripts/crop_offsets.py --processes 8
+```
+
+- Outputs `results/h3_level/era5grid_odyssey_clean_crop_<YYYY-MM>.npz` and
+  `era5grid_cirrus_crop_<YYYY-MM>.npz`, the layout above with only the cleaned
+  rain (`rain_clean`; `rain` for CIRRUS); the Belgian files are not touched.
+- With one process on the workstation, about 11 MB and 95 s per ODYSSEY
+  month (1/2017) and 13 MB and 6.5 min per CIRRUS month (2/2025). On the
+  Belgian cells with the same pixels the sums equal those of the Belgian files.
+- Radars listed in the composite but missing from the OPERA database (for
+  example `deflg`) are left out of the nearest radar and printed.
+- `crop_offsets.py` writes `results/h3_level/crop_monthly.npz` (wet counts
+  and sums per month and cell, country and distance of the nearest radar) and
+  `crop_offsets.csv`, and prints the tables; `--summary` prints them again.
+
+## Checks of the level correction (H3)
+
+Scripts behind the checks of [method.md](method.md), *Level correction (H3)*.
+Each prints its result; the method and the reading are in its docstring.
+
+```bash
+# hourly precipitation of the RMI automatic weather stations (open data, CC BY 4.0)
+uv run python scripts/fetch_rmi_aws.py --first 2012 --last 2025
+# #88: single-radar volumes of behel, bewid and bejab on rainy hours around 18/11/2025
+uv run python scripts/fetch_issue88_volumes.py
+# are the extra echoes of CIRRUS rain? radar against ERA5-Land and the RMI stations
+uv run python scripts/qc_dry_wet_hours.py --out results/h3_level
+# does CIRRUS take the maximum over the volumes of one radar in its time window?
+uv run python scripts/cirrus_window_volumes.py --days 2025-01-05 2025-08-28 2025-08-31 --out results/h3_level/window_test1.csv
+# how much does the CIRRUS time window change ODYSSEY?
+uv run python scripts/cirrus_window_odyssey.py --processes 16 --out results/h3_level/window_test2 \
+    --days 2018-08 2019-01 2019-09 2020-02 2020-10 2021-03 2021-07 2022-04 2022-11 2023-05 2023-12 2024-06
+```
+
+- `fetch_rmi_aws.py` writes `data/rmi_aws/aws_1hour_precip.npz` and
+  `stations.json` ([data.md](data.md), *RMI automatic weather stations*);
+  years already fetched are skipped; `--codes` limits it to some stations.
+- `fetch_issue88_volumes.py` picks the 15 rainiest hours, one per day, near
+  each radar before and after 18/11/2025 (from the Belgian CIRRUS sums and
+  ERA5-Land), and downloads their lowest-elevation `DBZH` volumes from the
+  public ORD bucket into `data/opera_pvol/issue88/` (about 75 MB), with
+  `hours.json` and `delivered.json`. Files already there are not downloaded
+  again; on the workstation, with the volumes already there, about 1 min.
+  Notebook 07, section 11, reads them.
+- `qc_dry_wet_hours.py` reads the Belgian sums above and the RMI stations,
+  and writes `qc_dry_wet_era5.csv` and `qc_dry_wet_rmi.csv`; `--summary`
+  prints the summary again, `--preliminary` adds the ERA5T hours.
+- `cirrus_window_volumes.py` reads the single-radar volumes of
+  `data/opera_single/<YYYYMMDD>/<node>/` and writes one CSV.
+- `cirrus_window_odyssey.py` needs the H2 outputs, like
+  `odyssey_clean_era5grid.py`, and writes `w_<YYYYMMDD>.npz` per day; days
+  already written are skipped; about 25 min for the 12 months above with 16
+  processes.
+
 ## IRENE test training on the workstation (T0)
 
 IRENE has its own environment (Python 3.13, torch with CUDA), next to DECADE;

@@ -96,6 +96,16 @@ macOS and Windows. CI runs the tests on Linux and Windows.
 | `opera_ds/plots.py` | validation figures |
 | `opera_ds/clean.py` | first-version cleaning (H2): `clean_composite` (> 70 dBZ, Gabella as a switch, static mask), `StaticCounts` (per-pixel counts on past composites and the mask rule), `StaticMask` (fill tables, radar of each masked pixel, switched with `how/nodes`), `static_fill` (EURADCLIM fill), `odyssey_period` |
 | `opera_ds/bridge.py` | bridge data (S7, S9, S10): `era5land_to_zarr` and `era5land_amounts` (ERA5-Land files to one store of hourly amounts), `cerraland_to_zarr` (CERRA-Land files to one store of daily amounts), `era5land_sum`, `cerraland_sum` (totals over a window, from the stores), `cell_index` and `cell_mean` (OPERA pixels on the bridge cells), `pixel_lonlat` |
+| `opera_ds/vmm.py` | VMM radar rasters (H3): `read_vmm` (−2 outside coverage → NaN, UTC label), `hourly_cell_sums` (hourly rain on the bridge cells), `steps_in_month` |
+| `opera_ds/homog.py` | homogeneity of a bridge (H3): `area_ratio` (product / bridge over the Belgian cells), `step` (log10 step of a monthly ratio at a date, with the spread before it) |
+| `scripts/vmm_hourly.py` | hourly VMM rain on the ERA5-Land cells over Belgium (H3) |
+| `scripts/odyssey_clean_era5grid.py` | hourly ODYSSEY rain on the ERA5-Land cells over Belgium, raw and cleaned as in H2; with `--product cirrus`, the Belgian CIRRUS sums of the target D; with `--crop`, cleaned ODYSSEY and CIRRUS on every land cell of the crop (H3) |
+| `scripts/crop_offsets.py` | intensity offsets of A, B and C against D on the whole crop, per country of the nearest radar and per ring, against the Belgian offset and U (H3) |
+| `scripts/fetch_rmi_aws.py` | hourly precipitation of the RMI automatic weather stations from the RMI open-data WFS (H3) |
+| `scripts/fetch_issue88_volumes.py` | single-radar volumes of the Belgian radars on rainy hours before and after 18/11/2025, from the public ORD bucket (#88) |
+| `scripts/cirrus_window_volumes.py` | CIRRUS frames against the Belgian single-radar volumes in their window: maximum, latest or earliest (H3) |
+| `scripts/cirrus_window_odyssey.py` | ODYSSEY interpolated to 1 min, 5 min frames at NT and as the maximum over (NT−10, NT], hourly on the ERA5-Land cells (H3) |
+| `scripts/qc_dry_wet_hours.py` | Radar against ERA5-Land and the RMI stations, wet and dry hours per period, season, hour and ring: are the extra echoes rain? (H3) |
 | `scripts/opera_ds_cli.py` | sub-commands `downscale`, `validate`, `sample`, `windows` |
 | `site/index.html`, `site/fetch_data.sh` | project plan page; ticket status, owners, dates and dependencies are read from the issues by `fetch_data.sh` when `.github/workflows/pages.yml` publishes it, so only the plan text lives in the page |
 | `scripts/fetch_ord_archive.py`, `scripts/fetch_cog_crop.py`, `scripts/make_region_mask.py`, `scripts/fetch_pvol_positions.py`, `scripts/fetch_cds.py`, `scripts/bridge_to_zarr.py` | download and masks; single-radar files for the radar positions of a day; ERA5-Land and CERRA-Land from the Copernicus Climate Data Store, ERA5-Land as one Zarr store |
