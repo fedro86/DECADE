@@ -341,6 +341,12 @@ node stays to T3.
     [#24](https://github.com/fedro86/DECADE/issues/24)).
   - **The H2 rule** is to match CIRRUS and not to clean it. Revisiting it is
     for G1 with Vito.
+- **The bridge term of U over Europe (H3)** (27/11/2026, #96): kept, u = g/√3
+  around ERA5-Land. The RMI check covers Belgium only, and the drift of
+  CERRA-Land depends on its local gauge input, so outside Belgium it is not
+  known which bridge drifts. Without the term, U would be about the interval
+  over Belgium, and more countries would fall beyond it ([method.md](method.md),
+  *Uncertainty budget of the level correction*).
 
 ## Open decisions
 
@@ -369,10 +375,6 @@ node stays to T3.
     *Whole crop: does the Belgian offset hold?*). The Belgian offset holds on
     the whole crop for A and C outside the Netherlands, Switzerland and
     Denmark.
-  - **The bridge term of U over Europe:** g/√3 around ERA5-Land, our choice
-    of 27/11/2026, to be confirmed. Without it, U is about the interval over
-    Belgium, and more countries fall beyond it ([method.md](method.md),
-    *Uncertainty budget of the level correction*).
   - **The Netherlands:** beyond U in every period; CIRRUS is about 1.8 times
     more intense there than ODYSSEY was.
   - **The sea:** no bridge; the offset of the country of the nearest radar,

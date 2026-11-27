@@ -1325,6 +1325,9 @@ it stands and links to them.
 - **Superseded:** the offsets on the volume (×1.43, ×1.13, ×1.26) of *Level only* and *Level offsets of periods
   A and B*, kept as the record of how the decision was reached.
 
+**Decided on 27/11/2026:** the bridge term of U over Europe is kept, u = g/√3 around ERA5-Land (*Uncertainty
+budget of the level correction*).
+
 **Checked (19/11/2026):**
 - **Bridge:** ERA5-Land has no drift against the RMI stations, CERRA-Land does (*Check against the RMI automatic
   stations*), so the offsets use ERA5-Land.
@@ -1336,7 +1339,6 @@ it stands and links to them.
 **Open for G1** (also in [roadmap.md](roadmap.md), *Open decisions*):
 - A at 12/2014, where the last year of A drops (SNHT p 0.09);
 - keep k, or calibrate the shift on the pixels: ×1.34 leaves A 0.042 below D (*Level on the intensity*);
-- the bridge term over Europe of the uncertainty budget (*Uncertainty budget of the level correction*);
 - B outside Belgium, the Netherlands, and the sea (*Whole crop*);
 - period E, CIRRUS from 18/11/2025, assessed again in May 2027 (H8, #24).
 
@@ -2175,7 +2177,7 @@ The budget comes in two parts, which are not added together:
   - The other choice is to leave the term out, because over Belgium the RMI check shows that CERRA-Land drifts,
     and a known systematic effect is corrected, not covered by a larger uncertainty (sections 3.2.4 and 6.3.1,
     note). Outside Belgium no such check exists.
-  - **Our choice of 27/11/2026, to be confirmed with Federico at G1:** u = g/√3 for the column over Europe, since
+  - **Decided on 27/11/2026:** u = g/√3 for the column over Europe, since
     there the drift of either bridge is not tested. The column over Belgium uses the RMI term instead (next).
 - **The bridge over Belgium**, after the RMI check, is the 95% interval of the ERA5-Land / stations trend times
   the years between the middle of the period and the middle of D. It is a t interval, so u = half-width / t at
@@ -2379,8 +2381,8 @@ correction*:
 - **Bridge over Europe:** CERRA-Land is daily, so the intensity offset is computed on the 06–06 days (area mean
   of the 186 cells) against ERA5-Land and against CERRA-Land. A wet day has at least 1 mm, the daily wet threshold
   of Goudenhoofdt and Delobbe (2009). The interval is written around the ERA5-Land offset, and the gap g between
-  the two bridges is the half-width of a rectangular term, u = g/√3 (JCGM 100:2008, 4.3.7). **Our choice of
-  27/11/2026, to be confirmed with Federico at G1:** it keeps the term over Europe, where no check like the RMI one
+  the two bridges is the half-width of a rectangular term, u = g/√3 (JCGM 100:2008, 4.3.7). **Decided on
+  27/11/2026:** it keeps the term over Europe, where no check like the RMI one
   exists. Leaving the term out instead gives intervals about equal to those over Belgium (notebook 09, section 8,
   prints both).
 - **Bridge over Belgium:** the trend of the wet-day intensity of ERA5-Land against the 12 RMI stations is ×1.01 a
@@ -2509,7 +2511,7 @@ processing. `scripts/odyssey_clean_era5grid.py --crop` and `scripts/crop_offsets
   10/11/2026. Radars missing from the database, such as `deflg`, `dehan` and `deham` in Germany, are left out; the
   cells near them go to another German radar.
 - **Comparison:** each offset minus the Belgian offset decided for G1, against U of the level over Europe (A 0.076,
-  B 0.071, C 0.049; *Level on the intensity*, table 2, with the bridge term g/√3 to be confirmed at G1).
+  B 0.071, C 0.049; *Level on the intensity*, table 2, with the bridge term g/√3).
 
 Offset against D (95%), and minus the Belgian offset in log10 (* beyond U). Cells are the mean number per month.
 On the 186 Belgian cells the decided offsets come back exactly.
