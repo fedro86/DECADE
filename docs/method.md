@@ -118,8 +118,10 @@ differ from 2.5 min. Three options were compared:
 | −5 | 0 | real frame | 12.93 | 8.89 | 0.545 |
 | −5 | 1/3 | 5 min | 13.15 | 9.20 | 0.530 |
 | +2.5 | 1/2 | 7.5 min | 13.15 | 9.28 | 0.526 |
+| +2.5 | 5/6 | 2.5 min | 13.16 | 9.28 | 0.529 |
 
-- −2.5 is better than 0 by about 0.1 dB of RMSE and MAE, under 1%.
+- −2.5 is better than 0 by 0.07 dB of RMSE and 0.1 dB of MAE on average over
+  its frames, under 1%.
 - +2.5 is clearly worse, which confirms the sign of the offset.
 - The level difference between the products dominates every row: bias −5.4 to
   −6.2 dB in the same file.
