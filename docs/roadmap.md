@@ -133,11 +133,12 @@ left allows it.
   radar artefacts from ODYSSEY (M→F, 16–29/11).
 - [ ] [**H3**](https://github.com/fedro86/DECADE/issues/20) Harmonise the
   ODYSSEY level with CIRRUS through a bridge, period by period; absorbs H3b
-  and H4 (M→F, 16/11–18/12, method frozen at G1). Period C (8/2018–6/2024)
-  against CIRRUS done on 16/11/2026, proposal for G1 on #79
-  ([method.md](method.md), *Level only: one offset for period C*); periods
-  A and B, with the CERRA-Land check, done on 16/11/2026 in the second pull
-  request, #96 ([method.md](method.md), *Level offsets of periods A and B*).
+  and H4 (M→F, 16/11–18/12, method frozen at G1). Decided on 17/11/2026:
+  one offset per period on the wet-hour intensity, bridged by ERA5-Land
+  ([method.md](method.md), *Level on the intensity*); continuity, jumps with
+  no date and the whole crop checked on 19/11/2026 ([method.md](method.md),
+  *Continuity and jumps on the intensity* and *Whole crop*), in #96. What
+  is left for G1 is in *Open decisions*.
 - [ ] [**H6**](https://github.com/fedro86/DECADE/issues/21) Decide the time
   shift used in production (F+M, 30/11–6/12).
 - [ ] [**H5**](https://github.com/fedro86/DECADE/issues/22) Validate archive v1
@@ -324,40 +325,12 @@ node stays to T3.
   in dBZ, so the radar keeps its own structure. EURADCLIM is not used: it is
   built on the OPERA composites. G1 freezes the procedure; offsets not ready
   for archive v1 enter v1.1 (H8).
-
-## Open decisions
-
-- **Level-correction bridge (H3):** pan-European, national or none; decided at
-  G1 with ERA5-Land, CERRA-Land and VMM. With similar results the pan-European bridge is preferred, because the
-  method must apply to the whole OPERA domain. If a national bridge is chosen,
-  the decision states what would replace it in the other countries.
-- **Seasonal level offsets (H3):** for period C, spring and autumn exceed the
-  rule of 13/11/2026 on one year of CIRRUS, while the monthly offsets show no
-  seasonal pattern ([method.md](method.md), *Level only: one offset for
-  period C*); one offset or seasonal offsets, decided at G1.
-- **Periods A and B (H3):** a single offset leaves a jump at 8/2018 beyond
-  the yardstick, because B rises over time; the steps at 12/2015 and 8/2018
-  are about twice as large near the radars; A has a seasonal pattern
-  ([method.md](method.md), *Level offsets of periods A and B*). Split B or
-  not, offsets by ring or not, seasonal offsets for A or not: for G1.
-  On the intensity offsets (19/11/2026, #96), B no longer breaks at 8/2018
-  (−0.032, within the yardstick of 0.067). A→B is just above it (+0.080),
-  from a drop in the last year of A. No jump with no date is significant
-  inside A, B or C (SNHT and Pettitt; the strongest is A at 12/2014,
-  p 0.09) ([method.md](method.md), *Continuity and jumps on the intensity*).
-- **Offsets outside Belgium (H3, for G1):** on the whole crop (19/11/2026,
-  #96), the Belgian offset holds for C and, outside the Netherlands,
-  Switzerland and Denmark, for A. B needs ×1.20–1.28 in France, Germany and
-  the United Kingdom, against ×1.06. The Netherlands are beyond U in every
-  period: CIRRUS is about 1.8 times more intense there than ODYSSEY was. One
-  offset per period, offsets per country of the nearest radar, or "adjusted"
-  for Belgium only; and what to apply over the sea ([method.md](method.md),
-  *Whole crop: does the Belgian offset hold?*).
-- **Volume or intensity, and the target (H3): decided on 17/11/2026** (#96).
+- **Volume or intensity, and the target (H3)** (17/11/2026, #96).
   - **Target:** the level offsets for G1 and archive v1 (G2) use D, CIRRUS
     7/2024–17/11/2025.
   - **Offsets:** they are on the intensity, applied as a shift in dBZ: A ×1.34, B ×1.06, C ×1.01
-    (±0.7–0.9 dB).
+    (95% over Belgium ±0.8–0.9 dB, over Europe ±0.8–1.2 dB; [method.md](method.md), *Level on the
+    intensity*).
   - **Frequency gap:** not corrected, documented as a difference of quality control. The
     extra echoes of CIRRUS against C sit in hours that ERA5-Land and the RMI
     stations call dry ([method.md](method.md), *Level on the intensity* and
@@ -368,6 +341,42 @@ node stays to T3.
     [#24](https://github.com/fedro86/DECADE/issues/24)).
   - **The H2 rule** is to match CIRRUS and not to clean it. Revisiting it is
     for G1 with Vito.
+
+## Open decisions
+
+- **Level-correction bridge (H3):** pan-European, national or none; decided at
+  G1 with ERA5-Land, CERRA-Land and VMM. With similar results the pan-European bridge is preferred, because the
+  method must apply to the whole OPERA domain. If a national bridge is chosen,
+  the decision states what would replace it in the other countries.
+- **What is left of the level correction (H3, for G1).** U is the expanded
+  uncertainty (95%) of the level of a period over Europe
+  ([method.md](method.md), *Level on the intensity*, table 1). On the
+  intensity (19/11/2026, #96) B does not break at 8/2018, the rings are
+  within U in every period, and no seasonal residual of A both exceeds U and
+  rests on two CIRRUS years or more ([method.md](method.md), *Continuity and
+  jumps on the intensity* and *Level on the intensity*). Still open:
+  - **A at 12/2014:** the last year of A is lower; A→B is just above the
+    yardstick (+0.080 against 0.067), and SNHT puts its most likely break
+    there (p 0.09). Jabbeke enters the composite that month; the cause is not
+    established.
+  - **Keep k or calibrate the shift:** on the pixels part of the shift goes
+    into the frequency, so ×1.34 leaves A 0.042 below D in intensity
+    (closure test of #100).
+  - **B outside Belgium:** France, Germany and the United Kingdom need
+    ×1.20–1.28, against ×1.06; the United Kingdom is beyond U, France and
+    Germany close to it. One offset per period, offsets per country of the
+    nearest radar, or "adjusted" for Belgium only ([method.md](method.md),
+    *Whole crop: does the Belgian offset hold?*). The Belgian offset holds on
+    the whole crop for A and C outside the Netherlands, Switzerland and
+    Denmark.
+  - **The bridge term of U over Europe:** g/√3 around ERA5-Land, our choice
+    of 27/11/2026, to be confirmed. Without it, U is about the interval over
+    Belgium, and more countries fall beyond it ([method.md](method.md),
+    *Uncertainty budget of the level correction*).
+  - **The Netherlands:** beyond U in every period; CIRRUS is about 1.8 times
+    more intense there than ODYSSEY was.
+  - **The sea:** no bridge; the offset of the country of the nearest radar,
+    labelled as extrapolated, or none.
 - **Where CIRRUS stops in archive v1 (for G1).** CIRRUS frames are not
   corrected (real-time rule). If the archive goes past 18/11/2025, it holds a
   step between D and E inside CIRRUS itself ([method.md](method.md), *CIRRUS

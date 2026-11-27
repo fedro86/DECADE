@@ -48,7 +48,11 @@ D_END = np.datetime64("2025-11-18T00")  # target D: CIRRUS to 17/11/2025
 PERIODS = {"A": ((2013, 4), (2015, 11)), "B": ((2015, 12), (2018, 7)), "C": ((2018, 8), (2024, 6)),
            "D": ((2024, 7), (2025, 11))}
 OFF_BE = {"A": 0.127, "B": 0.023, "C": 0.006}  # docs/method.md, *Level on the intensity*, table 1
-U_EU = {"A": 0.056, "B": 0.052, "C": 0.044}  # same section, table 2, "U, Europe"
+# U of the level over Europe (notebook 09, section 8, "U EU"): k from the effective degrees of freedom, and the
+# bridge term over Europe either g/sqrt(3) around ERA5-Land or left out (docs/method.md, *Uncertainty budget*)
+U_EU_BY_CHOICE = {"g/sqrt3": {"A": 0.076, "B": 0.071, "C": 0.049}, "none": {"A": 0.052, "B": 0.048, "C": 0.048}}
+BRIDGE_EU_CHOICE = "g/sqrt3"
+U_EU = U_EU_BY_CHOICE[BRIDGE_EU_CHOICE]
 RINGS = ((0, 50), (50, 100), (100, 150), (150, 1000))
 LAT_N, LON_W, STEP, NLON = 55.0, -3.9, 0.1, 158
 MIN_CELLS = 30  # a country with fewer cells on average is not shown
@@ -81,9 +85,9 @@ def full_cells():
 
 
 def belgian_cells():
-    """The 186 cells of notebook 07 and 09 (Belgian sums, 7/2024)."""
+    """The 186 cells of notebook 07 and 09 (Belgian sums of scripts/odyssey_clean_era5grid.py, 7/2024)."""
     out = None
-    for name in ("odyssey", "cirrus"):
+    for name in ("odyssey_clean", "cirrus"):
         z = np.load(H3 / f"era5grid_{name}_2024-07.npz")
         s = {tuple(c) for c in z["cells"][z["npix"] >= 0.8 * z["npix"].max()]}
         out = s if out is None else out & s
