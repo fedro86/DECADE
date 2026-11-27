@@ -72,7 +72,7 @@ def main():
     elat, elon = era5land_axes()
     idx = cell_index(elat, elon, lat, lon)
     n_cells = elat.size * elon.size
-    bel = grid_mask(where, country_geometry("BEL", str(DATA_DIR / "naturalearth")))
+    bel = grid_mask(where, country_geometry("BEL", str(DATA_DIR / "naturalearth"), download=False))
     bel_cells = np.unique(idx[bel])
     print(f"{len(paths)} rasters; {bel.sum()} VMM pixels in Belgium on {bel_cells.size} ERA5-Land cells", flush=True)
 

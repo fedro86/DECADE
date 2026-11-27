@@ -52,14 +52,22 @@ def hourly_cell_sums(paths, idx: np.ndarray, n_cells: int, cells: np.ndarray, st
     rasters already hold amounts (`PAC_*`).
 
     Returns {hour end (datetime): (sum per cell of `cells`, number of rasters)}. A cell below `min_valid`
-    coverage in any raster of the hour is NaN for that hour; an hour is complete with 12 rasters at 5 min.
+    coverage in any raster of the hour is NaN for that hour; an hour is complete with 12 rasters at 5 min. A
+    second raster with a label already read is not added: it is skipped with a warning.
     """
+    import warnings
+
     from opera_ds.bridge import cell_mean
 
     sums: dict = {}
     counts: dict = defaultdict(int)
+    seen: set = set()
     for p in paths:
         values, _, label = read_vmm(p)
+        if label in seen:
+            warnings.warn(f"duplicate VMM raster for {label:%Y-%m-%d %H:%M}, skipped: {p}", stacklevel=2)
+            continue
+        seen.add(label)
         hour = label.replace(minute=0, second=0, microsecond=0)
         if hour != label:
             hour += dt.timedelta(hours=1)

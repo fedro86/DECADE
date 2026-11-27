@@ -23,12 +23,16 @@ from opera_ds.odim_io import read_odim_composite
 NE_URL = "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip"
 
 
-def country_geometry(iso3: str, cache_dir: str):
+def country_geometry(iso3: str, cache_dir: str, download: bool = True):
+    """Natural Earth 1:10m border of a country (ISO A3), from the zip in cache_dir. With download=False (processing
+    code, which must not access the network) a missing zip is an error instead of a download."""
     import shapefile  # pyshp
     from shapely.geometry import shape
 
     path = os.path.join(cache_dir, "ne_10m_admin_0_countries.zip")
     if not os.path.exists(path):
+        if not download:
+            raise FileNotFoundError(f"{path} is missing: run scripts/make_region_mask.py first, which downloads it")
         os.makedirs(cache_dir, exist_ok=True)
         urllib.request.urlretrieve(NE_URL, path)
     with zipfile.ZipFile(path) as z:
@@ -39,7 +43,7 @@ def country_geometry(iso3: str, cache_dir: str):
             rec = dict(zip(fields, sr.record))
             if iso3 in (rec.get("ADM0_A3"), rec.get("ISO_A3")):
                 return shape(sr.shape.__geo_interface__)
-    raise KeyError(f"paese {iso3} non trovato")
+    raise KeyError(f"country {iso3} not found")
 
 
 def grid_mask(where: dict, geom_lonlat, buffer_km: float = 0.0) -> np.ndarray:
