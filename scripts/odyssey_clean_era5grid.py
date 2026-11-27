@@ -21,7 +21,14 @@ Use --last 2024-07 to add the overlap days, 1-5/7/2024, with the mask of the las
 Writes results/h3_level/era5grid_odyssey_clean_<YYYY-MM>.npz and prints one line per month when it is done.
 Months already written are skipped.
 
-Whole crop (review of #96, point 3 of 18/11/2026: does the Belgian offset hold on the whole crop?). With --crop the
+Belgian CIRRUS sums for the target D (`--product cirrus`): the same sums on CIRRUS as it is (1 km, 5 min frames,
+the Belgian pixels of the 1 km mask), as notebook 07, section 4. They are the CIRRUS input of notebook 09:
+
+  uv run python scripts/odyssey_clean_era5grid.py --product cirrus --first 2024-07 --last 2025-11 --processes 16
+
+They write results/h3_level/era5grid_cirrus_<YYYY-MM>.npz, with the sums in `rain`.
+
+Whole crop (asked on #96, 18/11/2026: does the Belgian offset hold on the whole crop?). With --crop the
 same sums are made on every land ERA5-Land cell of the crop, not only the Belgian ones: every pixel of the file
 goes to the cell with the nearest centre, as above, if it lies within half a cell (0.05 degrees) of that centre,
 so the pixels beyond the edge of the ERA5-Land grid are left out; cells over the sea (NaN in ERA5-Land) are left
@@ -57,13 +64,16 @@ STEP_H = {"odyssey": 0.25, "cirrus": 5 / 60}
 PERIODS = (("2013-04", "2015-11"), ("2015-12", "2018-07"), ("2018-08", "2024-07"))
 
 
-def belgian_window():
-    """Window of the ODYSSEY crop (rows, cols at 2 km) and its Belgian cells, as notebook 07, cell 3."""
+def belgian_window(product: str = "odyssey"):
+    """Window of the crop (rows, cols) and its Belgian pixels, as notebook 07, cell 3: for ODYSSEY at 2 km, a cell
+    being Belgian when at least 2 of its 4 pixels are; for CIRRUS the 1 km mask itself."""
     mask = np.load(DATA_DIR / "mask_BEL_1km.npy")
     r, c = np.where(mask.any(1))[0], np.where(mask.any(0))[0]
     r0, r1 = r[0] // 2 * 2, (r[-1] + 2) // 2 * 2
     c0, c1 = c[0] // 2 * 2, (c[-1] + 2) // 2 * 2
     m1 = mask[r0:r1, c0:c1]
+    if product == "cirrus":
+        return (r0, r1, c0, c1), m1
     m2 = m1.reshape(m1.shape[0] // 2, 2, m1.shape[1] // 2, 2).sum((1, 3)) >= 2
     return (r0 // 2, r1 // 2, c0 // 2, c1 // 2), m2
 
@@ -156,14 +166,14 @@ def month(ym: str, product: str = "odyssey", crop: bool = False) -> str:
     odyssey = product == "odyssey"
     if odyssey:
         radars = {k: (v["row"], v["col"])
-                  for k, v in json.loads((H2 / "db_rowcol_odyssey_crop.json").read_text()).items()}
+                  for k, v in json.loads((H2 / "db_rowcol_odyssey_crop.json").read_text(encoding="utf-8")).items()}
         static = StaticMask(np.load(H2 / f"static_mask_proposal_P{period_of(ym)}.npy").astype(bool), radars=radars,
                             pixel_km=2.0)
         listed = listed_by_day()
     if crop:
         land = land_cells()
     else:
-        win, m2 = belgian_window()
+        win, m2 = belgian_window(product)
     keys = ("clean",) if crop or not odyssey else ("raw", "clean")
     y, m = map(int, ym.split("-"))
     files = sorted(glob.glob(str(DATA_DIR / f"{product}_bel" / f"{y}" / f"{m:02d}" / "*.h5")))
@@ -236,10 +246,8 @@ def main() -> None:
     ap.add_argument("--processes", type=int, default=16)
     ap.add_argument("--crop", action="store_true", help="every land ERA5-Land cell of the crop, not only Belgium")
     ap.add_argument("--product", choices=("odyssey", "cirrus"), default="odyssey",
-                    help="cirrus: the CIRRUS sums of notebook 07, section 4, only with --crop")
+                    help="cirrus: CIRRUS as it is, 1 km, 5 min frames (the sums of notebook 07, section 4)")
     args = ap.parse_args()
-    if args.product == "cirrus" and not args.crop:
-        ap.error("--product cirrus needs --crop (the Belgian CIRRUS sums are made by notebook 07, section 4)")
     OUT.mkdir(parents=True, exist_ok=True)
     todo = months(args.first, args.last)
     if args.processes == 1:
@@ -249,7 +257,7 @@ def main() -> None:
     with ProcessPoolExecutor(args.processes) as ex:
         for fut in as_completed([ex.submit(month, ym, args.product, args.crop) for ym in todo]):
             print(fut.result(), flush=True)
-    print("FINITO", flush=True)
+    print("done", flush=True)
     sys.exit(0)
 
 

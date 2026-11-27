@@ -54,7 +54,7 @@ def day_job(args):
     t_start = time.time()
     ym = f"{day:%Y-%m}"
     win, m2 = oce.belgian_window()
-    radars = {k: (v["row"], v["col"]) for k, v in json.loads((H2 / "db_rowcol_odyssey_crop.json").read_text()).items()}
+    radars = {k: (v["row"], v["col"]) for k, v in json.loads((H2 / "db_rowcol_odyssey_crop.json").read_text(encoding="utf-8")).items()}
     static = StaticMask(np.load(H2 / f"static_mask_proposal_P{oce.period_of(ym)}.npy").astype(bool), radars=radars,
                         pixel_km=2.0)
     listed = oce.listed_by_day()
