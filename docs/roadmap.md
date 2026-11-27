@@ -10,8 +10,9 @@ Update this page in the same pull request that completes or changes a task.
 ## Goal
 
 DECADE (DEep-learning nowCasting from A harmonised DEcade of radar data),
-HydroScan with the University of Basilicata, compute on Leonardo Booster. The
-motivation is in the [README](../README.md).
+HydroScan with the University of Basilicata. Compute: a workstation with one
+RTX 4090 and a EuroHPC AI Factory Playground allocation of 5,000 GPU hours
+(*Team and timeline*). The motivation is in the [README](../README.md).
 
 ### Research questions
 
@@ -45,10 +46,11 @@ motivation is in the [README](../README.md).
   references. Validation references: VMM and RADCLIM ([data.md](data.md),
   *Inventory of sources and licences*). Validation against private Belgian
   archives is run by their owners through the injectable `reader`.
-- **Production runs on Leonardo Booster** (EuroHPC, CINECA) as Slurm batch
-  jobs, without notebooks. Compute nodes have no internet access and a job lasts
-  at most 24 hours, so long runs save partial results and resume
-  ([usage.md](usage.md), *Running on Leonardo Booster*).
+- **Production runs on HPC** as Slurm batch jobs, without notebooks: the
+  system of the Playground allocation, chosen when applying (P1). Compute nodes
+  may have no internet access and jobs have a time limit (24 hours on Leonardo
+  Booster, the only system documented so far), so long runs save partial
+  results and resume ([usage.md](usage.md), *Running on Leonardo Booster*).
 - **All inputs and outputs in Zarr** (crops, archive, training stores), with
   chunks, compression, data type and sharding chosen for GPU data loading and
   parallel reads, and to keep the size down.
@@ -64,18 +66,31 @@ motivation is in the [README](../README.md).
 - **Vito Telesca** (University of Basilicata): review at the gates and periodic
   reviews, as available.
 
-The **intensive phase** runs from 3/11/2026 to 28/2/2027. Leonardo access is
-12 months from 16/11/2026 if the call is won (result expected around
-15/11/2026): 4500 node-hours on nodes with 4 GPUs. If it is lost, the work runs
-on a workstation with one RTX 4090 and a request for a smaller HPC allocation
-is written (P1).
+The **intensive phase** runs from 3/11/2026 to 28/2/2027. The Leonardo call
+(4500 node-hours on nodes with 4 GPUs, 12 months) was not won (known on
+27/11/2026). The work runs on a workstation with one RTX 4090 and on a EuroHPC
+AI Factory **Playground** allocation, requested by HydroScan (P1):
+- **5,000 GPU hours** on one system, used within one, two or three months; no
+  extension and no extra hours;
+- the applicant (principal investigator) must work at a company or SME, so
+  Federico for HydroScan; the call is for industrial innovation, and
+  research-only proposals go to the *AI for Science* call;
+- applications are open at any time; after an eligibility and a technical check
+  they are granted first come, first served, within 2 working days;
+- the results are published with the EuroHPC acknowledgement, and a final
+  report is due 3 months after the end of the allocation.
+
+Sources: EuroHPC JU, *Terms of Reference – AI Factories Access calls for Industrial Innovation*, V3, 31/03/2026 ([summary](sources/2026%20-%20EuroHPC%20JU%20-%20Terms%20of%20Reference%20AI%20Factories%20Access%20calls%20for%20Industrial%20Innovation.md));
+the 5,000 GPU hours as shown on the EuroHPC access portal (27/11/2026). The
+portal showed the Playground call open on 27/11/2026, with its cut-off about
+five weeks later, and earlier Playground calls as closed.
 
 | gate | date | condition | review |
 |---|---|---|---|
 | G1 | 6/12/2026 | method frozen: cleaning, level-correction bridge, time shift | Vito |
 | G2 | 20/12/2026 | archive v1 and training stores ready | Vito |
 | G3 | 28/2/2027 | archive tested with IRENE (phase 1), technical report | Vito |
-| G4 | 15/11/2027 (indicative) | final archive and results: archive v1.1 and code released, research questions answered, costs extrapolated to Europe; end of Leonardo access | — |
+| G4 | 15/11/2027 (indicative) | final archive and results: archive v1.1 and code released, research questions answered, costs extrapolated to Europe | — |
 
 Tickets below carry an id, an owner (F Federico, M Marìca, F+M both, M→F
 explored by Marìca and coded by Federico) and the planned dates; dates after
@@ -108,13 +123,16 @@ left allows it.
 - [x] [**S10**](https://github.com/fedro86/DECADE/issues/93) Convert
   CERRA-Land to one Zarr store of daily amounts (F, 12–13/11).
 - [ ] [**S1**](https://github.com/fedro86/DECADE/issues/14) Build the Python
-  environment on the CINECA modules (F, 18–29/11, if the call is won).
+  environment on the system of the Playground allocation (F, when access is
+  granted; written for the CINECA modules, Leonardo was not won).
 - [ ] [**S2**](https://github.com/fedro86/DECADE/issues/15) Copy the inputs to
-  Leonardo via the data movers (F, 23/11–6/12, if the call is won).
+  that system (F, when access is granted; written for the Leonardo data
+  movers).
 - [ ] [**S3**](https://github.com/fedro86/DECADE/issues/16) Write chained,
-  resumable Slurm job scripts (F, 30/11–20/12, if the call is won).
+  resumable Slurm job scripts (F, 30/11–20/12).
 - [ ] [**P1**](https://github.com/fedro86/DECADE/issues/17) Write a request for
-  a smaller HPC allocation (F+M, 23/11–20/12, if the call is lost).
+  a smaller HPC allocation: the AI Factory Playground, 5,000 GPU hours,
+  HydroScan as applicant (F+M, 23/11–20/12; the Leonardo call was lost).
 
 ### WP1 – Harmonisation of ODYSSEY
 
@@ -189,15 +207,19 @@ many years are worth harmonising, which sets the cost of the European
 extension (WP5).
 
 The work runs in phases; each phase starts only if the compute budget left
-allows it. Planning estimate: 10% of the 4500 node-hours in reserve, the rest
-over 24 runs, about 169 node-hours per run (about 7 days on one node, so a
-chain of about 7 jobs of 24 hours), to be replaced by the cost measured in T3.
+allows it. The budget is the 5,000 GPU hours of the Playground allocation,
+used within at most three months, plus the 4090. The planning estimate per run
+is kept from the plan for Leonardo until T3 measures the real cost: 169
+node-hours on nodes with 4 GPUs (10% of the 4500 node-hours in reserve, the
+rest over 24 runs), so about 676 GPU hours per run. It holds only for a GPU of
+the same class as the system chosen. With 10% of the 5,000 in reserve, 4,500
+GPU hours give about 6 runs:
 
-| phase | trainings | seeds | runs | estimate |
-|---|---|---|---|---|
-| 1 | A, B, C | 3 | 9 | about 1520 node-hours; on 2 nodes, 5 rounds of a week from 21/12, B last |
-| 2 | C with k = 2 and k = 4, old/recent control | 1 | 3 | about 505 node-hours |
-| 3 | C with k = 1, 2, 4, 8, old/recent control | 3 | 15 (12 more than phase 2) | about 2025 node-hours, Leonardo only |
+| phase | trainings | seeds | runs | estimate | on the Playground |
+|---|---|---|---|---|---|
+| 1 | A, B, C | 3 | 9 | about 6,080 GPU hours | 1 seed (3 runs, about 2,030 GPU hours); other seeds on the 4090 or not run |
+| 2 | C with k = 2 and k = 4, old/recent control | 1 | 3 | about 2,020 GPU hours | fits with phase 1 at 1 seed |
+| 3 | C with k = 1, 2, 4, 8, old/recent control | 3 | 15 (12 more than phase 2) | about 8,100 GPU hours | does not fit: only with a further allocation |
 
 On the RTX 4090 alone (T9, measured on fake windows with the batch already
 loaded, so a lower bound): IRENE's default setting (CRPS on 2 members, batch
@@ -234,11 +256,11 @@ node stays to T3.
 - [ ] [**T3**](https://github.com/fedro86/DECADE/issues/38) Run a small training
   and measure the cost (F, 14–20/12).
 - [ ] [**T4**](https://github.com/fedro86/DECADE/issues/39) Train phase 1:
-  configurations A, B and C (F, 21/12–31/1).
+  configurations A, B and C (F, 21/12–31/1; Playground and 4090).
 - [ ] [**T5**](https://github.com/fedro86/DECADE/issues/40) Train phase 2:
   configuration C with 2 and 4 years (F, 3–4/2027).
 - [ ] [**T6**](https://github.com/fedro86/DECADE/issues/41) Train phase 3: the
-  full learning curve (F, 5–8/2027).
+  full learning curve (F, 5–8/2027; only with a further allocation).
 
 ### WP4 – Verification
 
@@ -320,8 +342,27 @@ node stays to T3.
   in dBZ, so the radar keeps its own structure. EURADCLIM is not used: it is
   built on the OPERA composites. G1 freezes the procedure; offsets not ready
   for archive v1 enter v1.1 (H8).
+- **Compute after the Leonardo call** (27/11/2026). The Leonardo call was not
+  won. DECADE applies to the EuroHPC AI Factory Playground (5,000 GPU hours,
+  one to three months, one system) with HydroScan as applicant, and keeps the
+  4090 (*Team and timeline*; *WP3*).
 
 ## Open decisions
+
+- **Playground allocation (P1):**
+  - **System:** one of those offered in the application form. NVIDIA GPUs keep
+    the setup tested on the 4090 (T0, T9); LUMI has AMD GPUs, not tested with
+    IRENE. Leonardo Booster takes no new Large Scale allocations (EuroHPC Large
+    Scale page, checked 27/11/2026); for the Playground this is not checked.
+  - **Start:** the allocation lasts one to three months and cannot be
+    extended, so it should start when the data loader (T1) and the small
+    training (T3) are ready, about 21/12/2026. Three months from then would
+    also cover phase 2 if T5 moves earlier.
+  - **After it:** the other seeds of phase 1 and phase 3 need a further
+    allocation: Fast Lane (up to 50,000 GPU hours, one to three months, for
+    HPC-ready users) or Large Scale (more than 50,000), for which the
+    Playground is the recommended first step (EuroHPC JU, *Terms of Reference – AI Factories Access calls for Industrial Innovation*, V3, 31/03/2026, sections 1.1–1.2); or
+    the Regular Access proposal (C2).
 
 - **Level-correction bridge (H3):** pan-European, national or none; decided at
   G1 with ERA5-Land, CERRA-Land and VMM. With similar results the pan-European bridge is preferred, because the
